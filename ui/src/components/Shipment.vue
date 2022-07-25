@@ -26,15 +26,15 @@
                 @selection-change="handleSelectionChange">
         <el-table-column type="selection">
         </el-table-column>
-        <el-table-column prop="id" label="UID" width="80" align="center">
+        <el-table-column prop="id" label="UID" align="center">
         </el-table-column>
-        <el-table-column prop="odd" label="单号" width="100" align="center">
+        <el-table-column prop="odd" label="单号" align="center">
         </el-table-column>
-        <el-table-column prop="customer" label="客户" width="120" align="center">
+        <el-table-column prop="customer" label="客户" width="120px" align="center">
         </el-table-column>
-        <el-table-column prop="product" label="产品" width="180" align="center">
+        <el-table-column prop="product" label="产品" width="240px" align="center">
         </el-table-column>
-        <el-table-column prop="billdate" label="日期" width="100" align="center">
+        <el-table-column prop="billdate" label="日期" width="120px" align="center">
         </el-table-column>
         <el-table-column prop="amount" label="数量" width="80" align="center">
         </el-table-column>
@@ -47,6 +47,8 @@
         <el-table-column prop="boardcost" label="夹板成本" width="100" align="center">
         </el-table-column>
         <el-table-column prop="fireproofboardcost" label="防火板成本" width="100" align="center">
+        </el-table-column>
+        <el-table-column prop="costmoney" label="成本" width="100" align="center">
         </el-table-column>
         <el-table-column fixed="right" label="操作" align="center" width="180">
           <template #default="opt">

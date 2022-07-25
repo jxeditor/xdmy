@@ -63,7 +63,7 @@ public class ShipmentService extends BaseService implements IShipmentService {
                     obj.put("paystatus", shipment.getPaystatus());
                     obj.put("boardcost", shipment.getBoardcost());
                     obj.put("fireproofboardcost", shipment.getFireproofboardcost());
-                    obj.put("costmoney", shipment.getCustomer());
+                    obj.put("costmoney", shipment.getCostmoney());
                     data.put(obj);
                 }
             }
