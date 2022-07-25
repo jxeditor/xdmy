@@ -24,8 +24,25 @@ public class ShipmentService extends BaseService implements IShipmentService {
     @Override
     public int addShipment(Shipment shipment) {
         DBContextHolder.setDbType("primary");
-        int result = daoFacade.getShipmentDao().addShipment(shipment);
-        return result;
+        return daoFacade.getShipmentDao().addShipment(shipment);
+    }
+
+    @Override
+    public int deleteShipmentById(int id) {
+        DBContextHolder.setDbType("primary");
+        return daoFacade.getShipmentDao().deleteShipmentById(id);
+    }
+
+    @Override
+    public int updateShipment(Shipment shipment) {
+        DBContextHolder.setDbType("primary");
+        return daoFacade.getShipmentDao().updateShipment(shipment);
+    }
+
+    @Override
+    public int updatePaystatusShipmentById(int id) {
+        DBContextHolder.setDbType("primary");
+        return daoFacade.getShipmentDao().updatePaystatusShipmentById(id);
     }
 
     public JSONObject toJSONObject(List<Shipment> shipmentList) {

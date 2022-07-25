@@ -2,11 +2,12 @@ package com.xdmy.utils;
 
 public enum ErrorCode {
 
-    PARAMS_ERROR(-1, "Params error!!"),
-    UNKNOWN_ERROR(-2, "Unknown error!!"),
-    DELETE_FAILED(-3, "Delete failed!!"),
-    MD5_ERROR(-4, "md5 verified error!!"),
-    INSERT_ERROR(-5,"Insert failed!!");
+    PARAMS_ERROR(-1, "参数错误!!"),
+    UNKNOWN_ERROR(-2, "未知错误!!"),
+    DELETE_FAILED(-3, "删除失败!!"),
+    MD5_ERROR(-4, "MD5校验错误!!"),
+    INSERT_FAILED(-5, "插入失败!!"),
+    UPDATE_FAILED(-6, "更新失败!!");
 
     public Integer code;
     public String message;

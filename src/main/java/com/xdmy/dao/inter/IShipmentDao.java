@@ -10,4 +10,10 @@ public interface IShipmentDao {
     int getAllTotalSize(String customerName, String bizStartDate, String bizEndDate);
 
     int addShipment(Shipment shipment);
+
+    int deleteShipmentById(int id);
+
+    int updateShipment(Shipment shipment);
+
+    int updatePaystatusShipmentById(int id);
 }

@@ -36,6 +36,26 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
         return jdbcTemplate.update(sql, shipment.getOdd(), shipment.getCustomer(), shipment.getProduct(), shipment.getBilldate(), shipment.getAmount(), shipment.getUnitprice(), shipment.getMoney(), shipment.getPaystatus(), shipment.getBoardcost(), shipment.getFireproofboardcost(), shipment.getCostmoney());
     }
 
+    @Override
+    public int deleteShipmentById(int id) {
+        String sql = "DELETE FROM shipment WHERE id = ?";
+        return jdbcTemplate.update(sql, id);
+    }
+
+    @Override
+    public int updateShipment(Shipment shipment) {
+        String sql = "UPDATE shipment set odd = ?,customer = ?,product = ?,billdate = ?,amount = ?,unitprice = ?,money = ?" +
+                ",paystatus = ?,boardcost = ?,fireproofboardcost = ?,costmoney = ?" +
+                "WHERE id = ? ";
+        return jdbcTemplate.update(sql, shipment.getOdd(), shipment.getCustomer(), shipment.getProduct(), shipment.getBilldate(), shipment.getAmount(), shipment.getUnitprice(), shipment.getMoney(), shipment.getPaystatus(), shipment.getBoardcost(), shipment.getFireproofboardcost(), shipment.getCostmoney(), shipment.getId());
+    }
+
+    @Override
+    public int updatePaystatusShipmentById(int id) {
+        String sql = "UPDATE shipment set paystatus = '1' WHERE id = ?";
+        return jdbcTemplate.update(sql, id);
+    }
+
     static class ShipmentRowMapper implements RowMapper<Shipment> {
         @Override
         public Shipment mapRow(ResultSet rs, int rowNum) throws SQLException {
