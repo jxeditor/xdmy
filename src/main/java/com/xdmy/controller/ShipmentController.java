@@ -40,7 +40,7 @@ public class ShipmentController extends BaseController {
         shipment.setPaystatus(params.get("paystatus"));
         shipment.setBoardcost(Double.parseDouble(params.get("boardcost")));
         shipment.setFireproofboardcost(Double.parseDouble(params.get("fireproofboardcost")));
-        shipment.setCostmoney((Double.parseDouble(params.get("boardcost") + Double.parseDouble(params.get("fireproofboardcost"))) * Integer.parseInt(params.get("amount"))));
+        shipment.setCostmoney((Double.parseDouble(params.get("boardcost")) + Double.parseDouble(params.get("fireproofboardcost"))) * Integer.parseInt(params.get("amount")));
         int result = serviceFacade.getShipmentService().addShipment(shipment);
         if (result > 0) {
             return new JSONReturn("success", "插入成功", 1).toString();
@@ -64,7 +64,7 @@ public class ShipmentController extends BaseController {
         shipment.setPaystatus(params.get("paystatus"));
         shipment.setBoardcost(Double.parseDouble(params.get("boardcost")));
         shipment.setFireproofboardcost(Double.parseDouble(params.get("fireproofboardcost")));
-        shipment.setCostmoney((Double.parseDouble(params.get("boardcost") + Double.parseDouble(params.get("fireproofboardcost"))) * Integer.parseInt(params.get("amount"))));
+        shipment.setCostmoney((Double.parseDouble(params.get("boardcost")) + Double.parseDouble(params.get("fireproofboardcost"))) * Integer.parseInt(params.get("amount")));
         int result = serviceFacade.getShipmentService().updateShipment(shipment);
         if (result > 0) {
             return new JSONReturn("success", "更新成功", 1).toString();
