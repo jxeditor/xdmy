@@ -31,9 +31,9 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
 
     @Override
     public int addShipment(Shipment shipment) {
-        String sql = "INSERT INTO shipment(odd,customer,product,billdate,amount,unitprice,money,paystatus,boardcost,fireproofboardcost,costmoney) " +
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
-        return jdbcTemplate.update(sql, shipment.getOdd(), shipment.getCustomer(), shipment.getProduct(), shipment.getBilldate(), shipment.getAmount(), shipment.getUnitprice(), shipment.getMoney(), shipment.getPaystatus(), shipment.getBoardcost(), shipment.getFireproofboardcost(), shipment.getCostmoney());
+        String sql = "INSERT INTO shipment(odd,customer,product,billdate,amount,unitprice,money,paystatus,boardcost,fireproofboardcost,costmoney,profit) " +
+                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+        return jdbcTemplate.update(sql, shipment.getOdd(), shipment.getCustomer(), shipment.getProduct(), shipment.getBilldate(), shipment.getAmount(), shipment.getUnitprice(), shipment.getMoney(), shipment.getPaystatus(), shipment.getBoardcost(), shipment.getFireproofboardcost(), shipment.getCostmoney(), shipment.getProfit());
     }
 
     @Override
@@ -45,9 +45,9 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
     @Override
     public int updateShipment(Shipment shipment) {
         String sql = "UPDATE shipment set odd = ?,customer = ?,product = ?,billdate = ?,amount = ?,unitprice = ?,money = ?" +
-                ",paystatus = ?,boardcost = ?,fireproofboardcost = ?,costmoney = ?" +
+                ",paystatus = ?,boardcost = ?,fireproofboardcost = ?,costmoney = ?,profit = ?" +
                 "WHERE id = ? ";
-        return jdbcTemplate.update(sql, shipment.getOdd(), shipment.getCustomer(), shipment.getProduct(), shipment.getBilldate(), shipment.getAmount(), shipment.getUnitprice(), shipment.getMoney(), shipment.getPaystatus(), shipment.getBoardcost(), shipment.getFireproofboardcost(), shipment.getCostmoney(), shipment.getId());
+        return jdbcTemplate.update(sql, shipment.getOdd(), shipment.getCustomer(), shipment.getProduct(), shipment.getBilldate(), shipment.getAmount(), shipment.getUnitprice(), shipment.getMoney(), shipment.getPaystatus(), shipment.getBoardcost(), shipment.getFireproofboardcost(), shipment.getCostmoney(), shipment.getProfit(), shipment.getId());
     }
 
     @Override
@@ -72,6 +72,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
             shipment.setBoardcost(rs.getDouble("boardcost"));
             shipment.setFireproofboardcost(rs.getDouble("fireproofboardcost"));
             shipment.setCostmoney(rs.getDouble("costmoney"));
+            shipment.setProfit(rs.getDouble("profit"));
             return shipment;
         }
     }

@@ -50,6 +50,8 @@
         </el-table-column>
         <el-table-column prop="costmoney" label="成本" width="100" align="center">
         </el-table-column>
+        <el-table-column prop="profit" label="利润" width="100" align="center">
+        </el-table-column>
         <el-table-column fixed="right" label="操作" align="center" width="180">
           <template #default="opt">
             <el-button type="primary" @click="onUpdateShipment(opt.row)">修改</el-button>

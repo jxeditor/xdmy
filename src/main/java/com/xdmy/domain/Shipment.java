@@ -13,14 +13,9 @@ public class Shipment {
     double boardcost;
     double fireproofboardcost;
     double costmoney;
+    double profit;
 
     public Shipment() {
-    }
-
-    public Shipment(int id, String odd, String customer) {
-        this.id = id;
-        this.odd = odd;
-        this.customer = customer;
     }
 
     public int getId() {
@@ -117,6 +112,14 @@ public class Shipment {
 
     public void setCostmoney(double costmoney) {
         this.costmoney = costmoney;
+    }
+
+    public double getProfit() {
+        return profit;
+    }
+
+    public void setProfit(double profit) {
+        this.profit = profit;
     }
 }
 
