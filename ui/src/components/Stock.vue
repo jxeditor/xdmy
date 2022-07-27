@@ -128,7 +128,7 @@ export default {
           param.append('product', this.addStockForm.product)
           param.append('unitstock', this.addStockForm.unitstock)
           param.append('unitprice', this.addStockForm.unitprice)
-          this.$axios.post('http://localhost:8088/stock/addStock', param).then(function (response) {
+          this.$axios.post('http://124.223.70.175:8088/stock/addStock', param).then(function (response) {
             if (response.data.code === 1) {
               that.addStockVisible = false
               that.getAllStock()
@@ -151,7 +151,7 @@ export default {
           param.append('product', this.updateStockForm.product)
           param.append('unitstock', this.updateStockForm.unitstock)
           param.append('unitprice', this.updateStockForm.unitprice)
-          this.$axios.post('http://localhost:8088/stock/updateStock', param).then(function (response) {
+          this.$axios.post('http://124.223.70.175:8088/stock/updateStock', param).then(function (response) {
             if (response.data.code === 1) {
               that.updateStockVisible = false
               that.getAllStock()
@@ -167,7 +167,7 @@ export default {
     },
     onDeleteStock(id) {
       const that = this;
-      this.$axios.get('http://localhost:8088/stock/deleteStockById?id=' + id)
+      this.$axios.get('http://124.223.70.175:8088/stock/deleteStockById?id=' + id)
         .then(function (response) {
           if (response.data.code === 1) {
             that.getAllStock()
@@ -179,7 +179,7 @@ export default {
     },
     getAllStock() {
       const that = this;
-      this.$axios.get('http://localhost:8088/stock/findAllStock' +
+      this.$axios.get('http://124.223.70.175:8088/stock/findAllStock' +
         '?productName=' + that.productInput)
         .then(function (response) {
           that.StockData = response.data.data
@@ -188,7 +188,7 @@ export default {
     },
     searchStock() {
       const that = this
-      this.$axios.get('http://localhost:8088/stock/findAllStock' +
+      this.$axios.get('http://124.223.70.175:8088/stock/findAllStock' +
         '?productName=' + that.productInput)
         .then(function (response) {
           that.StockData = response.data.data

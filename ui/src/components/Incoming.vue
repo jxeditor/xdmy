@@ -185,7 +185,7 @@ export default {
       if (this.multipleSelection.length !== 0) {
         const that = this;
         this.multipleSelection.forEach((data) => {
-          this.$axios.get('http://localhost:8088/incoming/updatePaystatusIncomingById?id=' + data.id)
+          this.$axios.get('http://124.223.70.175:8088/incoming/updatePaystatusIncomingById?id=' + data.id)
             .catch(function (error) {
             })
         })
@@ -197,7 +197,7 @@ export default {
       if (this.multipleSelection.length !== 0) {
         const that = this;
         this.multipleSelection.forEach((data) => {
-          this.$axios.get('http://localhost:8088/incoming/deleteIncomingById?id=' + data.id)
+          this.$axios.get('http://124.223.70.175:8088/incoming/deleteIncomingById?id=' + data.id)
             .catch(function (error) {
             })
         })
@@ -237,7 +237,7 @@ export default {
           param.append('amount', this.addIncomingForm.amount)
           param.append('unitprice', this.addIncomingForm.unitprice)
           param.append('paystatus', this.addIncomingForm.paystatus)
-          this.$axios.post('http://localhost:8088/incoming/addIncoming', param).then(function (response) {
+          this.$axios.post('http://124.223.70.175:8088/incoming/addIncoming', param).then(function (response) {
             if (response.data.code === 1) {
               that.addIncomingVisible = false
               that.getAllIncoming()
@@ -264,7 +264,7 @@ export default {
           param.append('amount', this.updateIncomingForm.amount)
           param.append('unitprice', this.updateIncomingForm.unitprice)
           param.append('paystatus', this.updateIncomingForm.paystatus)
-          this.$axios.post('http://localhost:8088/incoming/updateIncoming', param).then(function (response) {
+          this.$axios.post('http://124.223.70.175:8088/incoming/updateIncoming', param).then(function (response) {
             if (response.data.code === 1) {
               that.updateIncomingVisible = false
               that.getAllIncoming()
@@ -280,7 +280,7 @@ export default {
     },
     onDeleteIncoming(id) {
       const that = this;
-      this.$axios.get('http://localhost:8088/incoming/deleteIncomingById?id=' + id)
+      this.$axios.get('http://124.223.70.175:8088/incoming/deleteIncomingById?id=' + id)
         .then(function (response) {
           if (response.data.code === 1) {
             that.getAllIncoming()
@@ -292,7 +292,7 @@ export default {
     },
     getAllIncoming() {
       const that = this;
-      this.$axios.get('http://localhost:8088/incoming/findAllIncoming' +
+      this.$axios.get('http://124.223.70.175:8088/incoming/findAllIncoming' +
         '?pageNum=' + that.page.index + '&pageSize=' + that.page.size +
         '&producerName=' + that.producerInput +
         '&productName=' + that.productInput +
@@ -305,7 +305,7 @@ export default {
     },
     searchIncoming() {
       const that = this
-      this.$axios.get('http://localhost:8088/incoming/findAllIncoming' +
+      this.$axios.get('http://124.223.70.175:8088/incoming/findAllIncoming' +
         '?pageNum=' + that.page.index + '&pageSize=' + that.page.size +
         '&producerName=' + that.producerInput +
         '&productName=' + that.productInput +
