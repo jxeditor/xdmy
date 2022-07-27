@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="shipment">
     <Shipment msg="雄达木业"/>
   </div>
 </template>

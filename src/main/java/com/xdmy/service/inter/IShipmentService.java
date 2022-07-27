@@ -5,7 +5,7 @@ import org.json.JSONObject;
 
 
 public interface IShipmentService {
-    JSONObject findAllShipment(int pageNum, int pageSize, String customerName, String bizStartDate, String bizEndDate);
+    JSONObject findAllShipment(int pageNum, int pageSize, String customerName, String productName, String bizStartDate, String bizEndDate);
 
     int addShipment(Shipment shipment);
 

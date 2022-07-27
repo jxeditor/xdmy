@@ -2,25 +2,21 @@ package com.xdmy.domain;
 
 /**
  * @Author xz
- * @Date 2022/7/26 10:49
- * @Description 出货
+ * @Date 2022/7/27 10:49
+ * @Description 入货
  */
-public class Shipment {
+public class Incoming {
     int id;
     String odd;
-    String customer;
+    String producer;
     String product;
     String billdate;
     int amount;
     double unitprice;
     double money;
     String paystatus;
-    double boardcost;
-    double fireproofboardcost;
-    double costmoney;
-    double profit;
 
-    public Shipment() {
+    public Incoming() {
     }
 
     public int getId() {
@@ -39,12 +35,12 @@ public class Shipment {
         this.odd = odd;
     }
 
-    public String getCustomer() {
-        return customer;
+    public String getProducer() {
+        return producer;
     }
 
-    public void setCustomer(String customer) {
-        this.customer = customer;
+    public void setProducer(String producer) {
+        this.producer = producer;
     }
 
     public String getProduct() {
@@ -79,30 +75,6 @@ public class Shipment {
         this.unitprice = unitprice;
     }
 
-    public String getPaystatus() {
-        return paystatus;
-    }
-
-    public void setPaystatus(String paystatus) {
-        this.paystatus = paystatus;
-    }
-
-    public double getBoardcost() {
-        return boardcost;
-    }
-
-    public void setBoardcost(double boardcost) {
-        this.boardcost = boardcost;
-    }
-
-    public double getFireproofboardcost() {
-        return fireproofboardcost;
-    }
-
-    public void setFireproofboardcost(double fireproofboardcost) {
-        this.fireproofboardcost = fireproofboardcost;
-    }
-
     public double getMoney() {
         return money;
     }
@@ -111,20 +83,11 @@ public class Shipment {
         this.money = money;
     }
 
-    public double getCostmoney() {
-        return costmoney;
+    public String getPaystatus() {
+        return paystatus;
     }
 
-    public void setCostmoney(double costmoney) {
-        this.costmoney = costmoney;
-    }
-
-    public double getProfit() {
-        return profit;
-    }
-
-    public void setProfit(double profit) {
-        this.profit = profit;
+    public void setPaystatus(String paystatus) {
+        this.paystatus = paystatus;
     }
 }
-

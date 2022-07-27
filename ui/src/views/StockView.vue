@@ -1,5 +1,17 @@
 <template>
   <div class="stock">
-    <h1>库存页面,待开发</h1>
+    <Stock msg="雄达木业"/>
   </div>
 </template>
+
+<script>
+// @ is an alias to /src
+import Stock from '@/components/Stock.vue'
+
+export default {
+  name: 'StockView',
+  components: {
+    Stock
+  }
+}
+</script>

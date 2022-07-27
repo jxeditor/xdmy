@@ -16,13 +16,14 @@ import java.util.HashMap;
 public class ShipmentController extends BaseController {
 
     @RequestMapping("/findAllShipment")
-    public String findAllOrder(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                               @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-                               @RequestParam(value = "customerName", defaultValue = "") String customerName,
-                               @RequestParam(value = "bizStartDate", defaultValue = "undefined") String bizStartDate,
-                               @RequestParam(value = "bizEndDate", defaultValue = "undefined") String bizEndDate
+    public String findAllShipment(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                                  @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+                                  @RequestParam(value = "customerName", defaultValue = "") String customerName,
+                                  @RequestParam(value = "productName", defaultValue = "") String productName,
+                                  @RequestParam(value = "bizStartDate", defaultValue = "undefined") String bizStartDate,
+                                  @RequestParam(value = "bizEndDate", defaultValue = "undefined") String bizEndDate
     ) {
-        JSONObject result = serviceFacade.getShipmentService().findAllShipment(pageNum, pageSize, customerName, bizStartDate, bizEndDate);
+        JSONObject result = serviceFacade.getShipmentService().findAllShipment(pageNum, pageSize, customerName, productName, bizStartDate, bizEndDate);
         return new JSONReturn(result).toString();
     }
 

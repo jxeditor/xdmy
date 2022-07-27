@@ -14,10 +14,10 @@ import java.util.List;
 @Service
 public class ShipmentService extends BaseService implements IShipmentService {
     @Override
-    public JSONObject findAllShipment(int pageNum, int pageSize, String customerName, String bizStartDate, String bizEndDate) {
+    public JSONObject findAllShipment(int pageNum, int pageSize, String customerName, String productName, String bizStartDate, String bizEndDate) {
         DBContextHolder.setDbType("primary");
-        List<Shipment> shipmentList = daoFacade.getShipmentDao().findAllShipment(pageNum, pageSize, customerName, bizStartDate, bizEndDate);
-        int total = daoFacade.getShipmentDao().getAllTotalSize(customerName, bizStartDate, bizEndDate);
+        List<Shipment> shipmentList = daoFacade.getShipmentDao().findAllShipment(pageNum, pageSize, customerName, productName, bizStartDate, bizEndDate);
+        int total = daoFacade.getShipmentDao().getAllTotalSize(customerName, productName, bizStartDate, bizEndDate);
         return toJSONObject(shipmentList).put("total", total);
     }
 

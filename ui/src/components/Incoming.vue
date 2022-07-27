@@ -1,8 +1,8 @@
 <template>
-  <div id="shipment">
+  <div id="incoming">
     <h1>{{ msg }}</h1>
     <div id="app">
-      <el-row style="width:100%;padding: 20px;">
+      <el-row style="padding: 20px;">
         <el-col :span="10">
           <el-date-picker v-model="billDateInput"
                           type="daterange"
@@ -13,20 +13,20 @@
           />
         </el-col>
         <el-col :span="2">
-          <el-input v-model="customerInput" placeholder="输入客户名"/>
+          <el-input v-model="producerInput" placeholder="输入供应商"/>
         </el-col>
         <el-col :span="2"></el-col>
         <el-col :span="2">
           <el-input v-model="productInput" placeholder="输入产品名"/>
         </el-col>
         <el-col :span="4">
-          <el-button type="primary" @click='searchShipment'>搜索</el-button>
+          <el-button type="primary" @click='searchIncoming'>搜索</el-button>
         </el-col>
         <el-col :span="4">
-          <el-button type="primary" @click='onAddShipment'>开单</el-button>
+          <el-button type="primary" @click='onAddIncoming'>入货</el-button>
         </el-col>
       </el-row>
-      <el-table ref="multipleTable" stripe :data="ShipmentData" style="width: 100%;"
+      <el-table ref="multipleTable" stripe :data="IncomingData" style="width: 100%;"
                 @selection-change="handleSelectionChange">
         <el-table-column type="selection">
         </el-table-column>
@@ -34,7 +34,7 @@
         </el-table-column>
         <el-table-column prop="odd" label="单号" align="center">
         </el-table-column>
-        <el-table-column prop="customer" label="客户" width="120px" align="center">
+        <el-table-column prop="producer" label="供应商" width="120px" align="center">
         </el-table-column>
         <el-table-column prop="product" label="产品" width="240px" align="center">
         </el-table-column>
@@ -48,18 +48,10 @@
         </el-table-column>
         <el-table-column prop="paystatus" :formatter="setPayStatus" label="付款状态" width="100" align="center">
         </el-table-column>
-        <el-table-column prop="boardcost" label="夹板成本" width="100" align="center">
-        </el-table-column>
-        <el-table-column prop="fireproofboardcost" label="防火板成本" width="100" align="center">
-        </el-table-column>
-        <el-table-column prop="costmoney" label="成本" width="100" align="center">
-        </el-table-column>
-        <el-table-column prop="profit" label="利润" width="100" align="center">
-        </el-table-column>
         <el-table-column fixed="right" label="操作" align="center" width="180">
           <template #default="opt">
-            <el-button type="primary" @click="onUpdateShipment(opt.row)">修改</el-button>
-            <el-button type="danger" @click="onDeleteShipment(opt.row.id)">删除</el-button>
+            <el-button type="primary" @click="onUpdateIncoming(opt.row)">修改</el-button>
+            <el-button type="danger" @click="onDeleteIncoming(opt.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -71,96 +63,86 @@
         @current-change="handleCurrentChange">
       </el-pagination>
       <div style="margin-top: 20px">
-        <el-button @click="onBatchUpdateShipment()">置为已付款</el-button>
-        <el-button @click="onBatchDeleteShipment()">删除</el-button>
+        <el-button @click="onBatchUpdateIncoming()">置为已付款</el-button>
+        <el-button @click="onBatchDeleteIncoming()">删除</el-button>
         <el-button @click="onClearSelection()">取消选择</el-button>
       </div>
-      <el-dialog title="开单" v-model="addShipmentVisible" width="80%">
-        <el-form ref="addShipmentForm" :rules="addShipmentFormRules" :model="addShipmentForm" label-width="100px">
+      <el-dialog title="入货" v-model="addIncomingVisible" width="80%">
+        <el-form ref="addIncomingForm" :rules="addIncomingFormRules" :model="addIncomingForm" label-width="100px">
           <el-form-item label="单号:" prop="odd">
-            <el-input v-model="addShipmentForm.odd"></el-input>
+            <el-input v-model="addIncomingForm.odd"></el-input>
           </el-form-item>
-          <el-form-item label="客户:" prop="customer">
-            <el-input v-model="addShipmentForm.customer"></el-input>
+          <el-form-item label="供应商:" prop="producer">
+            <el-input v-model="addIncomingForm.producer"></el-input>
           </el-form-item>
           <el-form-item label="产品:" prop="product">
-            <el-input v-model="addShipmentForm.product"></el-input>
+            <el-input v-model="addIncomingForm.product"></el-input>
           </el-form-item>
           <el-form-item label="日期:" prop="billdate">
             <el-date-picker
               type="date"
               placeholder="选择日期"
-              v-model="addShipmentForm.billdate"
+              v-model="addIncomingForm.billdate"
               value-format="YYYY-MM-DD"
               style="width: 100%;"
             ></el-date-picker>
           </el-form-item>
           <el-form-item label="数量:" prop="amount">
-            <el-input v-model="addShipmentForm.amount"></el-input>
+            <el-input v-model="addIncomingForm.amount"></el-input>
           </el-form-item>
           <el-form-item label="单价:" prop="unitprice">
-            <el-input v-model="addShipmentForm.unitprice"></el-input>
+            <el-input v-model="addIncomingForm.unitprice"></el-input>
           </el-form-item>
           <el-form-item label="付款状态:" prop="paystatus">
-            <el-select v-model="addShipmentForm.paystatus" placeholder="请选择付款状态">
+            <el-select v-model="addIncomingForm.paystatus" placeholder="请选择付款状态">
               <el-option label="未付款" value="0"></el-option>
-              <el-option label="已付款" value="1"></el-option>
+              <el-option label="已付运费" value="1"></el-option>
+              <el-option label="已付款" value="2"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="夹板成本:" prop="boardcost">
-            <el-input v-model="addShipmentForm.boardcost"></el-input>
-          </el-form-item>
-          <el-form-item label="防火板成本:" prop="fireproofboardcost">
-            <el-input v-model="addShipmentForm.fireproofboardcost"></el-input>
-          </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="onAddShipmentCommit('addShipmentForm')">确定</el-button>
-            <el-button @click="onAddShipmentCancel">取消</el-button>
+            <el-button type="primary" @click="onAddIncomingCommit('addIncomingForm')">确定</el-button>
+            <el-button @click="onAddIncomingCancel">取消</el-button>
           </el-form-item>
         </el-form>
       </el-dialog>
-      <el-dialog title="修改单据信息" v-model="updateShipmentVisible" width="80%">
-        <el-form ref="updateShipmentForm" :rules="updateShipmentFormRules" :model="updateShipmentForm"
+      <el-dialog title="修改单据信息" v-model="updateIncomingVisible" width="80%">
+        <el-form ref="updateIncomingForm" :rules="updateIncomingFormRules" :model="updateIncomingForm"
                  label-width="80px">
           <el-form-item label="单号:" prop="odd">
-            <el-input v-model="updateShipmentForm.odd"></el-input>
+            <el-input v-model="updateIncomingForm.odd"></el-input>
           </el-form-item>
-          <el-form-item label="客户:" prop="customer">
-            <el-input v-model="updateShipmentForm.customer"></el-input>
+          <el-form-item label="供应商:" prop="producer">
+            <el-input v-model="updateIncomingForm.producer"></el-input>
           </el-form-item>
           <el-form-item label="产品:" prop="product">
-            <el-input v-model="updateShipmentForm.product"></el-input>
+            <el-input v-model="updateIncomingForm.product"></el-input>
           </el-form-item>
           <el-form-item label="日期:" prop="billdate">
             <el-date-picker
               type="date"
               placeholder="选择日期"
-              v-model="updateShipmentForm.billdate"
+              v-model="updateIncomingForm.billdate"
               value-format="YYYY-MM-DD"
               style="width: 100%;"
             ></el-date-picker>
           </el-form-item>
           <el-form-item label="数量:" prop="amount">
-            <el-input v-model="updateShipmentForm.amount"></el-input>
+            <el-input v-model="updateIncomingForm.amount"></el-input>
           </el-form-item>
           <el-form-item label="单价:" prop="unitprice">
-            <el-input v-model="updateShipmentForm.unitprice"></el-input>
+            <el-input v-model="updateIncomingForm.unitprice"></el-input>
           </el-form-item>
           <el-form-item label="付款状态:" prop="paystatus">
-            <el-select v-model="updateShipmentForm.paystatus" placeholder="请选择付款状态">
+            <el-select v-model="updateIncomingForm.paystatus" placeholder="请选择付款状态">
               <el-option label="未付款" value="0"></el-option>
-              <el-option label="已付款" value="1"></el-option>
+              <el-option label="已付运费" value="1"></el-option>
+              <el-option label="已付款" value="2"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="夹板成本:" prop="boardcost">
-            <el-input v-model="updateShipmentForm.boardcost"></el-input>
-          </el-form-item>
-          <el-form-item label="防火板成本:" prop="fireproofboardcost">
-            <el-input v-model="updateShipmentForm.fireproofboardcost"></el-input>
-          </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="onUpdateShipmentCommit('updateShipmentForm')">确定</el-button>
-            <el-button @click="onUpdateShipmentCancel">取消</el-button>
+            <el-button type="primary" @click="onUpdateIncomingCommit('updateIncomingForm')">确定</el-button>
+            <el-button @click="onUpdateIncomingCancel">取消</el-button>
           </el-form-item>
         </el-form>
       </el-dialog>
@@ -171,12 +153,12 @@
 
 <script>
 export default {
-  name: 'ShipmentScript',
+  name: 'IncomingScript',
   props: {
     msg: String
   },
   mounted() {
-    this.getAllShipment()
+    this.getAllIncoming()
   },
   methods: {
     sleep(ms) { //sleep延迟方法2
@@ -189,7 +171,9 @@ export default {
         case "0":
           return "未付款";
         case "1":
-          return "已付款";
+          return "已付运费";
+        case "2":
+          return "已付款"
         default:
           return "未定义";
       }
@@ -197,28 +181,28 @@ export default {
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
-    onBatchUpdateShipment() {
+    onBatchUpdateIncoming() {
       if (this.multipleSelection.length !== 0) {
         const that = this;
         this.multipleSelection.forEach((data) => {
-          this.$axios.get('http://124.223.70.175:8088/shipment/updatePaystatusShipmentById?id=' + data.id)
+          this.$axios.get('http://localhost:8088/incoming/updatePaystatusIncomingById?id=' + data.id)
             .catch(function (error) {
             })
         })
         this.sleep(500)
-        that.getAllShipment()
+        that.getAllIncoming()
       }
     },
-    onBatchDeleteShipment() {
+    onBatchDeleteIncoming() {
       if (this.multipleSelection.length !== 0) {
         const that = this;
         this.multipleSelection.forEach((data) => {
-          this.$axios.get('http://124.223.70.175:8088/shipment/deleteShipmentById?id=' + data.id)
+          this.$axios.get('http://localhost:8088/incoming/deleteIncomingById?id=' + data.id)
             .catch(function (error) {
             })
         })
         this.sleep(500)
-        that.getAllShipment()
+        that.getAllIncoming()
       }
     },
     onClearSelection() {
@@ -226,39 +210,37 @@ export default {
     },
     handleCurrentChange(currentPage) {
       this.page.index = currentPage;
-      this.getAllShipment()
+      this.getAllIncoming()
     },
-    onAddShipmentCancel() {
-      this.addShipmentVisible = false
+    onAddIncomingCancel() {
+      this.addIncomingVisible = false
     },
-    onUpdateShipmentCancel() {
-      this.updateShipmentVisible = false
+    onUpdateIncomingCancel() {
+      this.updateIncomingVisible = false
     },
-    onAddShipment() {
-      this.addShipmentVisible = true
+    onAddIncoming() {
+      this.addIncomingVisible = true
     },
-    onUpdateShipment(Shipment) {
-      this.updateShipmentForm = Shipment
-      this.updateShipmentVisible = true
+    onUpdateIncoming(incoming) {
+      this.updateIncomingForm = incoming
+      this.updateIncomingVisible = true
     },
-    onAddShipmentCommit(addShipmentForm) {
+    onAddIncomingCommit(addIncomingForm) {
       const that = this
-      this.$refs[addShipmentForm].validate((valid) => {
+      this.$refs[addIncomingForm].validate((valid) => {
         if (valid) {
           let param = new URLSearchParams()
-          param.append('odd', this.addShipmentForm.odd)
-          param.append('customer', this.addShipmentForm.customer)
-          param.append('product', this.addShipmentForm.product)
-          param.append('billdate', this.addShipmentForm.billdate)
-          param.append('amount', this.addShipmentForm.amount)
-          param.append('unitprice', this.addShipmentForm.unitprice)
-          param.append('paystatus', this.addShipmentForm.paystatus)
-          param.append('boardcost', this.addShipmentForm.boardcost)
-          param.append('fireproofboardcost', this.addShipmentForm.fireproofboardcost)
-          this.$axios.post('http://124.223.70.175:8088/shipment/addShipment', param).then(function (response) {
+          param.append('odd', this.addIncomingForm.odd)
+          param.append('producer', this.addIncomingForm.producer)
+          param.append('product', this.addIncomingForm.product)
+          param.append('billdate', this.addIncomingForm.billdate)
+          param.append('amount', this.addIncomingForm.amount)
+          param.append('unitprice', this.addIncomingForm.unitprice)
+          param.append('paystatus', this.addIncomingForm.paystatus)
+          this.$axios.post('http://localhost:8088/incoming/addIncoming', param).then(function (response) {
             if (response.data.code === 1) {
-              that.addShipmentVisible = false
-              that.getAllShipment()
+              that.addIncomingVisible = false
+              that.getAllIncoming()
             } else {
               that.$message.error(response.data.msg);
             }
@@ -269,25 +251,23 @@ export default {
         }
       })
     },
-    onUpdateShipmentCommit(updateShipmentForm) {
+    onUpdateIncomingCommit(updateIncomingForm) {
       const that = this
-      this.$refs[updateShipmentForm].validate((valid) => {
+      this.$refs[updateIncomingForm].validate((valid) => {
         if (valid) {
           let param = new URLSearchParams()
-          param.append('id', this.updateShipmentForm.id)
-          param.append('odd', this.updateShipmentForm.odd)
-          param.append('customer', this.updateShipmentForm.customer)
-          param.append('product', this.updateShipmentForm.product)
-          param.append('billdate', this.updateShipmentForm.billdate)
-          param.append('amount', this.updateShipmentForm.amount)
-          param.append('unitprice', this.updateShipmentForm.unitprice)
-          param.append('paystatus', this.updateShipmentForm.paystatus)
-          param.append('boardcost', this.updateShipmentForm.boardcost)
-          param.append('fireproofboardcost', this.updateShipmentForm.fireproofboardcost)
-          this.$axios.post('http://124.223.70.175:8088/shipment/updateShipment', param).then(function (response) {
+          param.append('id', this.updateIncomingForm.id)
+          param.append('odd', this.updateIncomingForm.odd)
+          param.append('producer', this.updateIncomingForm.producer)
+          param.append('product', this.updateIncomingForm.product)
+          param.append('billdate', this.updateIncomingForm.billdate)
+          param.append('amount', this.updateIncomingForm.amount)
+          param.append('unitprice', this.updateIncomingForm.unitprice)
+          param.append('paystatus', this.updateIncomingForm.paystatus)
+          this.$axios.post('http://localhost:8088/incoming/updateIncoming', param).then(function (response) {
             if (response.data.code === 1) {
-              that.updateShipmentVisible = false
-              that.getAllShipment()
+              that.updateIncomingVisible = false
+              that.getAllIncoming()
             } else {
               that.$message.error(response.data.msg);
             }
@@ -298,40 +278,40 @@ export default {
         }
       })
     },
-    onDeleteShipment(id) {
+    onDeleteIncoming(id) {
       const that = this;
-      this.$axios.get('http://124.223.70.175:8088/shipment/deleteShipmentById?id=' + id)
+      this.$axios.get('http://localhost:8088/incoming/deleteIncomingById?id=' + id)
         .then(function (response) {
           if (response.data.code === 1) {
-            that.getAllShipment()
+            that.getAllIncoming()
           } else {
             that.$message.error(response.data.msg);
           }
         }).catch(function (error) {
       })
     },
-    getAllShipment() {
+    getAllIncoming() {
       const that = this;
-      this.$axios.get('http://124.223.70.175:8088/shipment/findAllShipment' +
+      this.$axios.get('http://localhost:8088/incoming/findAllIncoming' +
         '?pageNum=' + that.page.index + '&pageSize=' + that.page.size +
-        '&customerName=' + that.customerInput +
+        '&producerName=' + that.producerInput +
         '&productName=' + that.productInput +
         '&bizStartDate=' + that.billDateInput[0] + '&bizEndDate=' + that.billDateInput[1])
         .then(function (response) {
-          that.ShipmentData = response.data.data
+          that.IncomingData = response.data.data
           that.page.total = response.data.total
         }).catch(function (error) {
       })
     },
-    searchShipment() {
+    searchIncoming() {
       const that = this
-      this.$axios.get('http://124.223.70.175:8088/shipment/findAllShipment' +
+      this.$axios.get('http://localhost:8088/incoming/findAllIncoming' +
         '?pageNum=' + that.page.index + '&pageSize=' + that.page.size +
-        '&customerName=' + that.customerInput +
+        '&producerName=' + that.producerInput +
         '&productName=' + that.productInput +
         '&bizStartDate=' + that.billDateInput[0] + '&bizEndDate=' + that.billDateInput[1])
         .then(function (response) {
-          that.ShipmentData = response.data.data
+          that.IncomingData = response.data.data
           that.page.total = response.data.total
         }).catch(function (error) {
       })
@@ -348,40 +328,36 @@ export default {
         total: 0
       },
       multipleSelection: [],
-      ShipmentData: [],
-      customerInput: '',
+      IncomingData: [],
+      producerInput: '',
       productInput: '',
       billDateInput: '',
-      addShipmentVisible: false,
-      updateShipmentVisible: false,
-      addShipmentForm: {
+      addIncomingVisible: false,
+      updateIncomingVisible: false,
+      addIncomingForm: {
         odd: '',
-        customer: '',
+        producer: '',
         product: '',
         billdate: '',
         amount: 0,
         unitprice: 0,
-        paystatus: '0',
-        boardcost: 0,
-        fireproofboardcost: 0
+        paystatus: '0'
       },
-      updateShipmentForm: {
+      updateIncomingForm: {
         odd: '',
-        customer: '',
+        producer: '',
         product: '',
         billdate: '',
         amount: 0,
         unitprice: 0,
-        paystatus: '0',
-        boardcost: 0,
-        fireproofboardcost: 0
+        paystatus: '0'
       },
-      addShipmentFormRules: {
+      addIncomingFormRules: {
         odd: [
           {required: true, message: '请输入单号', trigger: 'blur'}
         ],
-        customer: [
-          {required: true, message: '请输入客户名', trigger: 'blur'},
+        producer: [
+          {required: true, message: '请输入供应商', trigger: 'blur'},
         ],
         product: [
           {required: true, message: '请输入产品名', trigger: 'blur'},
@@ -399,20 +375,14 @@ export default {
         ],
         paystatus: [
           {required: true, message: '请选择付款状态', trigger: 'blur'},
-        ],
-        boardcost: [
-          {required: true, message: '请输入夹板成本', trigger: 'blur'},
-        ],
-        fireproofboardcost: [
-          {required: true, message: '请输入防火板成本', trigger: 'blur'},
         ]
       },
-      updateShipmentFormRules: {
+      updateIncomingFormRules: {
         odd: [
           {required: true, message: '请输入单号', trigger: 'blur'}
         ],
-        customer: [
-          {required: true, message: '请输入客户名', trigger: 'blur'},
+        producer: [
+          {required: true, message: '请输入供应商', trigger: 'blur'},
         ],
         product: [
           {required: true, message: '请输入产品名', trigger: 'blur'},
@@ -430,12 +400,6 @@ export default {
         ],
         paystatus: [
           {required: true, message: '请选择付款状态', trigger: 'blur'},
-        ],
-        boardcost: [
-          {required: true, message: '请输入夹板成本', trigger: 'blur'},
-        ],
-        fireproofboardcost: [
-          {required: true, message: '请输入防火板成本', trigger: 'blur'},
         ]
       }
     }
@@ -444,7 +408,7 @@ export default {
 </script>
 
 <style>
-#shipment {
+#incoming {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -471,3 +435,4 @@ a {
   color: #42b983;
 }
 </style>
+

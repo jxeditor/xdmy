@@ -14,18 +14,18 @@ import java.util.List;
 public class ShipmentDao extends BaseDao implements IShipmentDao {
 
     @Override
-    public List<Shipment> findAllShipment(int pageNum, int pageSize, String customerName, String bizStartDate, String bizEndDate) {
+    public List<Shipment> findAllShipment(int pageNum, int pageSize, String customerName, String productName, String bizStartDate, String bizEndDate) {
         int currOffset = (pageNum - 1) * pageSize;
         String sql = "SELECT * FROM shipment WHERE 1=1";
-        sql = genFilterSql(sql, customerName, bizStartDate, bizEndDate);
+        sql = genFilterSql(sql, customerName, productName, bizStartDate, bizEndDate);
         sql += " ORDER BY create_time DESC LIMIT ? ,?";
         return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new ShipmentRowMapper());
     }
 
     @Override
-    public int getAllTotalSize(String customerName, String bizStartDate, String bizEndDate) {
+    public int getAllTotalSize(String customerName, String productName, String bizStartDate, String bizEndDate) {
         String sql = "SELECT count(1) FROM shipment WHERE 1=1";
-        sql = genFilterSql(sql, customerName, bizStartDate, bizEndDate);
+        sql = genFilterSql(sql, customerName, productName, bizStartDate, bizEndDate);
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 
@@ -77,9 +77,12 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
         }
     }
 
-    public String genFilterSql(String sql, String customerName, String bizStartDate, String bizEndDate) {
+    public String genFilterSql(String sql, String customerName, String productName, String bizStartDate, String bizEndDate) {
         if (!customerName.equals("")) {
-            sql += " AND customer = '" + customerName + "'";
+            sql += " AND customer LIKE '%" + customerName + "%'";
+        }
+        if (!productName.equals("")) {
+            sql += " AND product LIKE '%" + productName + "%'";
         }
         if (!bizStartDate.equals("undefined")) {
             sql += " AND billdate >= '" + bizStartDate + "'";

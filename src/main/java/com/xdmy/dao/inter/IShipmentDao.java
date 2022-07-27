@@ -5,9 +5,9 @@ import com.xdmy.domain.Shipment;
 import java.util.List;
 
 public interface IShipmentDao {
-    List<Shipment> findAllShipment(int pageNum, int pageSize, String customerName, String bizStartDate, String bizEndDate);
+    List<Shipment> findAllShipment(int pageNum, int pageSize, String customerName, String productName, String bizStartDate, String bizEndDate);
 
-    int getAllTotalSize(String customerName, String bizStartDate, String bizEndDate);
+    int getAllTotalSize(String customerName, String productName, String bizStartDate, String bizEndDate);
 
     int addShipment(Shipment shipment);
 
