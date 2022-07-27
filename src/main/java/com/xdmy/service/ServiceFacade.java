@@ -19,6 +19,8 @@ public class ServiceFacade {
 
     @Autowired
     IStockService stockService;
+    @Autowired
+    IAdminService adminService;
 
     public IShipmentService getShipmentService() {
         return shipmentService;
@@ -30,5 +32,9 @@ public class ServiceFacade {
 
     public IStockService getStockService() {
         return stockService;
+    }
+
+    public IAdminService getAdminService() {
+        return adminService;
     }
 }

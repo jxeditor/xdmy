@@ -1,11 +1,27 @@
 <template>
   <nav>
-    <router-link to="/">出货</router-link> |
-    <router-link to="/incoming">入货</router-link> |
+    <router-link to="/shipment">出货</router-link>
+    |
+    <router-link to="/incoming">入货</router-link>
+    |
     <router-link to="/stock">库存</router-link>
+    |
+    <a href="" style="color:red" @click="handleLogout">注销</a>
   </nav>
   <router-view/>
 </template>
+
+<script>
+export default {
+  name: 'AppView',
+  methods: {
+    handleLogout() {
+      localStorage.setItem('role', "GUEST");
+      this.$router.push("/login");
+    }
+  }
+}
+</script>
 
 <style>
 #app {

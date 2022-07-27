@@ -1,6 +1,7 @@
 package com.xdmy.dao;
 
 import com.xdmy.dao.inter.*;
+import com.xdmy.service.inter.IAdminService;
 import com.xdmy.service.inter.IIncomingService;
 import com.xdmy.service.inter.IStockService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ public class DaoFacade {
     @Autowired
     IStockDao stockDao;
 
+    @Autowired
+    IAdminDao adminDao;
+
     public IShipmentDao getShipmentDao() {
         return shipmentDao;
     }
@@ -30,6 +34,10 @@ public class DaoFacade {
     }
 
     public IStockDao getStockDao() {
-            return stockDao;
+        return stockDao;
+    }
+
+    public IAdminDao getAdminDao() {
+        return adminDao;
     }
 }

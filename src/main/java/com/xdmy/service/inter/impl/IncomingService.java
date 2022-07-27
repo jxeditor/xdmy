@@ -16,9 +16,9 @@ public class IncomingService extends BaseService implements IIncomingService {
     @Override
     public JSONObject findAllIncoming(int pageNum, int pageSize, String producerName, String productName, String bizStartDate, String bizEndDate) {
         DBContextHolder.setDbType("primary");
-        List<Incoming> IncomingList = daoFacade.getIncomingDao().findAllIncoming(pageNum, pageSize, producerName, productName, bizStartDate, bizEndDate);
+        List<Incoming> incomingList = daoFacade.getIncomingDao().findAllIncoming(pageNum, pageSize, producerName, productName, bizStartDate, bizEndDate);
         int total = daoFacade.getIncomingDao().getAllTotalSize(producerName, productName, bizStartDate, bizEndDate);
-        return toJSONObject(IncomingList).put("total", total);
+        return toJSONObject(incomingList).put("total", total);
     }
 
     @Override

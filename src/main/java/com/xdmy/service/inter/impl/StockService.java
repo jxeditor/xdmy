@@ -16,8 +16,8 @@ public class StockService extends BaseService implements IStockService {
     @Override
     public JSONObject findAllStock(String productName) {
         DBContextHolder.setDbType("primary");
-        List<Stock> StockList = daoFacade.getStockDao().findAllStock(productName);
-        return toJSONObject(StockList);
+        List<Stock> stockList = daoFacade.getStockDao().findAllStock(productName);
+        return toJSONObject(stockList);
     }
 
     @Override
