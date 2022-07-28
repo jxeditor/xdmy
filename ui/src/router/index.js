@@ -36,6 +36,15 @@ const routes = [
       requireAuth: true,
       role: "ADMIN"
     }
+  },
+  {
+    path: '/turnover',
+    name: 'turnover',
+    component: () => import('../views/TurnoverView.vue'),
+    meta: {
+      requireAuth: true,
+      role: "ADMIN"
+    }
   }
 ]
 

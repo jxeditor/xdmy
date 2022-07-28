@@ -121,7 +121,7 @@
       </el-dialog>
       <el-dialog title="修改单据信息" v-model="updateShipmentVisible" width="80%">
         <el-form ref="updateShipmentForm" :rules="updateShipmentFormRules" :model="updateShipmentForm"
-                 label-width="80px">
+                 label-width="100px">
           <el-form-item label="单号:" prop="odd">
             <el-input v-model="updateShipmentForm.odd"></el-input>
           </el-form-item>

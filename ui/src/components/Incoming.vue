@@ -108,7 +108,7 @@
       </el-dialog>
       <el-dialog title="修改单据信息" v-model="updateIncomingVisible" width="80%">
         <el-form ref="updateIncomingForm" :rules="updateIncomingFormRules" :model="updateIncomingForm"
-                 label-width="80px">
+                 label-width="100px">
           <el-form-item label="单号:" prop="odd">
             <el-input v-model="updateIncomingForm.odd"></el-input>
           </el-form-item>

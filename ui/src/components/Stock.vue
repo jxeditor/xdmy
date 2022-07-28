@@ -62,7 +62,7 @@
       </el-dialog>
       <el-dialog title="修改库存信息" v-model="updateStockVisible" width="80%">
         <el-form ref="updateStockForm" :rules="updateStockFormRules" :model="updateStockForm"
-                 label-width="80px">
+                 label-width="120px">
           <el-form-item label="产品:" prop="product">
             <el-input v-model="updateStockForm.product"></el-input>
           </el-form-item>

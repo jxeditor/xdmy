@@ -1,6 +1,7 @@
 package com.xdmy.service;
 
 import com.xdmy.controller.StockController;
+import com.xdmy.controller.TurnoverController;
 import com.xdmy.service.inter.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,8 +20,12 @@ public class ServiceFacade {
 
     @Autowired
     IStockService stockService;
+
     @Autowired
     IAdminService adminService;
+
+    @Autowired
+    ITurnoverService turnoverService;
 
     public IShipmentService getShipmentService() {
         return shipmentService;
@@ -36,5 +41,9 @@ public class ServiceFacade {
 
     public IAdminService getAdminService() {
         return adminService;
+    }
+
+    public ITurnoverService getTurnoverService() {
+        return turnoverService;
     }
 }
