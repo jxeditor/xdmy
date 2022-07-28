@@ -44,7 +44,7 @@
         </el-table-column>
       </el-table>
       <el-dialog title="初始化库存" v-model="addStockVisible" width="80%">
-        <el-form ref="addStockForm" :rules="addStockFormRules" :model="addStockForm" label-width="100px">
+        <el-form ref="addStockForm" :rules="addStockFormRules" :model="addStockForm" label-width="120px">
           <el-form-item label="产品:" prop="product">
             <el-input v-model="addStockForm.product"></el-input>
           </el-form-item>
