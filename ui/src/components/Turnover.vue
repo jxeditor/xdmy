@@ -137,17 +137,6 @@ export default {
     this.getAllTurnover()
   },
   methods: {
-    sleep(ms) { //sleep延迟方法2
-      const time_ms = new Date().getTime();
-      while (new Date().getTime() < time_ms + ms) {
-      }
-    },
-    handleSelectionChange(val) {
-      this.multipleSelection = val
-    },
-    onClearSelection() {
-      this.$refs.multipleTable.clearSelection()
-    },
     handleCurrentChange(currentPage) {
       this.page.index = currentPage;
       this.getAllTurnover()
