@@ -39,7 +39,7 @@
         <el-table-column fixed="right" label="操作" align="center" width="180">
           <template #default="opt">
             <el-button type="primary" @click="onUpdateStock(opt.row)">修改</el-button>
-            <el-button type="danger" @click="onDeleteStock(opt.row.id)">删除</el-button>
+            <!-- <el-button type="danger" @click="onDeleteStock(opt.row.id)">删除</el-button> -->
           </template>
         </el-table-column>
       </el-table>
