@@ -23,7 +23,7 @@ public class StockDao extends BaseDao implements IStockDao {
                 "  ,t1.unitprice " +
                 "  ,t2.inamount  " +
                 "  ,t2.outamount " +
-                "  ,COALESCE(t1.unitstock,0) + t2.amount stock " +
+                "  ,COALESCE(t1.unitstock,0) + COALESCE(t2.amount,0) stock " +
                 "  ,if(t1.unitprice is not null,(COALESCE(t1.unitstock,0) + t2.amount)*t1.unitprice,null) money " +
                 "  ,t2.lastindate " +
                 "  ,t2.lastoutdate " +

@@ -29,19 +29,19 @@
       <el-table ref="multipleTable" stripe :data="TurnoverData" style="width: 100%;">
         <el-table-column prop="id" label="UID" align="center">
         </el-table-column>
-        <el-table-column prop="payer" label="付款人" width="120px" align="center">
+        <el-table-column prop="payer" label="付款人" width="180px" align="center">
         </el-table-column>
-        <el-table-column prop="payee" label="收款人" width="120px" align="center">
+        <el-table-column prop="payee" label="收款人" width="180px" align="center">
         </el-table-column>
         <el-table-column prop="billdate" label="日期" width="120px" align="center">
         </el-table-column>
-        <el-table-column prop="money" label="金额" width="80" align="center">
+        <el-table-column prop="money" label="金额" width="100" align="center">
         </el-table-column>
         <el-table-column prop="tax" label="税点金额" width="100" align="center">
         </el-table-column>
         <el-table-column prop="paid" label="实际金额" width="100" align="center">
         </el-table-column>
-        <el-table-column prop="remark" label="备注" width="480" align="center" :show-overflow-tooltip="true">
+        <el-table-column prop="remark" label="备注" width="360" align="center" :show-overflow-tooltip="true">
         </el-table-column>
         <el-table-column fixed="right" label="操作" align="center" width="180">
           <template #default="opt">
