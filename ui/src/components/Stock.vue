@@ -116,7 +116,7 @@ export default {
     },
     handleCurrentChange(currentPage) {
       this.page.index = currentPage;
-      this.getAllShipment()
+      this.getAllStock()
     },
     onAddStockCancel() {
       this.addStockVisible = false
