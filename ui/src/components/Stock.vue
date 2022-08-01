@@ -195,6 +195,7 @@ export default {
         '&productName=' + that.productInput)
         .then(function (response) {
           that.StockData = response.data.data
+          that.page.total = response.data.total
         }).catch(function (error) {
       })
     },
@@ -205,6 +206,7 @@ export default {
         '&productName=' + that.productInput)
         .then(function (response) {
           that.StockData = response.data.data
+          that.page.total = response.data.total
         }).catch(function (error) {
       })
     },
