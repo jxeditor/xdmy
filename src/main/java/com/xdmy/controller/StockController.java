@@ -16,9 +16,11 @@ import java.util.HashMap;
 public class StockController extends BaseController {
 
     @RequestMapping("/findAllStock")
-    public String findAllStock(@RequestParam(value = "productName", defaultValue = "") String productName
+    public String findAllStock(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                               @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+                               @RequestParam(value = "productName", defaultValue = "") String productName
     ) {
-        JSONObject result = serviceFacade.getStockService().findAllStock(productName);
+        JSONObject result = serviceFacade.getStockService().findAllStock(pageNum, pageSize, productName);
         return new JSONReturn(result).toString();
     }
 

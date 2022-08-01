@@ -4,7 +4,7 @@ import com.xdmy.domain.Stock;
 import org.json.JSONObject;
 
 public interface IStockService {
-    JSONObject findAllStock(String productName);
+    JSONObject findAllStock(int pageNum, int pageSize,String productName);
 
     int addStock(Stock Stock);
 

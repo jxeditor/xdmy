@@ -180,7 +180,8 @@ export default {
     getAllStock() {
       const that = this;
       this.$axios.get('http://124.223.70.175:8088/stock/findAllStock' +
-        '?productName=' + that.productInput)
+        '?pageNum=' + that.page.index + '&pageSize=' + that.page.size +
+        '&productName=' + that.productInput)
         .then(function (response) {
           that.StockData = response.data.data
         }).catch(function (error) {
@@ -189,7 +190,8 @@ export default {
     searchStock() {
       const that = this
       this.$axios.get('http://124.223.70.175:8088/stock/findAllStock' +
-        '?productName=' + that.productInput)
+        '?pageNum=' + that.page.index + '&pageSize=' + that.page.size +
+        '&productName=' + that.productInput)
         .then(function (response) {
           that.StockData = response.data.data
         }).catch(function (error) {
@@ -198,6 +200,14 @@ export default {
   },
   data() {
     return {
+      page: {
+        //当前页码
+        index: 1,
+        //每页展示数据
+        size: 20,
+        // 总条数
+        total: 0
+      },
       StockData: [],
       stockstatus: '0',
       productInput: '',

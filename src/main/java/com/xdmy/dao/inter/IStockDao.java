@@ -5,7 +5,9 @@ import com.xdmy.domain.Stock;
 import java.util.List;
 
 public interface IStockDao {
-    List<Stock> findAllStock(String productName);
+    List<Stock> findAllStock(int pageNum, int pageSize,String productName);
+
+    int getAllTotalSize(String productName);
 
     int addStock(Stock Stock);
 

@@ -14,10 +14,11 @@ import java.util.List;
 @Service
 public class StockService extends BaseService implements IStockService {
     @Override
-    public JSONObject findAllStock(String productName) {
+    public JSONObject findAllStock(int pageNum, int pageSize, String productName) {
         DBContextHolder.setDbType("primary");
-        List<Stock> stockList = daoFacade.getStockDao().findAllStock(productName);
-        return toJSONObject(stockList);
+        List<Stock> stockList = daoFacade.getStockDao().findAllStock(pageNum, pageSize, productName);
+        int total = daoFacade.getStockDao().getAllTotalSize(productName);
+        return toJSONObject(stockList).put("total", total);
     }
 
     @Override

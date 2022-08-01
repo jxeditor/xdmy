@@ -14,7 +14,8 @@ import java.util.List;
 public class StockDao extends BaseDao implements IStockDao {
 
     @Override
-    public List<Stock> findAllStock(String productName) {
+    public List<Stock> findAllStock(int pageNum, int pageSize, String productName) {
+        int currOffset = (pageNum - 1) * pageSize;
         String sql = "SELECT * " +
                 "FROM ( " +
                 " SELECT t1.id " +
@@ -89,8 +90,87 @@ public class StockDao extends BaseDao implements IStockDao {
                 " WHERE t1.product is null" +
                 ") t1 WHERE 1=1";
         sql = genFilterSql(sql, productName);
-        sql += " ORDER BY product";
-        return jdbcTemplate.query(sql, new StockRowMapper());
+        sql += " ORDER BY product DESC LIMIT ? ,?";
+        return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new StockRowMapper());
+    }
+
+    @Override
+    public int getAllTotalSize(String productName) {
+        String sql = "SELECT count(1) " +
+                "FROM ( " +
+                " SELECT t1.id " +
+                "  ,COALESCE(t1.product,t2.product) product " +
+                "  ,t1.unitstock " +
+                "  ,t1.unitprice " +
+                "  ,t2.inamount  " +
+                "  ,t2.outamount " +
+                "  ,COALESCE(t1.unitstock,0) + COALESCE(t2.amount,0) stock " +
+                "  ,if(t1.unitprice is not null,(COALESCE(t1.unitstock,0) + t2.amount)*t1.unitprice,null) money " +
+                "  ,t2.lastindate " +
+                "  ,t2.lastoutdate " +
+                "  ,if(t1.unitprice is not null,'1','0') stockstatus " +
+                " FROM ( " +
+                "  SELECT *  " +
+                "  FROM stock " +
+                " ) t1 " +
+                " LEFT JOIN ( " +
+                "  SELECT product " +
+                "   ,sum(if(source='入货',amount,0)) inamount " +
+                "   ,sum(if(source='出货',amount,0)) outamount " +
+                "   ,max(if(source='入货',billdate,null)) lastindate " +
+                "   ,max(if(source='出货',billdate,null)) lastoutdate " +
+                "   ,sum(if(source='入货',amount,0)) - sum(if(source='出货',amount,0)) amount " +
+                "  FROM ( " +
+                "   SELECT product,sum( amount ) amount,max(billdate) billdate,'出货' source " +
+                "   FROM shipment  " +
+                "   GROUP BY product  " +
+                "   UNION ALL " +
+                "   SELECT product,sum( amount ) amount,max(billdate) billdate,'入货' source " +
+                "   FROM incoming  " +
+                "   GROUP BY product  " +
+                "  ) t1 " +
+                "  GROUP BY product " +
+                " ) t2 " +
+                " ON t1.product = t2.product " +
+                " UNION ALL " +
+                " SELECT t1.id " +
+                "  ,COALESCE(t1.product,t2.product) product " +
+                "  ,t1.unitstock " +
+                "  ,t1.unitprice " +
+                "  ,t2.inamount  " +
+                "  ,t2.outamount " +
+                "  ,COALESCE(t1.unitstock,0) + t2.amount stock " +
+                "  ,if(t1.unitprice is not null,(COALESCE(t1.unitstock,0) + t2.amount)*t1.unitprice,null) money " +
+                "  ,t2.lastindate " +
+                "  ,t2.lastoutdate " +
+                "  ,if(t1.unitprice is not null,'1','0') stockstatus " +
+                " FROM ( " +
+                "  SELECT * " +
+                "  FROM stock " +
+                " ) t1 " +
+                " RIGHT JOIN ( " +
+                "  SELECT product " +
+                "   ,sum(if(source='入货',amount,0)) inamount " +
+                "   ,sum(if(source='出货',amount,0)) outamount " +
+                "   ,max(if(source='入货',billdate,null)) lastindate " +
+                "   ,max(if(source='出货',billdate,null)) lastoutdate " +
+                "   ,sum(if(source='入货',amount,0)) - sum(if(source='出货',amount,0)) amount " +
+                "  FROM ( " +
+                "   SELECT product,sum( amount ) amount,max(billdate) billdate,'出货' source " +
+                "   FROM shipment  " +
+                "   GROUP BY product  " +
+                "   UNION ALL " +
+                "   SELECT product,sum( amount ) amount,max(billdate) billdate,'入货' source " +
+                "   FROM incoming  " +
+                "   GROUP BY product  " +
+                "  ) t1 " +
+                "  GROUP BY product " +
+                " ) t2 " +
+                " ON t1.product = t2.product" +
+                " WHERE t1.product is null" +
+                ") t1 WHERE 1=1";
+        sql = genFilterSql(sql, productName);
+        return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 
     @Override
