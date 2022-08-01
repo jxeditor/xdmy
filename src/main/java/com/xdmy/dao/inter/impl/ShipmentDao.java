@@ -16,7 +16,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
     @Override
     public List<Shipment> findAllShipment(int pageNum, int pageSize, String customerName, String productName, String bizStartDate, String bizEndDate) {
         int currOffset = (pageNum - 1) * pageSize;
-        String sql = "SELECT * FROM shipment WHERE 1=1";
+        String sql = "SELECT * FROM shipment WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, customerName, productName, bizStartDate, bizEndDate);
         sql += " ORDER BY create_time DESC LIMIT ? ,?";
         return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new ShipmentRowMapper());
@@ -24,7 +24,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
 
     @Override
     public int getAllTotalSize(String customerName, String productName, String bizStartDate, String bizEndDate) {
-        String sql = "SELECT count(1) FROM shipment WHERE 1=1";
+        String sql = "SELECT count(1) FROM shipment WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, customerName, productName, bizStartDate, bizEndDate);
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
@@ -38,7 +38,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
 
     @Override
     public int deleteShipmentById(int id) {
-        String sql = "DELETE FROM shipment WHERE id = ?";
+        String sql = "UPDATE shipment set is_delete = 1 WHERE id = ?";
         return jdbcTemplate.update(sql, id);
     }
 

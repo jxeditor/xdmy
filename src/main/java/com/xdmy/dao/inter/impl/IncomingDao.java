@@ -16,7 +16,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
     @Override
     public List<Incoming> findAllIncoming(int pageNum, int pageSize, String producerName, String productName, String bizStartDate, String bizEndDate) {
         int currOffset = (pageNum - 1) * pageSize;
-        String sql = "SELECT * FROM incoming WHERE 1=1";
+        String sql = "SELECT * FROM incoming WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, producerName, productName, bizStartDate, bizEndDate);
         sql += " ORDER BY create_time DESC LIMIT ? ,?";
         return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new IncomingRowMapper());
@@ -24,7 +24,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
 
     @Override
     public int getAllTotalSize(String producerName, String productName, String bizStartDate, String bizEndDate) {
-        String sql = "SELECT count(1) FROM incoming WHERE 1=1";
+        String sql = "SELECT count(1) FROM incoming WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, producerName, productName, bizStartDate, bizEndDate);
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
@@ -38,7 +38,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
 
     @Override
     public int deleteIncomingById(int id) {
-        String sql = "DELETE FROM incoming WHERE id = ?";
+        String sql = "UPDATE incoming set is_delete = 1 WHERE id = ?";
         return jdbcTemplate.update(sql, id);
     }
 

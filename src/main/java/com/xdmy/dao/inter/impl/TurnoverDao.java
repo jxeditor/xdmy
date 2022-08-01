@@ -16,7 +16,7 @@ public class TurnoverDao extends BaseDao implements ITurnoverDao {
     @Override
     public List<Turnover> findAllTurnover(int pageNum, int pageSize, String payerName, String payeeName, String bizStartDate, String bizEndDate) {
         int currOffset = (pageNum - 1) * pageSize;
-        String sql = "SELECT * FROM turnover WHERE 1=1";
+        String sql = "SELECT * FROM turnover WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, payerName, payeeName, bizStartDate, bizEndDate);
         sql += " ORDER BY create_time DESC LIMIT ? ,?";
         return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new TurnoverRowMapper());
@@ -24,7 +24,7 @@ public class TurnoverDao extends BaseDao implements ITurnoverDao {
 
     @Override
     public int getAllTotalSize(String payerName, String payeeName, String bizStartDate, String bizEndDate) {
-        String sql = "SELECT count(1) FROM turnover WHERE 1=1";
+        String sql = "SELECT count(1) FROM turnover WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, payerName, payeeName, bizStartDate, bizEndDate);
         return jdbcTemplate.queryForObject(sql, Integer.class);
     }
@@ -38,7 +38,7 @@ public class TurnoverDao extends BaseDao implements ITurnoverDao {
 
     @Override
     public int deleteTurnoverById(int id) {
-        String sql = "DELETE FROM turnover WHERE id = ?";
+        String sql = "UPDATE turnover set is_delete = 1 WHERE id = ?";
         return jdbcTemplate.update(sql, id);
     }
 
