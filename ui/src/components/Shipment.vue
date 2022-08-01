@@ -197,6 +197,10 @@ export default {
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
+    handleCurrentChange(currentPage) {
+      this.page.index = currentPage;
+      this.getAllShipment()
+    },
     onBatchUpdateShipment() {
       if (this.multipleSelection.length !== 0) {
         const that = this;
@@ -223,10 +227,6 @@ export default {
     },
     onClearSelection() {
       this.$refs.multipleTable.clearSelection()
-    },
-    handleCurrentChange(currentPage) {
-      this.page.index = currentPage;
-      this.getAllShipment()
     },
     onAddShipmentCancel() {
       this.addShipmentVisible = false

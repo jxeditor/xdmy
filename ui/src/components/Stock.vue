@@ -43,6 +43,13 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        v-model:current-page="page.index"
+        :page-size="page.size"
+        layout="total,prev,pager,next"
+        :total="page.total"
+        @current-change="handleCurrentChange">
+      </el-pagination>
       <el-dialog title="初始化库存" v-model="addStockVisible" width="80%">
         <el-form ref="addStockForm" :rules="addStockFormRules" :model="addStockForm" label-width="120px">
           <el-form-item label="产品:" prop="product">
@@ -106,6 +113,10 @@ export default {
         default:
           return "未定义";
       }
+    },
+    handleCurrentChange(currentPage) {
+      this.page.index = currentPage;
+      this.getAllShipment()
     },
     onAddStockCancel() {
       this.addStockVisible = false
