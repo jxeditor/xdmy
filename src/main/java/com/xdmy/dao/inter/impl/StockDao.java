@@ -43,10 +43,12 @@ public class StockDao extends BaseDao implements IStockDao {
                 "  FROM ( " +
                 "   SELECT product,sum( amount ) amount,max(billdate) billdate,'出货' source " +
                 "   FROM shipment  " +
+                "   WHERE is_delete = 0 " +
                 "   GROUP BY product  " +
                 "   UNION ALL " +
                 "   SELECT product,sum( amount ) amount,max(billdate) billdate,'入货' source " +
                 "   FROM incoming  " +
+                "   WHERE is_delete = 0 " +
                 "   GROUP BY product  " +
                 "  ) t1 " +
                 "  GROUP BY product " +
@@ -78,10 +80,12 @@ public class StockDao extends BaseDao implements IStockDao {
                 "  FROM ( " +
                 "   SELECT product,sum( amount ) amount,max(billdate) billdate,'出货' source " +
                 "   FROM shipment  " +
+                "   WHERE is_delete = 0 " +
                 "   GROUP BY product  " +
                 "   UNION ALL " +
                 "   SELECT product,sum( amount ) amount,max(billdate) billdate,'入货' source " +
                 "   FROM incoming  " +
+                "   WHERE is_delete = 0 " +
                 "   GROUP BY product  " +
                 "  ) t1 " +
                 "  GROUP BY product " +
@@ -123,10 +127,12 @@ public class StockDao extends BaseDao implements IStockDao {
                 "  FROM ( " +
                 "   SELECT product,sum( amount ) amount,max(billdate) billdate,'出货' source " +
                 "   FROM shipment  " +
+                "   WHERE is_delete = 0 " +
                 "   GROUP BY product  " +
                 "   UNION ALL " +
                 "   SELECT product,sum( amount ) amount,max(billdate) billdate,'入货' source " +
                 "   FROM incoming  " +
+                "   WHERE is_delete = 0 " +
                 "   GROUP BY product  " +
                 "  ) t1 " +
                 "  GROUP BY product " +
@@ -158,10 +164,12 @@ public class StockDao extends BaseDao implements IStockDao {
                 "  FROM ( " +
                 "   SELECT product,sum( amount ) amount,max(billdate) billdate,'出货' source " +
                 "   FROM shipment  " +
+                "   WHERE is_delete = 0 " +
                 "   GROUP BY product  " +
                 "   UNION ALL " +
                 "   SELECT product,sum( amount ) amount,max(billdate) billdate,'入货' source " +
-                "   FROM incoming  " +
+                "   FROM incoming" +
+                "   WHERE is_delete = 0 " +
                 "   GROUP BY product  " +
                 "  ) t1 " +
                 "  GROUP BY product " +
