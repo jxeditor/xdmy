@@ -45,7 +45,7 @@ public class TurnoverDao extends BaseDao implements ITurnoverDao {
     @Override
     public int updateTurnover(Turnover turnover) {
         String sql = "UPDATE turnover set payer = ?,payee = ?,billdate = ?,money = ?,tax = ?,paid = ?" +
-                ",remark = ?" +
+                ",remark = ? " +
                 "WHERE id = ? ";
         return jdbcTemplate.update(sql, turnover.getPayer(), turnover.getPayee(), turnover.getBilldate(), turnover.getMoney(), turnover.getTax(), turnover.getPaid(), turnover.getRemark(), turnover.getId());
     }

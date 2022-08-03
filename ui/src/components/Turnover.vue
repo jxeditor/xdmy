@@ -186,12 +186,12 @@ export default {
         if (valid) {
           let param = new URLSearchParams()
           param.append('id', this.updateTurnoverForm.id)
-          param.append('payer', this.addTurnoverForm.payer)
-          param.append('payee', this.addTurnoverForm.payee)
-          param.append('billdate', this.addTurnoverForm.billdate)
-          param.append('money', this.addTurnoverForm.money)
-          param.append('tax', this.addTurnoverForm.tax)
-          param.append('remark', this.addTurnoverForm.remark)
+          param.append('payer', this.updateTurnoverForm.payer)
+          param.append('payee', this.updateTurnoverForm.payee)
+          param.append('billdate', this.updateTurnoverForm.billdate)
+          param.append('money', this.updateTurnoverForm.money)
+          param.append('tax', this.updateTurnoverForm.tax)
+          param.append('remark', this.updateTurnoverForm.remark)
           this.$axios.post('http://124.223.70.175:8088/turnover/updateTurnover', param).then(function (response) {
             if (response.data.code === 1) {
               that.updateTurnoverVisible = false

@@ -21,11 +21,36 @@ public class ScreenDao extends BaseDao implements IScreenDao {
                 "FROM shipment " +
                 "WHERE is_delete = 0";
         sql = genFilterSql(sql, customerName, bizStartDate, bizEndDate);
-        sql += " GROUP BY billdate ORDER BY billdate";
+        sql += " GROUP BY billdate ORDER BY billdate DESC";
         return jdbcTemplate.query(sql, new Shipment1ChartDataRowMapper());
     }
 
+    @Override
+    public List<JSONObject> getShipment2ChartData() {
+        String sql = "SELECT substring(billdate,1,7) billdate,sum(money) money,sum(costmoney) costmoney,sum(profit) profit" +
+                " ,sum(if(paystatus = 1,money,0)) paymoney" +
+                " ,sum(if(paystatus = 1,profit,0)) payprofit " +
+                "FROM shipment " +
+                "WHERE is_delete = 0";
+        sql += " GROUP BY substring(billdate,1,7) ORDER BY billdate DESC LIMIT 12";
+        return jdbcTemplate.query(sql, new Shipment2ChartDataRowMapper());
+    }
+
     static class Shipment1ChartDataRowMapper implements RowMapper<JSONObject> {
+        @Override
+        public JSONObject mapRow(ResultSet rs, int rowNum) throws SQLException {
+            JSONObject result = new JSONObject();
+            result.put("billdate", rs.getString("billdate"));
+            result.put("money", rs.getDouble("money"));
+            result.put("costmoney", rs.getDouble("costmoney"));
+            result.put("profit", rs.getDouble("profit"));
+            result.put("paymoney", rs.getDouble("paymoney"));
+            result.put("payprofit", rs.getDouble("payprofit"));
+            return result;
+        }
+    }
+
+    static class Shipment2ChartDataRowMapper implements RowMapper<JSONObject> {
         @Override
         public JSONObject mapRow(ResultSet rs, int rowNum) throws SQLException {
             JSONObject result = new JSONObject();

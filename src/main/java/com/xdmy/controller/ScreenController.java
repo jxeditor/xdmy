@@ -20,4 +20,11 @@ public class ScreenController extends BaseController {
         return new JSONReturn(result).toString();
     }
 
+
+    @RequestMapping("/getShipment2ChartData")
+    public String getShipment2ChartData() {
+        JSONObject result = serviceFacade.getScreenService().getShipment2ChartData();
+        return new JSONReturn(result).toString();
+    }
+
 }
