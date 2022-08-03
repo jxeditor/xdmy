@@ -59,7 +59,7 @@ export default {
               trigger: 'axis'
             },
             legend: {
-              data: ['出货总金额', '出货总成本', '出货总利润', '出货已收总利润']
+              data: ['出货总金额', '出货总成本', '出货总利润', '出货已收总金额', '出货已收总利润']
             },
             grid: {
               left: '3%',
@@ -109,7 +109,6 @@ export default {
               }
             ]
           };
-          console.log(response.data.payprofit)
           option && biShipment1Chart.setOption(option);
         }).catch(function (error) {
         console.log(error)
