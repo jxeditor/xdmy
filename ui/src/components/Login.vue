@@ -47,6 +47,7 @@ export default {
           that.$message.error(response.data.msg);
         }
       }).catch(function (error) {
+        that.$message.error(error);
       })
     }
   },

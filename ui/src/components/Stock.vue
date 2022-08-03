@@ -147,6 +147,7 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
+            that.$message.error(error);
           })
         } else {
           return false
@@ -170,6 +171,7 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
+            that.$message.error(error);
           })
         } else {
           return false
@@ -186,6 +188,7 @@ export default {
             that.$message.error(response.data.msg);
           }
         }).catch(function (error) {
+        that.$message.error(error);
       })
     },
     getAllStock() {
@@ -197,6 +200,7 @@ export default {
           that.StockData = response.data.data
           that.page.total = response.data.total
         }).catch(function (error) {
+        that.$message.error(error);
       })
     },
     searchStock() {
@@ -208,6 +212,7 @@ export default {
           that.StockData = response.data.data
           that.page.total = response.data.total
         }).catch(function (error) {
+        that.$message.error(error);
       })
     },
   },

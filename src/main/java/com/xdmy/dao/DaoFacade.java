@@ -1,10 +1,7 @@
 package com.xdmy.dao;
 
 import com.xdmy.dao.inter.*;
-import com.xdmy.service.inter.IAdminService;
-import com.xdmy.service.inter.IIncomingService;
-import com.xdmy.service.inter.IStockService;
-import com.xdmy.service.inter.ITurnoverService;
+import com.xdmy.service.inter.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -29,6 +26,9 @@ public class DaoFacade {
     @Autowired
     ITurnoverDao turnoverDao;
 
+    @Autowired
+    IScreenDao screenDao;
+
     public IShipmentDao getShipmentDao() {
         return shipmentDao;
     }
@@ -47,5 +47,9 @@ public class DaoFacade {
 
     public ITurnoverDao getTurnoverDao() {
         return turnoverDao;
+    }
+
+    public IScreenDao getScreenDao() {
+        return screenDao;
     }
 }

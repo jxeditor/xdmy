@@ -27,6 +27,9 @@ public class ServiceFacade {
     @Autowired
     ITurnoverService turnoverService;
 
+    @Autowired
+    IScreenService screenService;
+
     public IShipmentService getShipmentService() {
         return shipmentService;
     }
@@ -45,5 +48,9 @@ public class ServiceFacade {
 
     public ITurnoverService getTurnoverService() {
         return turnoverService;
+    }
+
+    public IScreenService getScreenService() {
+        return screenService;
     }
 }

@@ -207,6 +207,7 @@ export default {
         this.multipleSelection.forEach((data) => {
           this.$axios.get('http://124.223.70.175:8088/shipment/updatePaystatusShipmentById?id=' + data.id)
             .catch(function (error) {
+              that.$message.error(error);
             })
         })
         this.sleep(500)
@@ -219,6 +220,7 @@ export default {
         this.multipleSelection.forEach((data) => {
           this.$axios.get('http://124.223.70.175:8088/shipment/deleteShipmentById?id=' + data.id)
             .catch(function (error) {
+              that.$message.error(error);
             })
         })
         this.sleep(500)
@@ -263,6 +265,7 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
+            that.$message.error(error);
           })
         } else {
           return false
@@ -292,6 +295,7 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
+            that.$message.error(error);
           })
         } else {
           return false
@@ -308,6 +312,7 @@ export default {
             that.$message.error(response.data.msg);
           }
         }).catch(function (error) {
+        that.$message.error(error);
       })
     },
     getAllShipment() {
@@ -321,6 +326,7 @@ export default {
           that.ShipmentData = response.data.data
           that.page.total = response.data.total
         }).catch(function (error) {
+        that.$message.error(error);
       })
     },
     searchShipment() {
@@ -334,6 +340,7 @@ export default {
           that.ShipmentData = response.data.data
           that.page.total = response.data.total
         }).catch(function (error) {
+        that.$message.error(error);
       })
     },
   },

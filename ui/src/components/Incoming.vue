@@ -187,6 +187,7 @@ export default {
         this.multipleSelection.forEach((data) => {
           this.$axios.get('http://124.223.70.175:8088/incoming/updatePaystatusIncomingById?id=' + data.id)
             .catch(function (error) {
+              that.$message.error(error);
             })
         })
         this.sleep(500)
@@ -199,6 +200,7 @@ export default {
         this.multipleSelection.forEach((data) => {
           this.$axios.get('http://124.223.70.175:8088/incoming/deleteIncomingById?id=' + data.id)
             .catch(function (error) {
+              that.$message.error(error);
             })
         })
         this.sleep(500)
@@ -245,6 +247,7 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
+            that.$message.error(error);
           })
         } else {
           return false
@@ -272,6 +275,7 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
+            that.$message.error(error);
           })
         } else {
           return false
@@ -288,6 +292,7 @@ export default {
             that.$message.error(response.data.msg);
           }
         }).catch(function (error) {
+        that.$message.error(error);
       })
     },
     getAllIncoming() {
@@ -301,6 +306,7 @@ export default {
           that.IncomingData = response.data.data
           that.page.total = response.data.total
         }).catch(function (error) {
+        that.$message.error(error);
       })
     },
     searchIncoming() {
@@ -314,6 +320,7 @@ export default {
           that.IncomingData = response.data.data
           that.page.total = response.data.total
         }).catch(function (error) {
+        that.$message.error(error);
       })
     },
   },

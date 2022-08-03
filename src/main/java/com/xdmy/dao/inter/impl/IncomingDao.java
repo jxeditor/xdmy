@@ -44,8 +44,8 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
 
     @Override
     public int updateIncoming(Incoming incoming) {
-        String sql = "UPDATE incoming set odd = ?,producer = ?,product = ?,billdate = ?,amount = ?,unitprice = ?,money = ?" +
-                ",paystatus = ?" +
+        String sql = "UPDATE incoming set odd = ?,producer = ?,product = ?,billdate = ?,amount = ?,unitprice = ?,money = ? " +
+                ",paystatus = ? " +
                 "WHERE id = ? ";
         return jdbcTemplate.update(sql, incoming.getOdd(), incoming.getProducer(), incoming.getProduct(), incoming.getBilldate(), incoming.getAmount(), incoming.getUnitprice(), incoming.getMoney(), incoming.getPaystatus(), incoming.getId());
     }

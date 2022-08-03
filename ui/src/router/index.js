@@ -45,6 +45,15 @@ const routes = [
       requireAuth: true,
       role: "ADMIN"
     }
+  },
+  {
+    path: '/screen',
+    name: 'screen',
+    component: () => import('../views/ScreenView.vue'),
+    meta: {
+      requireAuth: true,
+      role: "ADMIN"
+    }
   }
 ]
 
