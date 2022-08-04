@@ -63,25 +63,30 @@ export default {
               text: '出货按天统计'
             },
             tooltip: {
-              trigger: 'axis'
+              trigger: 'axis',
+              axisPointer: {
+                type: 'shadow'
+              }
             },
             legend: {
               data: ['出货总金额', '出货总成本', '出货总利润', '出货已收总金额', '出货已收总利润']
             },
-            grid: {
-              left: '3%',
-              right: '4%',
-              bottom: '3%',
-              containLabel: true
-            },
             toolbox: {
+              show: true,
+              orient: 'vertical',
+              left: 'right',
+              top: 'center',
               feature: {
-                saveAsImage: {}
+                mark: {show: true},
+                dataView: {show: true, readOnly: false},
+                magicType: {show: true, type: ['line', 'bar', 'stack']},
+                restore: {show: true},
+                saveAsImage: {show: true}
               }
             },
             xAxis: {
               type: 'category',
-              boundaryGap: false,
+              axisTick: { show: false },
               data: response.data.billdate
             },
             yAxis: {
@@ -91,27 +96,67 @@ export default {
             series: [
               {
                 name: '出货总金额',
-                type: 'line',
+                type: 'bar',
+                barGap: 0,
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  position: 'top'
+                },
                 data: response.data.money
               },
               {
                 name: '出货总成本',
-                type: 'line',
+                type: 'bar',
+                barGap: 0,
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  position: 'top'
+                },
                 data: response.data.costmoney
               },
               {
                 name: '出货总利润',
-                type: 'line',
+                type: 'bar',
+                barGap: 0,
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  position: 'top'
+                },
                 data: response.data.profit
               },
               {
                 name: '出货已收总金额',
-                type: 'line',
+                type: 'bar',
+                barGap: 0,
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  position: 'top'
+                },
                 data: response.data.paymoney
               },
               {
                 name: '出货已收总利润',
-                type: 'line',
+                type: 'bar',
+                barGap: 0,
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  position: 'top'
+                },
                 data: response.data.payprofit
               }
             ]
@@ -145,17 +190,17 @@ export default {
               left: 'right',
               top: 'center',
               feature: {
-                mark: { show: true },
-                dataView: { show: true, readOnly: false },
-                magicType: { show: true, type: ['line', 'bar', 'stack'] },
-                restore: { show: true },
-                saveAsImage: { show: true }
+                mark: {show: true},
+                dataView: {show: true, readOnly: false},
+                magicType: {show: true, type: ['line', 'bar', 'stack']},
+                restore: {show: true},
+                saveAsImage: {show: true}
               }
             },
             xAxis: [
               {
                 type: 'category',
-                axisTick: { show: false },
+                axisTick: {show: false},
                 data: response.data.billdate
               }
             ],
@@ -172,6 +217,10 @@ export default {
                 emphasis: {
                   focus: 'series'
                 },
+                label: {
+                  show: true,
+                  position: 'top'
+                },
                 data: response.data.money
               },
               {
@@ -179,6 +228,10 @@ export default {
                 type: 'bar',
                 emphasis: {
                   focus: 'series'
+                },
+                label: {
+                  show: true,
+                  position: 'top'
                 },
                 data: response.data.costmoney
               },
@@ -188,6 +241,10 @@ export default {
                 emphasis: {
                   focus: 'series'
                 },
+                label: {
+                  show: true,
+                  position: 'top'
+                },
                 data: response.data.profit
               },
               {
@@ -196,6 +253,10 @@ export default {
                 emphasis: {
                   focus: 'series'
                 },
+                label: {
+                  show: true,
+                  position: 'top'
+                },
                 data: response.data.paymoney
               },
               {
@@ -203,6 +264,10 @@ export default {
                 type: 'bar',
                 emphasis: {
                   focus: 'series'
+                },
+                label: {
+                  show: true,
+                  position: 'top'
                 },
                 data: response.data.payprofit
               }

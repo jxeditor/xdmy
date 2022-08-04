@@ -21,18 +21,21 @@ public class ScreenDao extends BaseDao implements IScreenDao {
                 "FROM shipment " +
                 "WHERE is_delete = 0";
         sql = genFilterSql(sql, customerName, bizStartDate, bizEndDate);
-        sql += " GROUP BY billdate ORDER BY billdate DESC";
+        sql += " GROUP BY billdate ORDER BY billdate";
         return jdbcTemplate.query(sql, new Shipment1ChartDataRowMapper());
     }
 
     @Override
     public List<JSONObject> getShipment2ChartData() {
-        String sql = "SELECT substring(billdate,1,7) billdate,sum(money) money,sum(costmoney) costmoney,sum(profit) profit" +
-                " ,sum(if(paystatus = 1,money,0)) paymoney" +
-                " ,sum(if(paystatus = 1,profit,0)) payprofit " +
-                "FROM shipment " +
-                "WHERE is_delete = 0";
-        sql += " GROUP BY substring(billdate,1,7) ORDER BY billdate DESC LIMIT 12";
+        String sql = "SELECT * FROM (" +
+                " SELECT substring(billdate,1,7) billdate,sum(money) money,sum(costmoney) costmoney,sum(profit) profit" +
+                "  ,sum(if(paystatus = 1,money,0)) paymoney" +
+                "  ,sum(if(paystatus = 1,profit,0)) payprofit " +
+                " FROM shipment " +
+                " WHERE is_delete = 0"+
+                " GROUP BY substring(billdate,1,7) ORDER BY billdate DESC LIMIT 12" +
+                ") t1 " +
+                "ORDER BY billdate";
         return jdbcTemplate.query(sql, new Shipment2ChartDataRowMapper());
     }
 
