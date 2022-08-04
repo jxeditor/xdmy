@@ -43,11 +43,13 @@ export default {
   methods: {
     drawShipment1(id) {
       const chartDom = document.getElementById(id);
+      document.getElementById(id).removeAttribute('_echarts_instance_');
       biShipment1Chart = echarts.init(chartDom);
       this.getShipment1ChartData()
     },
     drawShipment2(id) {
       const chartDom = document.getElementById(id);
+      document.getElementById(id).removeAttribute('_echarts_instance_');
       biShipment2Chart = echarts.init(chartDom);
       this.getShipment2ChartData()
     },
