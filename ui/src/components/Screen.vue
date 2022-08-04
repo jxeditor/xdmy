@@ -60,7 +60,8 @@ export default {
           let option;
           option = {
             title: {
-              text: '出货按天统计'
+              text: '出货按天统计',
+              left: 'center'
             },
             tooltip: {
               trigger: 'axis',
@@ -69,7 +70,9 @@ export default {
               }
             },
             legend: {
-              data: ['出货总金额', '出货总成本', '出货总利润', '出货已收总金额', '出货已收总利润']
+              data: ['出货总金额', '出货已收总金额', '出货总利润', '出货已收总利润'],
+              left: 'center',
+              bottom: 10
             },
             toolbox: {
               show: true,
@@ -108,7 +111,7 @@ export default {
                 data: response.data.money
               },
               {
-                name: '出货总成本',
+                name: '出货已收总金额',
                 type: 'bar',
                 barGap: 0,
                 emphasis: {
@@ -118,8 +121,21 @@ export default {
                   show: true,
                   position: 'top'
                 },
-                data: response.data.costmoney
+                data: response.data.paymoney
               },
+              // {
+              //   name: '出货总成本',
+              //   type: 'bar',
+              //   barGap: 0,
+              //   emphasis: {
+              //     focus: 'series'
+              //   },
+              //   label: {
+              //     show: true,
+              //     position: 'top'
+              //   },
+              //   data: response.data.costmoney
+              // },
               {
                 name: '出货总利润',
                 type: 'bar',
@@ -132,19 +148,6 @@ export default {
                   position: 'top'
                 },
                 data: response.data.profit
-              },
-              {
-                name: '出货已收总金额',
-                type: 'bar',
-                barGap: 0,
-                emphasis: {
-                  focus: 'series'
-                },
-                label: {
-                  show: true,
-                  position: 'top'
-                },
-                data: response.data.paymoney
               },
               {
                 name: '出货已收总利润',
@@ -163,7 +166,7 @@ export default {
           };
           option && biShipment1Chart.setOption(option);
         }).catch(function (error) {
-        console.log(error)
+        that.$message.error(error);
       })
     },
     getShipment2ChartData() {
@@ -173,7 +176,8 @@ export default {
           let option;
           option = {
             title: {
-              text: '出货按月统计'
+              text: '出货按月统计',
+              left: 'center'
             },
             tooltip: {
               trigger: 'axis',
@@ -182,7 +186,9 @@ export default {
               }
             },
             legend: {
-              data: ['出货总金额', '出货总成本', '出货总利润', '出货已收总金额', '出货已收总利润']
+              data: ['出货总金额', '出货已收总金额', '出货总利润', '出货已收总利润'],
+              left: 'center',
+              bottom: 10
             },
             toolbox: {
               show: true,
@@ -224,7 +230,7 @@ export default {
                 data: response.data.money
               },
               {
-                name: '出货总成本',
+                name: '出货已收总金额',
                 type: 'bar',
                 emphasis: {
                   focus: 'series'
@@ -233,8 +239,20 @@ export default {
                   show: true,
                   position: 'top'
                 },
-                data: response.data.costmoney
+                data: response.data.paymoney
               },
+              // {
+              //   name: '出货总成本',
+              //   type: 'bar',
+              //   emphasis: {
+              //     focus: 'series'
+              //   },
+              //   label: {
+              //     show: true,
+              //     position: 'top'
+              //   },
+              //   data: response.data.costmoney
+              // },
               {
                 name: '出货总利润',
                 type: 'bar',
@@ -246,18 +264,6 @@ export default {
                   position: 'top'
                 },
                 data: response.data.profit
-              },
-              {
-                name: '出货已收总金额',
-                type: 'bar',
-                emphasis: {
-                  focus: 'series'
-                },
-                label: {
-                  show: true,
-                  position: 'top'
-                },
-                data: response.data.paymoney
               },
               {
                 name: '出货已收总利润',
@@ -275,7 +281,7 @@ export default {
           };
           option && biShipment2Chart.setOption(option);
         }).catch(function (error) {
-        console.log(error)
+        that.$message.error(error);
       })
     }
   },
