@@ -18,7 +18,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
         int currOffset = (pageNum - 1) * pageSize;
         String sql = "SELECT * FROM shipment WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, customerName, productName, bizStartDate, bizEndDate);
-        sql += " ORDER BY create_time DESC LIMIT ? ,?";
+        sql += " ORDER BY billdate DESC,odd DESC LIMIT ? ,?";
         return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new ShipmentRowMapper());
     }
 
