@@ -18,7 +18,7 @@ public class TurnoverDao extends BaseDao implements ITurnoverDao {
         int currOffset = (pageNum - 1) * pageSize;
         String sql = "SELECT * FROM turnover WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, payerName, payeeName, bizStartDate, bizEndDate);
-        sql += " ORDER BY create_time DESC LIMIT ? ,?";
+        sql += " ORDER BY billdate DESC,create_time DESC LIMIT ? ,?";
         return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new TurnoverRowMapper());
     }
 

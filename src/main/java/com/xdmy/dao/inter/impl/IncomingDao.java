@@ -18,7 +18,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
         int currOffset = (pageNum - 1) * pageSize;
         String sql = "SELECT * FROM incoming WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, producerName, productName, bizStartDate, bizEndDate);
-        sql += " ORDER BY create_time DESC LIMIT ? ,?";
+        sql += " ORDER BY billdate DESC,create_time DESC LIMIT ? ,?";
         return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new IncomingRowMapper());
     }
 
