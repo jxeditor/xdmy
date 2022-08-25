@@ -1,12 +1,13 @@
 package com.xdmy.service.inter.impl;
 
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.xdmy.datasource.DBContextHolder;
 import com.xdmy.domain.Turnover;
 import com.xdmy.service.inter.ITurnoverService;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,7 +19,9 @@ public class TurnoverService extends BaseService implements ITurnoverService {
         DBContextHolder.setDbType("primary");
         List<Turnover> turnoverList = daoFacade.getTurnoverDao().findAllTurnover(pageNum, pageSize, payerName, payeeName, bizStartDate, bizEndDate);
         int total = daoFacade.getTurnoverDao().getAllTotalSize(payerName, payeeName, bizStartDate, bizEndDate);
-        return toJSONObject(turnoverList).put("total", total);
+        JSONObject result = toJSONObject(turnoverList);
+        result.put("total", total);
+        return result;
     }
 
     @Override
@@ -54,7 +57,7 @@ public class TurnoverService extends BaseService implements ITurnoverService {
                     obj.put("tax", turnover.getTax());
                     obj.put("paid", turnover.getPaid());
                     obj.put("remark", turnover.getRemark());
-                    data.put(obj);
+                    data.add(obj);
                 }
             }
             result.put("data", data);

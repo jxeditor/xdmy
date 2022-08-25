@@ -23,10 +23,32 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
     }
 
     @Override
+    public List<Shipment> getShipmentStatement(String customerName, String bizStartDate, String bizEndDate) {
+        String sql = "SELECT * FROM shipment WHERE 1=1 AND is_delete = 0" +
+                " AND customer = ? AND billdate >= ? AND billdate <= ?";
+        sql += " ORDER BY billdate,create_time";
+        return jdbcTemplate.query(sql, new Object[]{customerName, bizStartDate, bizEndDate}, new ShipmentRowMapper());
+    }
+
+    @Override
     public int getAllTotalSize(String customerName, String productName, String bizStartDate, String bizEndDate) {
         String sql = "SELECT count(1) FROM shipment WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, customerName, productName, bizStartDate, bizEndDate);
         return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    @Override
+    public int getDistinctSize(String customerName, String bizStartDate, String bizEndDate) {
+        String sql = "SELECT count(distinct odd) FROM shipment WHERE 1=1 AND is_delete = 0" +
+                " AND customer = ? AND billdate >= ? AND billdate <= ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, customerName, bizStartDate, bizEndDate);
+    }
+
+    @Override
+    public double getSumPay(String customerName, String bizStartDate, String bizEndDate) {
+        String sql = "SELECT sum(money) FROM shipment WHERE 1=1 AND is_delete = 0" +
+                " AND customer = ? AND billdate >= ? AND billdate <= ?";
+        return jdbcTemplate.queryForObject(sql, Double.class, customerName, bizStartDate, bizEndDate);
     }
 
     @Override

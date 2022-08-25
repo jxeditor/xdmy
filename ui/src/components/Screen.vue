@@ -23,10 +23,10 @@
   </div>
   <div id="shipment2" style="border:1px solid #000;width: 100%;height: 400px;margin-top: 20px">
   </div>
-  <div id="shipment3" style="width: 100%;height: 400px">
-  </div>
-  <div id="shipment4" style="width: 100%;height: 400px">
-  </div>
+<!--  <div id="shipment3" style="width: 100%;height: 400px">-->
+<!--  </div>-->
+<!--  <div id="shipment4" style="width: 100%;height: 400px">-->
+<!--  </div>-->
 </template>
 
 <script>

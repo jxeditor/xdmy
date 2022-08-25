@@ -1,6 +1,7 @@
 package com.xdmy.dao.inter;
 
-import org.json.JSONObject;
+
+import com.alibaba.fastjson.JSONObject;
 
 import java.util.List;
 

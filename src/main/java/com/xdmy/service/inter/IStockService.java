@@ -1,10 +1,10 @@
 package com.xdmy.service.inter;
 
+import com.alibaba.fastjson.JSONObject;
 import com.xdmy.domain.Stock;
-import org.json.JSONObject;
 
 public interface IStockService {
-    JSONObject findAllStock(int pageNum, int pageSize,String productName);
+    JSONObject findAllStock(int pageNum, int pageSize, String productName);
 
     int addStock(Stock Stock);
 

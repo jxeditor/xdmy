@@ -1,12 +1,12 @@
 package com.xdmy.service.inter.impl;
 
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.xdmy.datasource.DBContextHolder;
 import com.xdmy.domain.Stock;
 import com.xdmy.service.inter.IStockService;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,7 +18,9 @@ public class StockService extends BaseService implements IStockService {
         DBContextHolder.setDbType("primary");
         List<Stock> stockList = daoFacade.getStockDao().findAllStock(pageNum, pageSize, productName);
         int total = daoFacade.getStockDao().getAllTotalSize(productName);
-        return toJSONObject(stockList).put("total", total);
+        JSONObject result = toJSONObject(stockList);
+        result.put("total", total);
+        return result;
     }
 
     @Override
@@ -57,7 +59,7 @@ public class StockService extends BaseService implements IStockService {
                     obj.put("lastindate", stock.getLastindate());
                     obj.put("lastoutdate", stock.getLastoutdate());
                     obj.put("stockstatus", stock.getStockstatus());
-                    data.put(obj);
+                    data.add(obj);
                 }
             }
             result.put("data", data);

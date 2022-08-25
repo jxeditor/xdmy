@@ -54,6 +54,15 @@ const routes = [
       requireAuth: true,
       role: "ADMIN"
     }
+  },
+  {
+    path: '/download',
+    name: 'download',
+    component: () => import('../views/DownloadView.vue'),
+    meta: {
+      requireAuth: true,
+      role: "ADMIN"
+    }
   }
 ]
 

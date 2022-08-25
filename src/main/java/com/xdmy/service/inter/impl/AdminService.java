@@ -1,14 +1,14 @@
 package com.xdmy.service.inter.impl;
 
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.xdmy.datasource.DBContextHolder;
 import com.xdmy.domain.Stock;
 import com.xdmy.domain.User;
 import com.xdmy.service.inter.IAdminService;
 import com.xdmy.service.inter.IStockService;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,7 +33,7 @@ public class AdminService extends BaseService implements IAdminService {
                     obj.put("username", user.getUsername());
                     obj.put("password", user.getPassword());
                     obj.put("role", user.getRole());
-                    data.put(obj);
+                    data.add(obj);
                 }
             }
             result.put("data", data);

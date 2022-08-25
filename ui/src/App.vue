@@ -10,6 +10,8 @@
     |
     <router-link to="/screen">大屏</router-link>
     |
+    <router-link to="/download">下载</router-link>
+    |
     <a href="" style="color:red" @click="handleLogout">注销</a>
   </nav>
   <router-view/>

@@ -1,11 +1,11 @@
 package com.xdmy.service.inter.impl;
 
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.xdmy.datasource.DBContextHolder;
 import com.xdmy.service.inter.IScreenService;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,12 +38,12 @@ public class ScreenService extends BaseService implements IScreenService {
         try {
             if (resultList != null) {
                 for (JSONObject obj : resultList) {
-                    billdate.put(obj.getString("billdate"));
-                    money.put(obj.getDouble("money"));
-                    costmoney.put(obj.getDouble("costmoney"));
-                    profit.put(obj.getDouble("profit"));
-                    paymoney.put(obj.getDouble("paymoney"));
-                    payprofit.put(obj.getDouble("payprofit"));
+                    billdate.add(obj.getString("billdate"));
+                    money.add(obj.getDouble("money"));
+                    costmoney.add(obj.getDouble("costmoney"));
+                    profit.add(obj.getDouble("profit"));
+                    paymoney.add(obj.getDouble("paymoney"));
+                    payprofit.add(obj.getDouble("payprofit"));
                 }
             }
             result.put("billdate", billdate);
@@ -70,12 +70,12 @@ public class ScreenService extends BaseService implements IScreenService {
         try {
             if (resultList != null) {
                 for (JSONObject obj : resultList) {
-                    billdate.put(obj.getString("billdate"));
-                    money.put(obj.getDouble("money"));
-                    costmoney.put(obj.getDouble("costmoney"));
-                    profit.put(obj.getDouble("profit"));
-                    paymoney.put(obj.getDouble("paymoney"));
-                    payprofit.put(obj.getDouble("payprofit"));
+                    billdate.add(obj.getString("billdate"));
+                    money.add(obj.getDouble("money"));
+                    costmoney.add(obj.getDouble("costmoney"));
+                    profit.add(obj.getDouble("profit"));
+                    paymoney.add(obj.getDouble("paymoney"));
+                    payprofit.add(obj.getDouble("payprofit"));
                 }
             }
             result.put("billdate", billdate);

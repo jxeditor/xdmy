@@ -1,12 +1,12 @@
 package com.xdmy.service.inter.impl;
 
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.xdmy.datasource.DBContextHolder;
 import com.xdmy.domain.Shipment;
 import com.xdmy.service.inter.IShipmentService;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,7 +18,21 @@ public class ShipmentService extends BaseService implements IShipmentService {
         DBContextHolder.setDbType("primary");
         List<Shipment> shipmentList = daoFacade.getShipmentDao().findAllShipment(pageNum, pageSize, customerName, productName, bizStartDate, bizEndDate);
         int total = daoFacade.getShipmentDao().getAllTotalSize(customerName, productName, bizStartDate, bizEndDate);
-        return toJSONObject(shipmentList).put("total", total);
+        JSONObject result = toJSONObject(shipmentList);
+        result.put("total", total);
+        return result;
+    }
+
+    @Override
+    public JSONObject getShipmentStatement(String customerName, String bizStartDate, String bizEndDate) {
+        DBContextHolder.setDbType("primary");
+        List<Shipment> shipmentList = daoFacade.getShipmentDao().getShipmentStatement(customerName, bizStartDate, bizEndDate);
+        int total = daoFacade.getShipmentDao().getDistinctSize(customerName, bizStartDate, bizEndDate);
+        double sumpay = daoFacade.getShipmentDao().getSumPay(customerName, bizStartDate, bizEndDate);
+        JSONObject result = toJSONObject(shipmentList);
+        result.put("total", total);
+        result.put("sumpay", sumpay);
+        return result;
     }
 
     @Override
@@ -65,7 +79,7 @@ public class ShipmentService extends BaseService implements IShipmentService {
                     obj.put("fireproofboardcost", shipment.getFireproofboardcost());
                     obj.put("costmoney", shipment.getCostmoney());
                     obj.put("profit", shipment.getProfit());
-                    data.put(obj);
+                    data.add(obj);
                 }
             }
             result.put("data", data);

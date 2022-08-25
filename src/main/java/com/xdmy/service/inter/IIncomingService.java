@@ -1,7 +1,7 @@
 package com.xdmy.service.inter;
 
+import com.alibaba.fastjson.JSONObject;
 import com.xdmy.domain.Incoming;
-import org.json.JSONObject;
 
 public interface IIncomingService {
     JSONObject findAllIncoming(int pageNum, int pageSize, String producerName, String productName, String bizStartDate, String bizEndDate);

@@ -1,7 +1,7 @@
 package com.xdmy.service.inter;
 
+import com.alibaba.fastjson.JSONObject;
 import com.xdmy.domain.Turnover;
-import org.json.JSONObject;
 
 
 public interface ITurnoverService {

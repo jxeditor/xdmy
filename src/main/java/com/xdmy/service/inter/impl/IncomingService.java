@@ -1,12 +1,12 @@
 package com.xdmy.service.inter.impl;
 
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.xdmy.datasource.DBContextHolder;
 import com.xdmy.domain.Incoming;
 import com.xdmy.service.inter.IIncomingService;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,7 +18,9 @@ public class IncomingService extends BaseService implements IIncomingService {
         DBContextHolder.setDbType("primary");
         List<Incoming> incomingList = daoFacade.getIncomingDao().findAllIncoming(pageNum, pageSize, producerName, productName, bizStartDate, bizEndDate);
         int total = daoFacade.getIncomingDao().getAllTotalSize(producerName, productName, bizStartDate, bizEndDate);
-        return toJSONObject(incomingList).put("total", total);
+        JSONObject result = toJSONObject(incomingList);
+        result.put("total", total);
+        return result;
     }
 
     @Override
@@ -61,7 +63,7 @@ public class IncomingService extends BaseService implements IIncomingService {
                     obj.put("unitprice", incoming.getUnitprice());
                     obj.put("money", incoming.getMoney());
                     obj.put("paystatus", incoming.getPaystatus());
-                    data.put(obj);
+                    data.add(obj);
                 }
             }
             result.put("data", data);

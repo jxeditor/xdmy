@@ -1,8 +1,8 @@
 package com.xdmy.dao.inter.impl;
 
 
+import com.alibaba.fastjson.JSONObject;
 import com.xdmy.dao.inter.IScreenDao;
-import org.json.JSONObject;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
