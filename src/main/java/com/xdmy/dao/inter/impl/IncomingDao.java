@@ -24,7 +24,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
 
     @Override
     public List<Incoming> getIncomingStatement(String producerName, String bizStartDate, String bizEndDate) {
-        String sql = "SELECT * FROM incoming WHERE 1=1 AND is_delete = 0 AND paystatus = 0" +
+        String sql = "SELECT * FROM incoming WHERE 1=1 AND is_delete = 0 AND paystatus != 2" +
                 " AND producer = ? AND billdate >= ? AND billdate <= ?";
         sql += " ORDER BY billdate,create_time";
         return jdbcTemplate.query(sql, new Object[]{producerName, bizStartDate, bizEndDate}, new IncomingRowMapper());
@@ -33,7 +33,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
 
     @Override
     public int getDistinctSize(String producerName, String bizStartDate, String bizEndDate) {
-        String sql = "SELECT count(distinct odd) FROM incoming WHERE 1=1 AND is_delete = 0 AND paystatus = 0" +
+        String sql = "SELECT count(distinct odd) FROM incoming WHERE 1=1 AND is_delete = 0 AND paystatus != 2" +
                 " AND producer = ? AND billdate >= ? AND billdate <= ?";
         return jdbcTemplate.queryForObject(sql, Integer.class, producerName, bizStartDate, bizEndDate);
 
@@ -41,7 +41,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
 
     @Override
     public double getSumPay(String producerName, String bizStartDate, String bizEndDate) {
-        String sql = "SELECT sum(money) FROM incoming WHERE 1=1 AND is_delete = 0 AND paystatus = 0" +
+        String sql = "SELECT sum(money) FROM incoming WHERE 1=1 AND is_delete = 0 AND paystatus != 2" +
                 " AND producer = ? AND billdate >= ? AND billdate <= ?";
         return jdbcTemplate.queryForObject(sql, Double.class, producerName, bizStartDate, bizEndDate);
     }
