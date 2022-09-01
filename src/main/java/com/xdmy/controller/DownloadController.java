@@ -39,8 +39,8 @@ public class DownloadController extends BaseController {
 
         JSONObject result = serviceFacade.getShipmentService().getShipmentStatement(customerName, bizStartDate, bizEndDate);
 
-        InputStream templateFileName = this.getClass().getClassLoader().getResourceAsStream("对账单模板.xlsx");
-        // String templateFileName = FileUtil.getPath() + "对账单模板.xlsx";
+        InputStream templateFileName = this.getClass().getClassLoader().getResourceAsStream("出货对账单模板.xlsx");
+        // String templateFileName = FileUtil.getPath() + "出货对账单模板.xlsx";
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setCharacterEncoding("utf-8");
         Map<String, Object> map = MapUtils.newHashMap();
@@ -51,7 +51,7 @@ public class DownloadController extends BaseController {
         map.put("total", result.getInteger("total"));
         map.put("sumpay", result.getDouble("sumpay"));
 
-        String fileName = URLEncoder.encode(customerName + bizStartDate.substring(0, 7).replace("-", "") + "对账单", "UTF-8").replaceAll("\\+", "%20");
+        String fileName = URLEncoder.encode(customerName + bizStartDate.substring(0, 7).replace("-", "") + "出货对账单", "UTF-8").replaceAll("\\+", "%20");
         response.setHeader("Access-Control-Expose-Headers", "Content-disposition,filename");
         response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
         response.setHeader("filename", fileName + ".xlsx");
@@ -66,37 +66,32 @@ public class DownloadController extends BaseController {
     @GetMapping("/downloadIncomingStatement")
     public void downloadIncomingStatement(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HashMap<String, String> params = getRequestParam(request);
-        String consumer = params.getOrDefault("consumer", "");
-        String billdate = params.getOrDefault("billdate", "");
+        String producerName = params.getOrDefault("producerName", "");
+        String bizStartDate = params.getOrDefault("bizStartDate", "");
+        String bizEndDate = params.getOrDefault("bizEndDate", "");
 
-        InputStream templateFileName = this.getClass().getClassLoader().getResourceAsStream("对账单模板.xlsx");
-        // String templateFileName = FileUtil.getPath() + "对账单模板.xlsx";
+        JSONObject result = serviceFacade.getIncomingService().getIncomingStatement(producerName, bizStartDate, bizEndDate);
+
+        InputStream templateFileName = this.getClass().getClassLoader().getResourceAsStream("入货对账单模板.xlsx");
+        // String templateFileName = FileUtil.getPath() + "出货对账单模板.xlsx";
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setCharacterEncoding("utf-8");
-
         Map<String, Object> map = MapUtils.newHashMap();
-        map.put("year", "2022");
-        map.put("month", "08");
-        map.put("consumer", "贵咏");
+        map.put("year", bizStartDate.substring(0, 4));
+        map.put("month", bizStartDate.substring(5, 7));
+        map.put("producer", producerName);
         map.put("currentdate", DateUtils.format(new Date(), "yyyy-MM-dd"));
-        map.put("total", "贵咏");
-        map.put("sumpay", 200);
-        JSONArray arr = new JSONArray();
-        JSONObject obj = new JSONObject();
-        obj.put("odd", "1111");
-        obj.put("consumer", "1111");
-        obj.put("product", "1111");
-        obj.put("billdate", "1231231");
-        obj.put("amount", 5.5);
-        obj.put("unitprice", 5.5);
-        arr.add(obj);
+        map.put("total", result.getInteger("total"));
+        map.put("sumpay", result.getDouble("sumpay"));
 
-        String fileName = URLEncoder.encode(consumer + billdate.substring(0, 7).replace("-", "") + "对账单", "UTF-8").replaceAll("\\+", "%20");
+        String fileName = URLEncoder.encode(producerName + bizStartDate.substring(0, 7).replace("-", "") + "入货对账单", "UTF-8").replaceAll("\\+", "%20");
+        response.setHeader("Access-Control-Expose-Headers", "Content-disposition,filename");
         response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+        response.setHeader("filename", fileName + ".xlsx");
         try (ExcelWriter excelWriter = EasyExcel.write(response.getOutputStream()).withTemplate(templateFileName).build()) {
             WriteSheet writeSheet = EasyExcel.writerSheet().build();
             FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.FALSE).build();
-            excelWriter.fill(arr, fillConfig, writeSheet);
+            excelWriter.fill(result.getJSONArray("data"), fillConfig, writeSheet);
             excelWriter.fill(map, writeSheet);
         }
     }

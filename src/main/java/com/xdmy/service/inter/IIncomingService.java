@@ -13,4 +13,6 @@ public interface IIncomingService {
     int updateIncoming(Incoming Incoming);
 
     int updatePaystatusIncomingById(int id);
+
+    JSONObject getIncomingStatement(String producerName, String bizStartDate, String bizEndDate);
 }

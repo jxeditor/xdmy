@@ -16,4 +16,11 @@ public interface IIncomingDao {
     int updateIncoming(Incoming Incoming);
 
     int updatePaystatusIncomingById(int id);
+
+    List<Incoming> getIncomingStatement(String producerName, String bizStartDate, String bizEndDate);
+
+    int getDistinctSize(String producerName, String bizStartDate, String bizEndDate);
+
+    double getSumPay(String producerName, String bizStartDate, String bizEndDate);
+
 }

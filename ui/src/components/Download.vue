@@ -74,6 +74,32 @@ export default {
         }).catch((error) => {
         that.$message.error(error);
       })
+    },
+    downloadIncoming() {
+      const that = this;
+      this.$axios.get('http://124.223.70.175:8088/download/downloadIncomingStatement' +
+        '?producerName=' + that.producerInput +
+        '&bizStartDate=' + that.incomingBillDateInput[0] + '&bizEndDate=' + that.incomingBillDateInput[1], {responseType: 'blob'})
+        .then(function (res) {
+          let data = res.data
+          let filename = "用户明细表.xlsx"
+          console.log(res)
+          if (res.headers.filename) {
+            filename = decodeURI(res.headers.filename)
+          }
+          let url = window.URL.createObjectURL(new Blob([data]))
+          let link = document.createElement('a')
+          link.style.display = 'none'
+          link.href = url
+          link.setAttribute('download', filename)
+
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link) // 下载完成移除元素
+          window.URL.revokeObjectURL(url) // 释放掉blob对象
+        }).catch((error) => {
+        that.$message.error(error);
+      })
     }
   },
   data() {
