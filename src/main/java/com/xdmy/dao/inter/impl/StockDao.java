@@ -28,7 +28,7 @@ public class StockDao extends BaseDao implements IStockDao {
                 "  ,if(t1.unitprice is not null,(COALESCE(t1.unitstock,0) + COALESCE(t2.amount,0))*t1.unitprice,null) money " +
                 "  ,t2.lastindate " +
                 "  ,t2.lastoutdate " +
-                "  ,if(t1.unitprice is not null,'1','0') stockstatus " +
+                "  ,if(t1.unitprice is not null,t1.stockstatus,'0') stockstatus " +
                 " FROM ( " +
                 "  SELECT *  " +
                 "  FROM stock " +
@@ -65,7 +65,7 @@ public class StockDao extends BaseDao implements IStockDao {
                 "  ,if(t1.unitprice is not null,(COALESCE(t1.unitstock,0) + t2.amount)*t1.unitprice,null) money " +
                 "  ,t2.lastindate " +
                 "  ,t2.lastoutdate " +
-                "  ,if(t1.unitprice is not null,'1','0') stockstatus " +
+                "  ,if(t1.unitprice is not null,t1.stockstatus,'0') stockstatus " +
                 " FROM ( " +
                 "  SELECT * " +
                 "  FROM stock " +
@@ -112,7 +112,7 @@ public class StockDao extends BaseDao implements IStockDao {
                 "  ,if(t1.unitprice is not null,(COALESCE(t1.unitstock,0) + COALESCE(t2.amount,0))*t1.unitprice,null) money " +
                 "  ,t2.lastindate " +
                 "  ,t2.lastoutdate " +
-                "  ,if(t1.unitprice is not null,'1','0') stockstatus " +
+                "  ,if(t1.unitprice is not null,t1.stockstatus,'0') stockstatus " +
                 " FROM ( " +
                 "  SELECT *  " +
                 "  FROM stock " +
@@ -149,7 +149,7 @@ public class StockDao extends BaseDao implements IStockDao {
                 "  ,if(t1.unitprice is not null,(COALESCE(t1.unitstock,0) + t2.amount)*t1.unitprice,null) money " +
                 "  ,t2.lastindate " +
                 "  ,t2.lastoutdate " +
-                "  ,if(t1.unitprice is not null,'1','0') stockstatus " +
+                "  ,if(t1.unitprice is not null,t1.stockstatus,'0') stockstatus " +
                 " FROM ( " +
                 "  SELECT * " +
                 "  FROM stock " +
