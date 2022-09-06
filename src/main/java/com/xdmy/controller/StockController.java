@@ -47,6 +47,7 @@ public class StockController extends BaseController {
         stock.setProduct(params.get("product"));
         stock.setUnitstock(Integer.parseInt(params.get("unitstock")));
         stock.setUnitprice(Double.parseDouble(params.get("unitprice")));
+        stock.setStockstatus(params.get("stockstatus"));
         int result = serviceFacade.getStockService().updateStock(stock);
         if (result > 0) {
             return new JSONReturn("success", "更新成功", 1).toString();

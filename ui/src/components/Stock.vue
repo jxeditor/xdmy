@@ -79,6 +79,12 @@
           <el-form-item label="单价:" prop="unitprice">
             <el-input v-model="updateStockForm.unitprice"></el-input>
           </el-form-item>
+          <el-form-item label="库存状态:" prop="stockstatus">
+            <el-select v-model="updateStockForm.stockstatus" placeholder="请选择库存状态">
+              <el-option label="已初始化" value="1"></el-option>
+              <el-option label="不进行推送" value="2"></el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onUpdateStockCommit('updateStockForm')">确定</el-button>
             <el-button @click="onUpdateStockCancel">取消</el-button>
@@ -110,6 +116,8 @@ export default {
           return "未初始化";
         case "1":
           return "已初始化";
+        case "2":
+          return "不进行推送";
         default:
           return "未定义";
       }
@@ -163,6 +171,7 @@ export default {
           param.append('product', this.updateStockForm.product)
           param.append('unitstock', this.updateStockForm.unitstock)
           param.append('unitprice', this.updateStockForm.unitprice)
+          param.append('stockstatus', this.updateStockForm.stockstatus)
           this.$axios.post('http://124.223.70.175:8088/stock/updateStock', param).then(function (response) {
             if (response.data.code === 1) {
               that.updateStockVisible = false

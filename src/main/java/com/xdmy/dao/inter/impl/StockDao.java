@@ -196,9 +196,9 @@ public class StockDao extends BaseDao implements IStockDao {
 
     @Override
     public int updateStock(Stock stock) {
-        String sql = "UPDATE stock set product = ?,unitstock = ?,unitprice = ?" +
-                "WHERE id = ? ";
-        return jdbcTemplate.update(sql, stock.getProduct(), stock.getUnitstock(), stock.getUnitprice(), stock.getId());
+        String sql = "UPDATE stock set product = ?,unitstock = ?,unitprice = ?,stockstatus = ?" +
+                " WHERE id = ? ";
+        return jdbcTemplate.update(sql, stock.getProduct(), stock.getUnitstock(), stock.getUnitprice(), stock.getStockstatus(), stock.getId());
     }
 
     static class StockRowMapper implements RowMapper<Stock> {
