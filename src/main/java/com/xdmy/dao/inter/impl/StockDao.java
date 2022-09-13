@@ -179,7 +179,8 @@ public class StockDao extends BaseDao implements IStockDao {
                 " ON t1.product = t2.product" +
                 " WHERE t1.product is null" +
                 ") t1 WHERE 1=1 " +
-                " ORDER BY product";
+                "AND t1.stock <= 100 " +
+                "ORDER BY product";
         return jdbcTemplate.query(sql, new StockRowMapper());
     }
 
