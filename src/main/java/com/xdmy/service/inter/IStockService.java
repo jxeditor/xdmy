@@ -6,6 +6,8 @@ import com.xdmy.domain.Stock;
 public interface IStockService {
     JSONObject findAllStock(int pageNum, int pageSize, String productName);
 
+    JSONObject findSurplusStock();
+
     int addStock(Stock Stock);
 
     int deleteStockById(int id);
