@@ -76,6 +76,7 @@ public class IncomingService extends BaseService implements IIncomingService {
                     obj.put("unitprice", incoming.getUnitprice());
                     obj.put("money", incoming.getMoney());
                     obj.put("paystatus", incoming.getPaystatus());
+                    obj.put("remark", incoming.getRemark());
                     data.add(obj);
                 }
             }

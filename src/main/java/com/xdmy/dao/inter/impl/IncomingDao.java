@@ -55,9 +55,9 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
 
     @Override
     public int addIncoming(Incoming incoming) {
-        String sql = "INSERT INTO incoming(odd,producer,product,billdate,amount,unitprice,money,paystatus) " +
-                "VALUES(?,?,?,?,?,?,?,?)";
-        return jdbcTemplate.update(sql, incoming.getOdd(), incoming.getProducer(), incoming.getProduct(), incoming.getBilldate(), incoming.getAmount(), incoming.getUnitprice(), incoming.getMoney(), incoming.getPaystatus());
+        String sql = "INSERT INTO incoming(odd,producer,product,billdate,amount,unitprice,money,paystatus,remark) " +
+                "VALUES(?,?,?,?,?,?,?,?,?)";
+        return jdbcTemplate.update(sql, incoming.getOdd(), incoming.getProducer(), incoming.getProduct(), incoming.getBilldate(), incoming.getAmount(), incoming.getUnitprice(), incoming.getMoney(), incoming.getPaystatus(), incoming.getRemark());
     }
 
     @Override
@@ -69,9 +69,9 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
     @Override
     public int updateIncoming(Incoming incoming) {
         String sql = "UPDATE incoming set odd = ?,producer = ?,product = ?,billdate = ?,amount = ?,unitprice = ?,money = ? " +
-                ",paystatus = ? " +
+                ",paystatus = ?,remark = ? " +
                 "WHERE id = ? ";
-        return jdbcTemplate.update(sql, incoming.getOdd(), incoming.getProducer(), incoming.getProduct(), incoming.getBilldate(), incoming.getAmount(), incoming.getUnitprice(), incoming.getMoney(), incoming.getPaystatus(), incoming.getId());
+        return jdbcTemplate.update(sql, incoming.getOdd(), incoming.getProducer(), incoming.getProduct(), incoming.getBilldate(), incoming.getAmount(), incoming.getUnitprice(), incoming.getMoney(), incoming.getPaystatus(), incoming.getRemark(), incoming.getId());
     }
 
     @Override
@@ -93,6 +93,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
             incoming.setUnitprice(rs.getDouble("unitprice"));
             incoming.setMoney(rs.getDouble("money"));
             incoming.setPaystatus(rs.getString("paystatus"));
+            incoming.setRemark(rs.getString("remark"));
             return incoming;
         }
     }

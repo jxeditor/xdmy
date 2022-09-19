@@ -48,6 +48,8 @@
         </el-table-column>
         <el-table-column prop="paystatus" :formatter="setPayStatus" label="付款状态" width="100" align="center">
         </el-table-column>
+        <el-table-column prop="remark" label="备注" width="80" align="center">
+        </el-table-column>
         <el-table-column fixed="right" label="操作" align="center" width="180">
           <template #default="opt">
             <el-button type="primary" @click="onUpdateIncoming(opt.row)">修改</el-button>
@@ -100,6 +102,9 @@
               <el-option label="已付款" value="2"></el-option>
             </el-select>
           </el-form-item>
+          <el-form-item label="备注:" prop="remark">
+            <el-input v-model="addIncomingForm.remark"></el-input>
+          </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onAddIncomingCommit('addIncomingForm')">确定</el-button>
             <el-button @click="onAddIncomingCancel">取消</el-button>
@@ -139,6 +144,9 @@
               <el-option label="已付运费" value="1"></el-option>
               <el-option label="已付款" value="2"></el-option>
             </el-select>
+          </el-form-item>
+          <el-form-item label="备注:" prop="remark">
+            <el-input v-model="updateIncomingForm.remark"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onUpdateIncomingCommit('updateIncomingForm')">确定</el-button>
@@ -239,6 +247,7 @@ export default {
           param.append('amount', this.addIncomingForm.amount)
           param.append('unitprice', this.addIncomingForm.unitprice)
           param.append('paystatus', this.addIncomingForm.paystatus)
+          param.append('remark', this.addIncomingForm.remark)
           this.$axios.post('http://124.223.70.175:8088/incoming/addIncoming', param).then(function (response) {
             if (response.data.code === 1) {
               that.addIncomingVisible = false
@@ -267,6 +276,7 @@ export default {
           param.append('amount', this.updateIncomingForm.amount)
           param.append('unitprice', this.updateIncomingForm.unitprice)
           param.append('paystatus', this.updateIncomingForm.paystatus)
+          param.append('remark', this.updateIncomingForm.remark)
           this.$axios.post('http://124.223.70.175:8088/incoming/updateIncoming', param).then(function (response) {
             if (response.data.code === 1) {
               that.updateIncomingVisible = false
@@ -348,7 +358,8 @@ export default {
         billdate: '',
         amount: 0,
         unitprice: 0,
-        paystatus: '0'
+        paystatus: '0',
+        remark: '无'
       },
       updateIncomingForm: {
         odd: '',
@@ -357,7 +368,8 @@ export default {
         billdate: '',
         amount: 0,
         unitprice: 0,
-        paystatus: '0'
+        paystatus: '0',
+        remark: '无'
       },
       addIncomingFormRules: {
         odd: [

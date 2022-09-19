@@ -39,6 +39,7 @@ public class IncomingController extends BaseController {
         incoming.setUnitprice(Double.parseDouble(params.get("unitprice")));
         incoming.setMoney(Integer.parseInt(params.get("amount")) * Double.parseDouble(params.get("unitprice")));
         incoming.setPaystatus(params.get("paystatus"));
+        incoming.setRemark(params.get("remark"));
         int result = serviceFacade.getIncomingService().addIncoming(incoming);
         if (result > 0) {
             return new JSONReturn("success", "插入成功", 1).toString();
@@ -60,6 +61,7 @@ public class IncomingController extends BaseController {
         incoming.setUnitprice(Double.parseDouble(params.get("unitprice")));
         incoming.setMoney(Integer.parseInt(params.get("amount")) * Double.parseDouble(params.get("unitprice")));
         incoming.setPaystatus(params.get("paystatus"));
+        incoming.setRemark(params.get("remark"));
         int result = serviceFacade.getIncomingService().updateIncoming(incoming);
         if (result > 0) {
             return new JSONReturn("success", "更新成功", 1).toString();

@@ -15,6 +15,7 @@ public class Incoming {
     double unitprice;
     double money;
     String paystatus;
+    String remark;
 
     public Incoming() {
     }
@@ -89,5 +90,13 @@ public class Incoming {
 
     public void setPaystatus(String paystatus) {
         this.paystatus = paystatus;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 }
