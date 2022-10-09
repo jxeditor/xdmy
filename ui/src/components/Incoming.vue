@@ -34,7 +34,7 @@
         </el-table-column>
         <el-table-column prop="odd" label="单号" align="center">
         </el-table-column>
-        <el-table-column prop="producer" label="供应商" width="120px" align="center">
+        <el-table-column prop="producer" label="供应商" width="100px" align="center">
         </el-table-column>
         <el-table-column prop="product" label="产品" width="240px" align="center">
         </el-table-column>
