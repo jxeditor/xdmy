@@ -26,7 +26,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
     public List<Shipment> getShipmentStatement(String customerName, String bizStartDate, String bizEndDate) {
         String sql = "SELECT * FROM shipment WHERE 1=1 AND is_delete = 0 AND paystatus = 0" +
                 " AND customer = ? AND billdate >= ? AND billdate <= ?";
-        sql += " ORDER BY billdate,create_time";
+        sql += " ORDER BY billdate,odd,id";
         return jdbcTemplate.query(sql, new Object[]{customerName, bizStartDate, bizEndDate}, new ShipmentRowMapper());
     }
 
