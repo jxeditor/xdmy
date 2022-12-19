@@ -19,6 +19,7 @@ public class Shipment {
     double fireproofboardcost;
     double costmoney;
     double profit;
+    String remark;
 
     public Shipment() {
     }
@@ -125,6 +126,14 @@ public class Shipment {
 
     public void setProfit(double profit) {
         this.profit = profit;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 }
 

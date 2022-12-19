@@ -56,6 +56,8 @@
         </el-table-column>
         <el-table-column prop="profit" label="利润" width="100" align="center">
         </el-table-column>
+        <el-table-column prop="remark" label="备注" width="80" align="center">
+        </el-table-column>
         <el-table-column fixed="right" label="操作" align="center" width="180">
           <template #default="opt">
             <el-button type="primary" @click="onUpdateShipment(opt.row)">修改</el-button>
@@ -113,6 +115,9 @@
           <el-form-item label="防火板成本:" prop="fireproofboardcost">
             <el-input v-model="addShipmentForm.fireproofboardcost"></el-input>
           </el-form-item>
+          <el-form-item label="备注:" prop="remark">
+            <el-input v-model="addShipmentForm.remark"></el-input>
+          </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onAddShipmentCommit('addShipmentForm')">确定</el-button>
             <el-button @click="onAddShipmentCancel">取消</el-button>
@@ -157,6 +162,9 @@
           </el-form-item>
           <el-form-item label="防火板成本:" prop="fireproofboardcost">
             <el-input v-model="updateShipmentForm.fireproofboardcost"></el-input>
+          </el-form-item>
+          <el-form-item label="备注:" prop="remark">
+            <el-input v-model="updateShipmentForm.remark"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onUpdateShipmentCommit('updateShipmentForm')">确定</el-button>
@@ -257,6 +265,7 @@ export default {
           param.append('paystatus', this.addShipmentForm.paystatus)
           param.append('boardcost', this.addShipmentForm.boardcost)
           param.append('fireproofboardcost', this.addShipmentForm.fireproofboardcost)
+          param.append('remark', this.addShipmentForm.remark)
           this.$axios.post('http://124.223.70.175:8088/shipment/addShipment', param).then(function (response) {
             if (response.data.code === 1) {
               that.addShipmentVisible = false
@@ -287,6 +296,7 @@ export default {
           param.append('paystatus', this.updateShipmentForm.paystatus)
           param.append('boardcost', this.updateShipmentForm.boardcost)
           param.append('fireproofboardcost', this.updateShipmentForm.fireproofboardcost)
+          param.append('remark', this.updateShipmentForm.remark)
           this.$axios.post('http://124.223.70.175:8088/shipment/updateShipment', param).then(function (response) {
             if (response.data.code === 1) {
               that.updateShipmentVisible = false
@@ -370,7 +380,8 @@ export default {
         unitprice: 0,
         paystatus: '0',
         boardcost: 0,
-        fireproofboardcost: 0
+        fireproofboardcost: 0,
+        remark: '无'
       },
       updateShipmentForm: {
         odd: '',
@@ -381,7 +392,8 @@ export default {
         unitprice: 0,
         paystatus: '0',
         boardcost: 0,
-        fireproofboardcost: 0
+        fireproofboardcost: 0,
+        remark: '无'
       },
       addShipmentFormRules: {
         odd: [
