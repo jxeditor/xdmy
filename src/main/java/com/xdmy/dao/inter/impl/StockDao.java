@@ -94,7 +94,7 @@ public class StockDao extends BaseDao implements IStockDao {
                 " WHERE t1.product is null" +
                 ") t1 WHERE 1=1";
         sql = genFilterSql(sql, productName);
-        sql += " ORDER BY product LIMIT ? ,?";
+        sql += " ORDER BY stock DESC LIMIT ? ,?";
         return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new StockRowMapper());
     }
 
