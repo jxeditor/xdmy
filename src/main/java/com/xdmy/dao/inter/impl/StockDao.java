@@ -21,7 +21,8 @@ public class StockDao extends BaseDao implements IStockDao {
                 " SELECT t1.id " +
                 "  ,COALESCE(t1.product,t2.product) product " +
                 "  ,t1.unitstock " +
-                "  ,t1.unitprice " +
+                "  ,t1.unitprice unitprice " +
+                "  ,t3.unitprice purchaseprice " +
                 "  ,t2.inamount  " +
                 "  ,t2.outamount " +
                 "  ,COALESCE(t1.unitstock,0) + COALESCE(t2.amount,0) stock " +
@@ -54,11 +55,21 @@ public class StockDao extends BaseDao implements IStockDao {
                 "  GROUP BY product " +
                 " ) t2 " +
                 " ON t1.product = t2.product " +
+                " LEFT JOIN ( " +
+                "   SELECT product,unitprice " +
+                "   FROM ( " +
+                "       SELECT product,unitprice,ROW_NUMBER() OVER(PARTITION BY product ORDER BY billdate DESC) rk " +
+                "       FROM incoming " +
+                "   ) t1 " +
+                "   WHERE rk = 1 " +
+                " ) t3 " +
+                " ON t1.product = t3.product  " +
                 " UNION ALL " +
                 " SELECT t1.id " +
                 "  ,COALESCE(t1.product,t2.product) product " +
                 "  ,t1.unitstock " +
-                "  ,t1.unitprice " +
+                "  ,t1.unitprice unitprice " +
+                "  ,t3.unitprice purchaseprice " +
                 "  ,t2.inamount  " +
                 "  ,t2.outamount " +
                 "  ,COALESCE(t1.unitstock,0) + t2.amount stock " +
@@ -90,7 +101,16 @@ public class StockDao extends BaseDao implements IStockDao {
                 "  ) t1 " +
                 "  GROUP BY product " +
                 " ) t2 " +
-                " ON t1.product = t2.product" +
+                " ON t1.product = t2.product " +
+                " LEFT JOIN ( " +
+                "   SELECT product,unitprice " +
+                "   FROM ( " +
+                "       SELECT product,unitprice,ROW_NUMBER() OVER(PARTITION BY product ORDER BY billdate DESC) rk " +
+                "       FROM incoming " +
+                "   ) t1 " +
+                "   WHERE rk = 1 " +
+                " ) t3 " +
+                " ON t2.product = t3.product  " +
                 " WHERE t1.product is null" +
                 ") t1 WHERE 1=1";
         sql = genFilterSql(sql, productName);

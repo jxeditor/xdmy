@@ -59,6 +59,7 @@ public class StockService extends BaseService implements IStockService {
                     obj.put("product", stock.getProduct());
                     obj.put("unitstock", stock.getUnitstock());
                     obj.put("unitprice", stock.getUnitprice());
+                    obj.put("purchaseprice", stock.getPurchaseprice());
                     obj.put("inamount", stock.getInamount());
                     obj.put("outamount", stock.getOutamount());
                     obj.put("stock", stock.getStock());

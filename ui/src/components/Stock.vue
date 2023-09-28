@@ -24,6 +24,8 @@
         </el-table-column>
         <el-table-column prop="unitprice" label="单价" width="80" align="center">
         </el-table-column>
+        <el-table-column prop="purchaseprice" label="采购单价" width="80" align="center">
+        </el-table-column>
         <el-table-column prop="inamount" label="累计入货数量" width="120" align="center">
         </el-table-column>
         <el-table-column prop="outamount" label="累计出货数量" width="120" align="center">

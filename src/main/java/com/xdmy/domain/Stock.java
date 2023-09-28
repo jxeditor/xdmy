@@ -10,6 +10,7 @@ public class Stock {
     String product;
     int unitstock;
     double unitprice;
+    double purchaseprice;
     int inamount;
     int outamount;
     int stock;
@@ -51,6 +52,14 @@ public class Stock {
 
     public void setUnitprice(double unitprice) {
         this.unitprice = unitprice;
+    }
+
+    public double getPurchaseprice() {
+        return purchaseprice;
+    }
+
+    public void setPurchaseprice(double purchaseprice) {
+        this.purchaseprice = purchaseprice;
     }
 
     public int getInamount() {
