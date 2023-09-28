@@ -316,6 +316,7 @@ public class StockDao extends BaseDao implements IStockDao {
             stock.setProduct(rs.getString("product"));
             stock.setUnitstock(rs.getInt("unitstock"));
             stock.setUnitprice(rs.getDouble("unitprice"));
+            stock.setUnitprice(rs.getDouble("purchaseprice"));
             stock.setInamount(rs.getInt("inamount"));
             stock.setOutamount(rs.getInt("outamount"));
             stock.setStock(rs.getInt("stock"));
