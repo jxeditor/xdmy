@@ -23,4 +23,8 @@ public interface IShipmentDao {
     int updateShipment(Shipment shipment);
 
     int updatePaystatusShipmentById(int id);
+
+    List<String> findCustomerNamesByPrefix(String prefix, int pageNum, int pageSize);
+
+    int getCustomerNamesCount(String prefix);
 }

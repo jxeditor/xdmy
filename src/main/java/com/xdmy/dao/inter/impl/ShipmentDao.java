@@ -79,6 +79,19 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
         return jdbcTemplate.update(sql, id);
     }
 
+    @Override
+    public List<String> findCustomerNamesByPrefix(String prefix, int pageNum, int pageSize) {
+        int offset = (pageNum - 1) * pageSize;
+        String sql = "SELECT DISTINCT customer FROM shipment WHERE customer LIKE ? AND is_delete = 0 ORDER BY customer LIMIT ? OFFSET ?";
+        return jdbcTemplate.queryForList(sql, new Object[]{"%" + prefix + "%", pageSize, offset}, String.class);
+    }
+
+    @Override
+    public int getCustomerNamesCount(String prefix) {
+        String sql = "SELECT COUNT(DISTINCT customer) FROM shipment WHERE customer LIKE ? AND is_delete = 0";
+        return jdbcTemplate.queryForObject(sql, new Object[]{"%" + prefix + "%"}, Integer.class);
+    }
+
     static class ShipmentRowMapper implements RowMapper<Shipment> {
         @Override
         public Shipment mapRow(ResultSet rs, int rowNum) throws SQLException {

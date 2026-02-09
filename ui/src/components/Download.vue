@@ -16,7 +16,7 @@
         </el-col>
         <el-col :span="2"></el-col>
         <el-col :span="4">
-          <el-button type="primary" @click='downloadShipment'>下载出货对账单</el-button>
+          <el-button type="primary" @click="downloadShipment">下载出货对账单</el-button>
         </el-col>
       </el-row>
     </div>
@@ -37,7 +37,7 @@
         </el-col>
         <el-col :span="2"></el-col>
         <el-col :span="4">
-          <el-button type="primary" @click='downloadIncoming'>下载入货对账单</el-button>
+          <el-button type="primary" @click="downloadIncoming">下载入货对账单</el-button>
         </el-col>
       </el-row>
     </div>
@@ -51,9 +51,9 @@ export default {
   methods: {
     downloadShipment() {
       const that = this;
-      this.$axios.get('http://124.223.70.175:8088/download/downloadShipmentStatement' +
-        '?customerName=' + that.customerInput +
-        '&bizStartDate=' + that.shipmentBillDateInput[0] + '&bizEndDate=' + that.shipmentBillDateInput[1], {responseType: 'blob'})
+      this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/download/downloadShipmentStatement` +
+        `?customerName=` + that.customerInput +
+        `&bizStartDate=` + that.shipmentBillDateInput[0] + `&bizEndDate=` + that.shipmentBillDateInput[1], {responseType: `blob`})
         .then(function (res) {
           let data = res.data
           let filename = "用户明细表.xlsx"
@@ -62,10 +62,10 @@ export default {
             filename = decodeURI(res.headers.filename)
           }
           let url = window.URL.createObjectURL(new Blob([data]))
-          let link = document.createElement('a')
-          link.style.display = 'none'
+          let link = document.createElement(`a`)
+          link.style.display = `none`
           link.href = url
-          link.setAttribute('download', filename)
+          link.setAttribute(`download`, filename)
 
           document.body.appendChild(link)
           link.click()
@@ -77,9 +77,9 @@ export default {
     },
     downloadIncoming() {
       const that = this;
-      this.$axios.get('http://124.223.70.175:8088/download/downloadIncomingStatement' +
-        '?producerName=' + that.producerInput +
-        '&bizStartDate=' + that.incomingBillDateInput[0] + '&bizEndDate=' + that.incomingBillDateInput[1], {responseType: 'blob'})
+      this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/download/downloadIncomingStatement` +
+        `?producerName=` + that.producerInput +
+        `&bizStartDate=` + that.incomingBillDateInput[0] + `&bizEndDate=` + that.incomingBillDateInput[1], {responseType: `blob`})
         .then(function (res) {
           let data = res.data
           let filename = "用户明细表.xlsx"
@@ -88,10 +88,10 @@ export default {
             filename = decodeURI(res.headers.filename)
           }
           let url = window.URL.createObjectURL(new Blob([data]))
-          let link = document.createElement('a')
-          link.style.display = 'none'
+          let link = document.createElement(`a`)
+          link.style.display = `none`
           link.href = url
-          link.setAttribute('download', filename)
+          link.setAttribute(`download`, filename)
 
           document.body.appendChild(link)
           link.click()
@@ -104,10 +104,10 @@ export default {
   },
   data() {
     return {
-      customerInput: '',
-      producerInput: '',
-      shipmentBillDateInput: '',
-      incomingBillDateInput: '',
+      customerInput: ``,
+      producerInput: ``,
+      shipmentBillDateInput: ``,
+      incomingBillDateInput: ``,
     }
   }
 }

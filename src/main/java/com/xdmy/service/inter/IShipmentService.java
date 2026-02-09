@@ -16,4 +16,6 @@ public interface IShipmentService {
     int updateShipment(Shipment shipment);
 
     int updatePaystatusShipmentById(int id);
+
+    JSONObject findCustomerNamesByPrefix(String prefix, int pageNum, int pageSize);
 }

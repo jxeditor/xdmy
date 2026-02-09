@@ -23,4 +23,8 @@ public interface IIncomingDao {
 
     double getSumPay(String producerName, String bizStartDate, String bizEndDate);
 
+    List<String> findProducerNamesByPrefix(String prefix, int pageNum, int pageSize);
+
+    int getProducerNamesCount(String prefix);
+
 }

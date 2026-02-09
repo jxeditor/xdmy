@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.xdmy.domain.Stock;
 import com.xdmy.utils.ErrorCode;
 import com.xdmy.utils.JSONReturn;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -64,5 +65,14 @@ public class StockController extends BaseController {
         } else {
             return new JSONReturn(ErrorCode.DELETE_FAILED).toString();
         }
+    }
+
+    @RequestMapping("/findProductNamesByPrefix")
+    public String findProductNamesByPrefix(@RequestBody java.util.Map<String, Object> request) {
+        String prefix = (String) request.getOrDefault("prefix", "");
+        int pageNum = request.containsKey("pageNum") ? Integer.parseInt(request.get("pageNum").toString()) : 1;
+        int pageSize = request.containsKey("pageSize") ? Integer.parseInt(request.get("pageSize").toString()) : 10;
+        JSONObject result = serviceFacade.getStockService().findProductNamesByPrefix(prefix, pageNum, pageSize);
+        return new JSONReturn(result).toString();
     }
 }

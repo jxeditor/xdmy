@@ -3,6 +3,8 @@ package com.xdmy.service.inter;
 import com.alibaba.fastjson.JSONObject;
 import com.xdmy.domain.Stock;
 
+import java.util.List;
+
 public interface IStockService {
     JSONObject findAllStock(int pageNum, int pageSize, String productName);
 
@@ -13,4 +15,6 @@ public interface IStockService {
     int deleteStockById(int id);
 
     int updateStock(Stock Stock);
+
+    JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize);
 }

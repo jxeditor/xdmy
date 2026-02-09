@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import router from '@/router'
+import router from "@/router"
 
 export default {
   name: "Login",
@@ -36,12 +36,12 @@ export default {
     handleLogin() {
       const that = this
       let param = new URLSearchParams()
-      param.append('username', this.loginForm.username)
-      param.append('password', this.loginForm.password)
-      this.$axios.post('http://124.223.70.175:8088/admin/verifyLogin', param).then(function (response) {
+      param.append(`username`, this.loginForm.username)
+      param.append(`password`, this.loginForm.password)
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/admin/verifyLogin`, param).then(function (response) {
         if (response.data.code === 1) {
-          localStorage.setItem('role', response.data.data[0].role);
-          // window.location.href = '/#/shipment';
+          localStorage.setItem(`role`, response.data.data[0].role);
+          // window.location.href = `/#/shipment`;
           router.push("shipment")
         } else {
           that.$message.error(response.data.msg);
@@ -54,22 +54,22 @@ export default {
   data() {
     return {
       loginForm: {
-        username: '',
-        password: ''
+        username: ``,
+        password: ``
       },
       loginFormRules: {
         username: [
           {
             required: true,
-            trigger: 'blur',
-            message: '用户名长度在2-6之间'
+            trigger: `blur`,
+            message: `用户名长度在2-6之间`
           }
         ],
         password: [
           {
             required: true,
-            trigger: 'blur',
-            message: '密码不能为空'
+            trigger: `blur`,
+            message: `密码不能为空`
           }
         ]
       },

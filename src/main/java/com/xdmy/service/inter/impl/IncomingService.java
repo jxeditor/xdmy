@@ -60,6 +60,27 @@ public class IncomingService extends BaseService implements IIncomingService {
         return daoFacade.getIncomingDao().updatePaystatusIncomingById(id);
     }
 
+    @Override
+    public JSONObject findProducerNamesByPrefix(String prefix, int pageNum, int pageSize) {
+        DBContextHolder.setDbType("primary");
+        List<String> producerNames = daoFacade.getIncomingDao().findProducerNamesByPrefix(prefix, pageNum, pageSize);
+        int total = daoFacade.getIncomingDao().getProducerNamesCount(prefix);
+        JSONObject result = new JSONObject();
+        JSONArray data = new JSONArray();
+        try {
+            if (producerNames != null) {
+                for (String producerName : producerNames) {
+                    data.add(producerName);
+                }
+            }
+            result.put("data", data);
+            result.put("total", total);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
     public JSONObject toJSONObject(List<Incoming> incomingList) {
         JSONObject result = new JSONObject();
         JSONArray data = new JSONArray();

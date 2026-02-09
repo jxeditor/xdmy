@@ -17,5 +17,9 @@ public interface IStockDao {
 
     int updateStock(Stock Stock);
 
+    List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize);
+
+    int getProductNamesCount(String prefix);
+
 
 }

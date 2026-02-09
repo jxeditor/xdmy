@@ -59,6 +59,27 @@ public class ShipmentService extends BaseService implements IShipmentService {
         return daoFacade.getShipmentDao().updatePaystatusShipmentById(id);
     }
 
+    @Override
+    public JSONObject findCustomerNamesByPrefix(String prefix, int pageNum, int pageSize) {
+        DBContextHolder.setDbType("primary");
+        List<String> customerNames = daoFacade.getShipmentDao().findCustomerNamesByPrefix(prefix, pageNum, pageSize);
+        int total = daoFacade.getShipmentDao().getCustomerNamesCount(prefix);
+        JSONObject result = new JSONObject();
+        JSONArray data = new JSONArray();
+        try {
+            if (customerNames != null) {
+                for (String customerName : customerNames) {
+                    data.add(customerName);
+                }
+            }
+            result.put("data", data);
+            result.put("total", total);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
     public JSONObject toJSONObject(List<Shipment> shipmentList) {
         JSONObject result = new JSONObject();
         JSONArray data = new JSONArray();

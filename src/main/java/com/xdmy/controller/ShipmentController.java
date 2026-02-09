@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.xdmy.domain.Shipment;
 import com.xdmy.utils.ErrorCode;
 import com.xdmy.utils.JSONReturn;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -98,5 +99,13 @@ public class ShipmentController extends BaseController {
         }
     }
 
+    @RequestMapping("/findCustomerNamesByPrefix")
+    public String findCustomerNamesByPrefix(@RequestBody java.util.Map<String, Object> request) {
+        String prefix = (String) request.getOrDefault("prefix", "");
+        int pageNum = request.containsKey("pageNum") ? Integer.parseInt(request.get("pageNum").toString()) : 1;
+        int pageSize = request.containsKey("pageSize") ? Integer.parseInt(request.get("pageSize").toString()) : 10;
+        JSONObject result = serviceFacade.getShipmentService().findCustomerNamesByPrefix(prefix, pageNum, pageSize);
+        return new JSONReturn(result).toString();
+    }
 
 }

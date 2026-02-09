@@ -48,6 +48,17 @@ public class StockService extends BaseService implements IStockService {
         return daoFacade.getStockDao().updateStock(stock);
     }
 
+    @Override
+    public JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize) {
+        DBContextHolder.setDbType("primary");
+        List<String> productNames = daoFacade.getStockDao().findProductNamesByPrefix(prefix, pageNum, pageSize);
+        int total = daoFacade.getStockDao().getProductNamesCount(prefix);
+        JSONObject result = new JSONObject();
+        result.put("data", productNames);
+        result.put("total", total);
+        return result;
+    }
+
     public JSONObject toJSONObject(List<Stock> stockList) {
         JSONObject result = new JSONObject();
         JSONArray data = new JSONArray();

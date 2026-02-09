@@ -15,4 +15,6 @@ public interface IIncomingService {
     int updatePaystatusIncomingById(int id);
 
     JSONObject getIncomingStatement(String producerName, String bizStartDate, String bizEndDate);
+
+    JSONObject findProducerNamesByPrefix(String prefix, int pageNum, int pageSize);
 }

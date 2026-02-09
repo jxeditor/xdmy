@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="PASSWORD" host="124.223.70.175" id="cc717b52-2a6a-439a-a7a2-d0d597d561bd" port="22" customName="XDMY" nameFormat="CUSTOM" username="root" useOpenSSHConfig="true">
+        <option name="customName" value="XDMY" />
+      </sshConfig>
+    </configs>
+  </component>
+</project>

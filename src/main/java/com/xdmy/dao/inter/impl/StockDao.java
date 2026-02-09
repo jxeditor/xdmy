@@ -308,6 +308,41 @@ public class StockDao extends BaseDao implements IStockDao {
         return jdbcTemplate.update(sql, stock.getProduct(), stock.getUnitstock(), stock.getUnitprice(), stock.getStockstatus(), stock.getId());
     }
 
+    @Override
+    public List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize) {
+        int offset = (pageNum - 1) * pageSize;
+        // 优先匹配包含完整前缀的产品，然后匹配包含前缀中每个字符的产品
+        String sql = "SELECT DISTINCT product FROM stock " +
+                     "WHERE product LIKE ? OR product LIKE ? " +
+                     "ORDER BY " +
+                     "CASE " +
+                     "    WHEN product LIKE ? THEN 0 " +
+                     "    ELSE 1 " +
+                     "END, " +
+                     "product " +
+                     "LIMIT ? OFFSET ?";
+        
+        return jdbcTemplate.queryForList(sql, new Object[]{
+            "%" + prefix + "%",  // 包含完整前缀
+            "%" + prefix.replaceAll("", "%") + "%",  // 包含前缀中每个字符
+            "%" + prefix + "%",  // 用于排序
+            pageSize, 
+            offset
+        }, String.class);
+    }
+
+    @Override
+    public int getProductNamesCount(String prefix) {
+        // 计算包含完整前缀或包含前缀中每个字符的产品数量
+        String sql = "SELECT COUNT(DISTINCT product) FROM stock " +
+                     "WHERE product LIKE ? OR product LIKE ?";
+        
+        return jdbcTemplate.queryForObject(sql, new Object[]{
+            "%" + prefix + "%",  // 包含完整前缀
+            "%" + prefix.replaceAll("", "%") + "%"  // 包含前缀中每个字符
+        }, Integer.class);
+    }
+
     static class StockRowMapper implements RowMapper<Stock> {
         @Override
         public Stock mapRow(ResultSet rs, int rowNum) throws SQLException {

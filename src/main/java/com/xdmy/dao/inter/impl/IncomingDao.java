@@ -114,4 +114,39 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
         return sql;
     }
 
+    @Override
+    public List<String> findProducerNamesByPrefix(String prefix, int pageNum, int pageSize) {
+        int offset = (pageNum - 1) * pageSize;
+        // 优先匹配包含完整前缀的供应商，然后匹配包含前缀中每个字符的供应商
+        String sql = "SELECT DISTINCT producer FROM incoming " +
+                     "WHERE is_delete = 0 AND (producer LIKE ? OR producer LIKE ?) " +
+                     "ORDER BY " +
+                     "CASE " +
+                     "    WHEN producer LIKE ? THEN 0 " +
+                     "    ELSE 1 " +
+                     "END, " +
+                     "producer " +
+                     "LIMIT ? OFFSET ?";
+        
+        return jdbcTemplate.queryForList(sql, new Object[]{
+            "%" + prefix + "%",  // 包含完整前缀
+            "%" + prefix.replaceAll("", "%") + "%",  // 包含前缀中每个字符
+            "%" + prefix + "%",  // 用于排序
+            pageSize, 
+            offset
+        }, String.class);
+    }
+
+    @Override
+    public int getProducerNamesCount(String prefix) {
+        // 计算包含完整前缀或包含前缀中每个字符的供应商数量
+        String sql = "SELECT COUNT(DISTINCT producer) FROM incoming " +
+                     "WHERE is_delete = 0 AND (producer LIKE ? OR producer LIKE ?)";
+        
+        return jdbcTemplate.queryForObject(sql, new Object[]{
+            "%" + prefix + "%",  // 包含完整前缀
+            "%" + prefix.replaceAll("", "%") + "%"  // 包含前缀中每个字符
+        }, Integer.class);
+    }
+
 }

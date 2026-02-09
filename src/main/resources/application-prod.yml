@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    primary:
+      url: jdbc:mysql://124.223.70.175:3306/xdmy?useSSL=false&characterEncoding=UTF-8&useOldAliasMetadataBehavior=true&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai
+    secondary:
+      url: jdbc:mysql://124.223.70.175:3306/temp?useSSL=false&characterEncoding=UTF-8&useOldAliasMetadataBehavior=true&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai
