@@ -77,6 +77,20 @@ router.afterEach((to, from) => {
 
 router.beforeEach((to, from, next) => {
   const role = localStorage.getItem('role');	//获取当前用户权限
+  const loginTime = localStorage.getItem('loginTime');	//获取登录时间
+  
+  // 检查会话是否过期（2小时 = 7200000毫秒）
+  if (loginTime) {
+    const currentTime = new Date().getTime();
+    if (currentTime - parseInt(loginTime) > 7200000) {
+      // 会话过期，清除登录信息
+      localStorage.removeItem('role');
+      localStorage.removeItem('loginTime');
+      next({path: '/login'});
+      return;
+    }
+  }
+  
   if (to.meta.role === 'ADMIN') {		//判断即将跳转到的页面要检查的权限是否为admin
     if (role === 'ADMIN') {
       next();		//若当前用户权限为admin则放行

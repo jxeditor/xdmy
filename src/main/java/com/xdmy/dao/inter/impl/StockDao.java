@@ -14,7 +14,7 @@ import java.util.List;
 public class StockDao extends BaseDao implements IStockDao {
 
     @Override
-    public List<Stock> findAllStock(int pageNum, int pageSize, String productName) {
+    public List<Stock> findAllStock(int pageNum, int pageSize, String productName, boolean hideZeroStock) {
         int currOffset = (pageNum - 1) * pageSize;
         String sql = "SELECT * " +
                 "FROM ( " +
@@ -114,6 +114,9 @@ public class StockDao extends BaseDao implements IStockDao {
                 " WHERE t1.product is null" +
                 ") t1 WHERE 1=1";
         sql = genFilterSql(sql, productName);
+        if (hideZeroStock) {
+            sql += " AND t1.stock != 0";
+        }
         sql += " ORDER BY stock DESC LIMIT ? ,?";
         return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new StockRowMapper());
     }
@@ -206,7 +209,7 @@ public class StockDao extends BaseDao implements IStockDao {
 
 
     @Override
-    public int getAllTotalSize(String productName) {
+    public int getAllTotalSize(String productName, boolean hideZeroStock) {
         String sql = "SELECT count(1) " +
                 "FROM ( " +
                 " SELECT t1.id " +
@@ -275,17 +278,105 @@ public class StockDao extends BaseDao implements IStockDao {
                 "   GROUP BY product  " +
                 "   UNION ALL " +
                 "   SELECT product,sum( amount ) amount,max(billdate) billdate,'入货' source " +
-                "   FROM incoming" +
+                "   FROM incoming " +
                 "   WHERE is_delete = 0 " +
                 "   GROUP BY product  " +
                 "  ) t1 " +
                 "  GROUP BY product " +
                 " ) t2 " +
-                " ON t1.product = t2.product" +
+                " ON t1.product = t2.product " +
                 " WHERE t1.product is null" +
                 ") t1 WHERE 1=1";
         sql = genFilterSql(sql, productName);
+        if (hideZeroStock) {
+            sql += " AND t1.stock != 0";
+        }
         return jdbcTemplate.queryForObject(sql, Integer.class);
+    }
+
+    @Override
+    public int flattenStock() {
+        // 开始事务
+        jdbcTemplate.execute("START TRANSACTION");
+        try {
+            // 第一步：初始化UID为0的数据
+            String initSql = "INSERT INTO stock(product, unitstock, unitprice, stockstatus) " +
+                    "SELECT DISTINCT product, 0, (SELECT unitprice FROM incoming WHERE product = t1.product ORDER BY billdate DESC LIMIT 1), '1' " +
+                    "FROM ( " +
+                    "  SELECT product FROM shipment WHERE product NOT IN (SELECT product FROM stock) " +
+                    "  UNION " +
+                    "  SELECT product FROM incoming WHERE product NOT IN (SELECT product FROM stock) " +
+                    ") t1 " +
+                    "WHERE EXISTS ( " +
+                    "  SELECT 1 FROM ( " +
+                    "    SELECT product FROM shipment WHERE product = t1.product " +
+                    "    UNION " +
+                    "    SELECT product FROM incoming WHERE product = t1.product " +
+                    "  ) t2 " +
+                    ")";
+            int initCount = jdbcTemplate.update(initSql);
+
+            // 第二步：调整负库存为0
+            String adjustSql = "UPDATE stock s " +
+                    "JOIN ( " +
+                    "  SELECT product, COALESCE(SUM(CASE WHEN source = '入货' THEN amount ELSE -amount END), 0) as balance " +
+                    "  FROM ( " +
+                    "    SELECT product, amount, '出货' as source FROM shipment WHERE is_delete = 0 " +
+                    "    UNION ALL " +
+                    "    SELECT product, amount, '入货' as source FROM incoming WHERE is_delete = 0 " +
+                    "  ) t " +
+                    "  GROUP BY product " +
+                    ") t ON s.product = t.product " +
+                    "SET s.unitstock = ABS(t.balance), s.stockstatus = '1' " +
+                    "WHERE (s.unitstock + t.balance) < 0";
+            int adjustCount = jdbcTemplate.update(adjustSql);
+
+            // 提交事务
+            jdbcTemplate.execute("COMMIT");
+            return initCount + adjustCount;
+        } catch (Exception e) {
+            // 回滚事务
+            jdbcTemplate.execute("ROLLBACK");
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    @Override
+    public int getFlattenStockCount() {
+        // 计算需要初始化的UID为0的数据数量
+        String initCountSql = "SELECT COUNT(DISTINCT product) " +
+                "FROM ( " +
+                "  SELECT product FROM shipment WHERE product NOT IN (SELECT product FROM stock) " +
+                "  UNION " +
+                "  SELECT product FROM incoming WHERE product NOT IN (SELECT product FROM stock) " +
+                ") t1 " +
+                "WHERE EXISTS ( " +
+                "  SELECT 1 FROM ( " +
+                "    SELECT product FROM shipment WHERE product = t1.product " +
+                "    UNION " +
+                "    SELECT product FROM incoming WHERE product = t1.product " +
+                "  ) t2 " +
+                ")";
+        Integer initCount = jdbcTemplate.queryForObject(initCountSql, Integer.class);
+
+        // 计算需要调整的负库存数据数量
+        String adjustCountSql = "SELECT COUNT(*) " +
+                "FROM stock s " +
+                "JOIN ( " +
+                "  SELECT product, COALESCE(SUM(CASE WHEN source = '入货' THEN amount ELSE -amount END), 0) as balance " +
+                "  FROM ( " +
+                "    SELECT product, amount, '出货' as source FROM shipment WHERE is_delete = 0 " +
+                "    UNION ALL " +
+                "    SELECT product, amount, '入货' as source FROM incoming WHERE is_delete = 0 " +
+                "  ) t " +
+                "  GROUP BY product " +
+                ") t ON s.product = t.product " +
+                "WHERE (s.unitstock + t.balance) < 0";
+        Integer adjustCount = jdbcTemplate.queryForObject(adjustCountSql, Integer.class);
+
+        // 返回总数量
+        return initCount + adjustCount;
     }
 
     @Override

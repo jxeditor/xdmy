@@ -5,11 +5,11 @@ import com.xdmy.domain.Stock;
 import java.util.List;
 
 public interface IStockDao {
-    List<Stock> findAllStock(int pageNum, int pageSize, String productName);
+    List<Stock> findAllStock(int pageNum, int pageSize, String productName, boolean hideZeroStock);
 
     List<Stock> findSurplusStock();
 
-    int getAllTotalSize(String productName);
+    int getAllTotalSize(String productName, boolean hideZeroStock);
 
     int addStock(Stock Stock);
 
@@ -21,5 +21,8 @@ public interface IStockDao {
 
     int getProductNamesCount(String prefix);
 
+    int flattenStock();
+    
+    int getFlattenStockCount();
 
 }

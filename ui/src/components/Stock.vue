@@ -2,53 +2,49 @@
   <div id="stock">
     <h1>{{ msg }}</h1>
     <div id="app">
-      <el-container style="max-width: 1400px; margin: 0 auto;">
-        <el-header style="padding: 0; margin-bottom: 20px;">
-          <el-row :gutter="10" type="flex" justify="start" align="middle" class="search-row">
-            <el-col :xs="20" :sm="16" :md="12" :lg="8">
-              <div class="search-container">
-                <el-input
-                  v-model="productInput"
-                  placeholder="输入产品名"
-                  clearable
-                  prefix-icon="el-icon-search"
-                  style="width: 100%;"
-                >
-                  <template #append>
-                    <el-button @click="searchStock" type="primary">搜索</el-button>
-                  </template>
-                </el-input>
-                <!-- 联想结果下拉框 -->
-                <div v-if="showSuggestions && suggestOptions.length > 0" class="suggestions-dropdown">
-                  <div 
-                    v-for="(item, index) in suggestOptions" 
-                    :key="index"
-                    class="suggestion-item"
-                    @click="selectSuggestion(item)"
-                  >
-                    {{ item }}
-                  </div>
-                  <!-- 分页控件 -->
-                  <div v-if="suggestTotal > suggestPageSize" class="suggestion-pagination">
-                    <el-pagination
-                      small
-                      layout="prev, pager, next, ->, total"
-                      :total="suggestTotal"
-                      :page-size="suggestPageSize"
-                      :current-page="suggestCurrentPage"
-                      @current-change="handleSuggestPageChange"
-                      style="margin-top: 10px;"
-                    />
-                  </div>
-                </div>
+      <!-- 搜索行 -->
+      <el-row type="flex" justify="space-between" align="center" style="width:100%;padding: 10px 20px; margin-bottom: 24px;">
+        <el-col :span="8">
+          <div class="stock-search-container">
+            <el-input
+              v-model="productInput"
+              placeholder="输入产品名"
+              clearable
+              prefix-icon="el-icon-search"
+              style="width: 100%;"
+            />
+            <!-- 联想结果下拉框 -->
+            <div v-if="showSuggestions && suggestOptions.length > 0" class="stock-suggestions-dropdown">
+              <div 
+                v-for="(item, index) in suggestOptions" 
+                :key="index"
+                class="stock-suggestion-item"
+                @click="selectSuggestion(item)"
+              >
+                {{ item }}
               </div>
-            </el-col>
-            <el-col :xs="12" :sm="4" :md="4" :lg="3">
-              <el-button type="primary" @click="onAddStock" class="w-100">添加库存</el-button>
-            </el-col>
-          </el-row>
-        </el-header>
-        <el-main>
+              <!-- 分页控件 -->
+              <div v-if="suggestTotal > suggestPageSize" class="stock-suggestion-pagination">
+                <el-pagination
+                  small
+                  layout="prev, pager, next, ->, total"
+                  :total="suggestTotal"
+                  :page-size="suggestPageSize"
+                  :current-page="suggestCurrentPage"
+                  @current-change="handleSuggestPageChange"
+                  style="margin-top: 10px;"
+                />
+              </div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="8" style="display: flex; justify-content: flex-end; gap: 10px;">
+          <el-button type="primary" @click="searchStock">搜索</el-button>
+          <el-button type="primary" @click='onAddStock'>添加库存</el-button>
+          <el-button type="warning" @click="toggleHideZeroStock">{{ hideZeroStock ? '取消隐藏' : '隐藏' }}</el-button>
+          <el-button type="danger" @click="flattenStock">抹平</el-button>
+        </el-col>
+      </el-row>
       <el-table ref="multipleTable" stripe :data="StockData" style="width: 100%;">
         <el-table-column prop="id" label="UID" align="center">
         </el-table-column>
@@ -89,8 +85,6 @@
         style="margin-top: 20px; text-align: center;"
       >
       </el-pagination>
-        </el-main>
-      </el-container>
       <el-dialog title="初始化库存" v-model="addStockVisible" width="80%">
         <el-form ref="addStockForm" :rules="addStockFormRules" :model="addStockForm" label-width="120px">
           <el-form-item label="产品:" prop="product">
@@ -103,7 +97,7 @@
             <el-input v-model="addStockForm.unitprice"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="onAddStockCommit(`addStockForm`)">确定</el-button>
+            <el-button type="primary" @click="onAddStockCommit('addStockForm')">确定</el-button>
             <el-button @click="onAddStockCancel">取消</el-button>
           </el-form-item>
         </el-form>
@@ -127,7 +121,7 @@
             </el-select>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="onUpdateStockCommit(`updateStockForm`)">确定</el-button>
+            <el-button type="primary" @click="onUpdateStockCommit('updateStockForm')">确定</el-button>
             <el-button @click="onUpdateStockCancel">取消</el-button>
           </el-form-item>
         </el-form>
@@ -187,9 +181,9 @@ export default {
       this.$refs[addStockForm].validate((valid) => {
         if (valid) {
           let param = new URLSearchParams()
-          param.append(`product`, that.addStockForm.product)
-          param.append(`unitstock`, that.addStockForm.unitstock)
-          param.append(`unitprice`, that.addStockForm.unitprice)
+          param.append('product', that.addStockForm.product)
+          param.append('unitstock', that.addStockForm.unitstock)
+          param.append('unitprice', that.addStockForm.unitprice)
           that.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/addStock`, param).then(function (response) {
             if (response.data.code === 1) {
               that.addStockVisible = false
@@ -211,11 +205,11 @@ export default {
       this.$refs[updateStockForm].validate((valid) => {
         if (valid) {
           let param = new URLSearchParams()
-          param.append(`id`, that.updateStockForm.id)
-          param.append(`product`, that.updateStockForm.product)
-          param.append(`unitstock`, that.updateStockForm.unitstock)
-          param.append(`unitprice`, that.updateStockForm.unitprice)
-          param.append(`stockstatus`, that.updateStockForm.stockstatus)
+          param.append('id', that.updateStockForm.id)
+          param.append('product', that.updateStockForm.product)
+          param.append('unitstock', that.updateStockForm.unitstock)
+          param.append('unitprice', that.updateStockForm.unitprice)
+          param.append('stockstatus', that.updateStockForm.stockstatus)
           that.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/updateStock`, param).then(function (response) {
             if (response.data.code === 1) {
               that.updateStockVisible = false
@@ -234,13 +228,27 @@ export default {
     // 获取所有库存
     getAllStock() {
       const that = this;
+      console.log('Get all stock with hideZeroStock:', that.hideZeroStock)
+      console.log('API URL:', `${process.env.VUE_APP_API_BASE_URL}/stock/findAllStock` +
+        '?pageNum=' + that.page.index + '&pageSize=' + that.page.size +
+        '&productName=' + that.productInput +
+        '&hideZeroStock=' + that.hideZeroStock)
       this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/stock/findAllStock` +
-        `?pageNum=` + that.page.index + `&pageSize=` + that.page.size +
-        `&productName=` + that.productInput)
+        '?pageNum=' + that.page.index + '&pageSize=' + that.page.size +
+        '&productName=' + that.productInput +
+        '&hideZeroStock=' + that.hideZeroStock)
         .then(function (response) {
-          that.StockData = response.data.data
+          console.log('API response:', response.data)
+          // 使用深拷贝确保Vue能够检测到数据变化
+          that.StockData = JSON.parse(JSON.stringify(response.data.data))
           that.page.total = response.data.total
+          console.log('Updated StockData:', that.StockData)
+          console.log('Updated page.total:', that.page.total)
+          // 强制Vue重新渲染组件，确保表格能够正确响应数据变化
+          that.$forceUpdate()
+          console.log('Forced update completed')
         }).catch(function (error) {
+        console.error('API error:', error)
         that.$message.error(error);
       })
     },
@@ -248,12 +256,18 @@ export default {
     searchStock() {
       const that = this
       this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/stock/findAllStock` +
-        `?pageNum=` + that.page.index + `&pageSize=` + that.page.size +
-        `&productName=` + that.productInput)
+        '?pageNum=' + that.page.index + '&pageSize=' + that.page.size +
+        '&productName=' + that.productInput +
+        '&hideZeroStock=' + that.hideZeroStock)
         .then(function (response) {
-          that.StockData = response.data.data
+          console.log('Search API response:', response.data)
+          // 使用深拷贝确保Vue能够检测到数据变化
+          that.StockData = JSON.parse(JSON.stringify(response.data.data))
           that.page.total = response.data.total
+          console.log('Updated StockData after search:', that.StockData)
+          console.log('Updated page.total after search:', that.page.total)
         }).catch(function (error) {
+        console.error('Search API error:', error)
         that.$message.error(error);
       })
     },
@@ -289,6 +303,77 @@ export default {
     handleSuggestPageChange(pageNum) {
       this.suggestCurrentPage = pageNum
       this.getSuggestions()
+    },
+    // 切换隐藏零库存状态
+    toggleHideZeroStock() {
+      this.hideZeroStock = !this.hideZeroStock
+      console.log('Toggle hideZeroStock:', this.hideZeroStock)
+      // 先将StockData设置为空数组，强制表格组件重新渲染
+      this.StockData = []
+      // 然后调用getAllStock方法获取新数据
+      this.getAllStock()
+    },
+    // 抹平库存
+    flattenStock() {
+      const that = this
+      
+      // 先获取需要抹平的库存数据数量
+      that.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/stock/getFlattenStockCount`)
+        .then(function (countResponse) {
+          if (countResponse.data.code === 1) {
+            const flattenCount = countResponse.data.data
+            
+            // 检查需要抹除的数据条数是否为0
+            if (flattenCount === 0) {
+              // 显示黄色的提示信息，说明具体原因
+              that.$message({
+                message: '无需执行库存抹平操作，当前没有需要初始化的UID为0数据和负库存数据。',
+                type: 'warning'
+              });
+              return;
+            }
+            
+            // 显示确认弹窗，包含操作数量
+            that.$confirm(`确定要执行库存抹平操作吗？这将初始化UID为0的数据并调整负库存为0。\n本次操作将处理 ${flattenCount} 条数据。`, '警告', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
+              // 显示进度条
+              const loadingInstance = that.$loading({
+                lock: true,
+                text: '库存抹平中，请稍候...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+              });
+              
+              // 执行库存抹平操作
+              that.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/flattenStock`)
+                .then(function (response) {
+                  // 关闭进度条
+                  loadingInstance.close();
+                  
+                  if (response.data.code === 1) {
+                    that.$message.success('库存抹平成功');
+                    that.getAllStock()
+                  } else {
+                    // 只有当需要抹除的数据条数不为0但抹平失败时才显示红色提示信息
+                    that.$message.error('库存抹平失败');
+                  }
+                }).catch(function (error) {
+                  // 关闭进度条
+                  loadingInstance.close();
+                  that.$message.error('库存抹平失败：' + error);
+                })
+            }).catch(() => {
+              // 取消操作
+            })
+          } else {
+            that.$message.error('获取需要抹平的库存数据数量失败');
+          }
+        }).catch(function (error) {
+          that.$message.error('获取需要抹平的库存数据数量失败：' + error);
+        })
     }
   },
   watch: {
@@ -312,42 +397,42 @@ export default {
       // 库存数据
       StockData: [],
       // 搜索参数
-      productInput: ``,
+      productInput: '',
       // 对话框状态
       addStockVisible: false,
       updateStockVisible: false,
       // 表单数据
       addStockForm: {
-        product: ``,
+        product: '',
         unitstock: 0,
         unitprice: 0
       },
       updateStockForm: {
-        product: ``,
+        product: '',
         unitstock: 0,
         unitprice: 0
       },
       // 表单验证规则
       addStockFormRules: {
         product: [
-          {required: true, message: `请输入产品名`, trigger: `blur`},
+          {required: true, message: '请输入产品名', trigger: 'blur'},
         ],
         unitstock: [
-          {required: true, message: `请输入数量`, trigger: `blur`},
+          {required: true, message: '请输入数量', trigger: 'blur'},
         ],
         unitprice: [
-          {required: true, message: `请输入单价`, trigger: `blur`},
+          {required: true, message: '请输入单价', trigger: 'blur'},
         ]
       },
       updateStockFormRules: {
         product: [
-          {required: true, message: `请输入产品名`, trigger: `blur`},
+          {required: true, message: '请输入产品名', trigger: 'blur'},
         ],
         unitstock: [
-          {required: true, message: `请输入数量`, trigger: `blur`},
+          {required: true, message: '请输入数量', trigger: 'blur'},
         ],
         unitprice: [
-          {required: true, message: `请输入单价`, trigger: `blur`},
+          {required: true, message: '请输入单价', trigger: 'blur'},
         ]
       },
       // 联想功能参数
@@ -355,7 +440,9 @@ export default {
       suggestTotal: 0,
       suggestCurrentPage: 1,
       suggestPageSize: 10,
-      showSuggestions: false
+      showSuggestions: false,
+      // 隐藏零库存状态
+      hideZeroStock: false
     }
   }
 }
@@ -387,126 +474,181 @@ body {
   text-align: center;
   color: #303133;
   margin-bottom: 30px;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 600;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #667eea;
+  display: inline-block;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: fadeInDown 0.5s ease-out;
 }
 
 /* 内容容器 */
 #app {
   background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 30px;
   margin: 0 auto;
   max-width: 1400px;
-}
-
-/* 搜索行 */
-.search-row {
-  padding: 20px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  animation: fadeInUp 0.5s ease-out;
 }
 
 /* 搜索容器 */
-.search-container {
+.stock-search-container {
   position: relative;
   width: 100%;
 }
 
 /* 联想结果下拉框 */
-.suggestions-dropdown {
+.stock-suggestions-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
   background-color: #ffffff;
   border: 1px solid #dcdfe6;
-  border-radius: 0 0 4px 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  max-height: 300px;
+  max-height: 350px;
   overflow-y: auto;
+  margin-top: 4px;
+  animation: fadeIn 0.3s ease-out;
 }
 
 /* 联想结果项 */
-.suggestion-item {
-  padding: 10px 15px;
+.stock-suggestion-item {
+  padding: 12px 16px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #f0f0f0;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
 }
 
-.suggestion-item:hover {
-  background-color: #ecf5ff;
-  color: #409eff;
+.stock-suggestion-item:hover {
+  background-color: #f5f7fa;
+  color: #667eea;
+  transform: translateX(5px);
+}
+
+.stock-suggestion-item:last-child {
+  border-bottom: none;
 }
 
 /* 联想分页 */
-.suggestion-pagination {
-  padding: 10px;
+.stock-suggestion-pagination {
+  padding: 12px;
   border-top: 1px solid #e4e7ed;
-  background-color: #f5f7fa;
+  background-color: #f9f9f9;
+  border-radius: 0 0 8px 8px;
+  text-align: center;
 }
 
-.suggestion-pagination .el-pagination {
+.stock-suggestion-pagination .el-pagination {
   margin-top: 0;
 }
 
 /* 表格样式 */
 .el-table {
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  animation: fadeInUp 0.5s ease-out 0.2s both;
 }
 
 .el-table th {
-  background-color: #f5f7fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
   font-weight: 600;
   color: #303133;
+  padding: 14px 12px;
 }
 
 .el-table tr:hover {
   background-color: #f5f7fa;
+  transition: all 0.3s ease;
+}
+
+.el-table--striped .el-table__row--striped {
+  background-color: #fafbfc;
 }
 
 /* 分页样式 */
 .el-pagination {
   margin-top: 30px;
   text-align: center;
+  animation: fadeInUp 0.5s ease-out 0.3s both;
+}
+
+.el-pagination__item:hover {
+  border-color: #667eea !important;
+  color: #667eea !important;
+}
+
+.el-pagination__item.active {
+  background-color: #667eea !important;
+  border-color: #667eea !important;
 }
 
 /* 按钮样式 */
 .el-button {
-  border-radius: 4px;
-  transition: all 0.3s;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  padding: 10px 18px !important;
+  font-weight: 500 !important;
 }
 
 .el-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.el-button--primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+}
+
+.el-button--danger {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+  border: none !important;
+}
+
+.el-button--success {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+  border: none !important;
 }
 
 /* 对话框样式 */
 .el-dialog {
-  border-radius: 8px;
-  overflow: hidden;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
 }
 
 .el-dialog__header {
-  background-color: #f5f7fa;
-  border-bottom: 1px solid #ebeef5;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-bottom: none !important;
+  padding: 20px 24px !important;
 }
 
 .el-dialog__title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: white !important;
+}
+
+.el-dialog__close {
+  color: white !important;
 }
 
 .el-dialog__body {
-  padding: 30px;
-  background-color: #ffffff;
+  padding: 30px !important;
+  background-color: #ffffff !important;
 }
 
 /* 表单样式 */
@@ -516,12 +658,33 @@ body {
 }
 
 .el-form-item {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .el-form-item__label {
   font-weight: 500;
   color: #606266;
+  font-size: 14px;
+}
+
+.el-input {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-input:focus-within {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+  border-color: #667eea !important;
+}
+
+.el-select {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-select:focus-within {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+  border-color: #667eea !important;
 }
 
 /* 响应式设计 */
@@ -535,7 +698,7 @@ body {
   }
   
   #stock h1 {
-    font-size: 20px;
+    font-size: 22px;
     margin-bottom: 20px;
   }
   
@@ -544,7 +707,7 @@ body {
   }
   
   .el-dialog__body {
-    padding: 20px;
+    padding: 20px !important;
   }
   
   .el-form {
@@ -552,7 +715,50 @@ body {
   }
   
   .suggestions-dropdown {
-    max-height: 200px;
+    max-height: 250px;
+  }
+  
+  .el-table {
+    font-size: 12px;
+  }
+  
+  .el-table th,
+  .el-table td {
+    padding: 10px 8px !important;
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

@@ -6,7 +6,7 @@ import com.xdmy.domain.Stock;
 import java.util.List;
 
 public interface IStockService {
-    JSONObject findAllStock(int pageNum, int pageSize, String productName);
+    JSONObject findAllStock(int pageNum, int pageSize, String productName, boolean hideZeroStock);
 
     JSONObject findSurplusStock();
 
@@ -17,4 +17,8 @@ public interface IStockService {
     int updateStock(Stock Stock);
 
     JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize);
+
+    int flattenStock();
+    
+    int getFlattenStockCount();
 }

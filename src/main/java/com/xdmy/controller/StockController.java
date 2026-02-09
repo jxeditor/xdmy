@@ -19,9 +19,11 @@ public class StockController extends BaseController {
     @RequestMapping("/findAllStock")
     public String findAllStock(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                                @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-                               @RequestParam(value = "productName", defaultValue = "") String productName
+                               @RequestParam(value = "productName", defaultValue = "") String productName,
+                               @RequestParam(value = "hideZeroStock", defaultValue = "false") Boolean hideZeroStock
     ) {
-        JSONObject result = serviceFacade.getStockService().findAllStock(pageNum, pageSize, productName);
+        System.out.println("Received hideZeroStock parameter: " + hideZeroStock);
+        JSONObject result = serviceFacade.getStockService().findAllStock(pageNum, pageSize, productName, hideZeroStock);
         return new JSONReturn(result).toString();
     }
 
@@ -73,6 +75,24 @@ public class StockController extends BaseController {
         int pageNum = request.containsKey("pageNum") ? Integer.parseInt(request.get("pageNum").toString()) : 1;
         int pageSize = request.containsKey("pageSize") ? Integer.parseInt(request.get("pageSize").toString()) : 10;
         JSONObject result = serviceFacade.getStockService().findProductNamesByPrefix(prefix, pageNum, pageSize);
+        return new JSONReturn(result).toString();
+    }
+
+    @RequestMapping("/flattenStock")
+    public String flattenStock() {
+        int result = serviceFacade.getStockService().flattenStock();
+        if (result > 0) {
+            return new JSONReturn("success", "库存抹平成功", 1).toString();
+        } else {
+            return new JSONReturn("error", "库存抹平失败", 0).toString();
+        }
+    }
+
+    @RequestMapping("/getFlattenStockCount")
+    public String getFlattenStockCount() {
+        int count = serviceFacade.getStockService().getFlattenStockCount();
+        JSONObject result = new JSONObject();
+        result.put("data", count);
         return new JSONReturn(result).toString();
     }
 }

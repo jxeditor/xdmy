@@ -1,32 +1,51 @@
 <template>
-
-  <div class="shipment1" style="border:1px solid #000">
-    <el-row style="width:100%;padding: 20px;">
-      <el-col :span="10">
-        <el-date-picker v-model="billDateInput1"
-                        type="daterange"
-                        range-separator="至"
-                        start-placeholder="开始日期"
-                        end-placeholder="结束日期"
-                        value-format="YYYY-MM-DD"
-        />
-      </el-col>
-      <el-col :span="2">
-        <el-input v-model="customerInput1" placeholder="输入客户名"/>
-      </el-col>
-      <el-col :span="4">
-        <el-button type="primary" @click="getShipment1ChartData">搜索</el-button>
-      </el-col>
-    </el-row>
-    <div id="shipment1" style="width: 100%;height: 400px">
+  <div class="screen-container">
+    <h1>数据大屏</h1>
+    
+    <div class="content-wrapper">
+      <!-- 第一个图表 -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <el-row type="flex" justify="start" align="middle" class="search-row">
+            <el-col :span="12">
+              <el-date-picker v-model="billDateInput1"
+                              type="daterange"
+                              range-separator="至"
+                              start-placeholder="开始日期"
+                              end-placeholder="结束日期"
+                              value-format="YYYY-MM-DD"
+                              style="width: 100%;"
+              />
+            </el-col>
+            <el-col :span="6">
+              <el-input v-model="customerInput1" placeholder="输入客户名" style="width: 100%;"/>
+            </el-col>
+            <el-col :span="4">
+              <el-button type="primary" @click="getShipment1ChartData" style="width: 100%;">搜索</el-button>
+            </el-col>
+          </el-row>
+        </div>
+        <div id="shipment1" class="chart-content">
+        </div>
+      </div>
+      
+      <!-- 第二个图表 -->
+      <div class="chart-card">
+        <div id="shipment2" class="chart-content">
+        </div>
+      </div>
+      
+      <!-- 可以添加更多图表 -->
+      <!-- <div class="chart-card">
+        <div id="shipment3" class="chart-content">
+        </div>
+      </div>
+      <div class="chart-card">
+        <div id="shipment4" class="chart-content">
+        </div>
+      </div> -->
     </div>
   </div>
-  <div id="shipment2" style="border:1px solid #000;width: 100%;height: 400px;margin-top: 20px">
-  </div>
-<!--  <div id="shipment3" style="width: 100%;height: 400px">-->
-<!--  </div>-->
-<!--  <div id="shipment4" style="width: 100%;height: 400px">-->
-<!--  </div>-->
 </template>
 
 <script>
@@ -297,5 +316,152 @@ export default {
 </script>
 
 <style scoped>
+/* 页面容器 */
+.screen-container {
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f5f7fa;
+}
 
+/* 页面标题 */
+.screen-container h1 {
+  text-align: center;
+  color: #303133;
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: 600;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #667eea;
+  display: inline-block;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: fadeInDown 0.5s ease-out;
+}
+
+/* 内容容器 */
+.content-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* 图表卡片 */
+.chart-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  padding: 20px;
+  animation: fadeInUp 0.5s ease-out 0.1s both;
+}
+
+/* 图表头部 */
+.chart-header {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 搜索行 */
+.search-row {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+/* 图表内容 */
+.chart-content {
+  width: 100%;
+  height: 400px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 按钮样式 */
+.el-button {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  padding: 10px 18px !important;
+  font-weight: 500 !important;
+}
+
+.el-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.el-button--primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+}
+
+/* 日期选择器样式 */
+.el-date-picker {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+/* 输入框样式 */
+.el-input {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-input:focus-within {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+  border-color: #667eea !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .screen-container {
+    padding: 10px;
+  }
+  
+  .screen-container h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+  
+  .chart-card {
+    padding: 15px;
+  }
+  
+  .chart-content {
+    height: 300px;
+  }
+  
+  .search-row {
+    flex-wrap: wrap;
+  }
+  
+  .el-col {
+    margin-bottom: 10px;
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 </style>

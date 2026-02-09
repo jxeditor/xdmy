@@ -3,7 +3,7 @@
     <h1>{{ msg }}</h1>
     <div id="app">
       <!-- 第一行：时间筛选 -->
-      <el-row style="width:100%;padding: 10px 20px;">
+      <el-row type="flex" justify="space-between" align="center" style="width:100%;padding: 10px 20px;">
         <el-col :span="12">
           <el-date-picker v-model="billDateInput"
                           type="daterange"
@@ -14,10 +14,8 @@
                           style="width: 100%;"
           />
         </el-col>
-        <el-col :span="4">
+        <el-col :span="8" style="display: flex; justify-content: flex-end; gap: 10px;">
           <el-button type="primary" @click="searchShipment">搜索</el-button>
-        </el-col>
-        <el-col :span="4">
           <el-button type="primary" @click="onAddShipment">开单</el-button>
         </el-col>
       </el-row>
@@ -25,7 +23,7 @@
       <!-- 第二行：客户和产品筛选 -->
       <el-row style="width:100%;padding: 0 20px 20px;">
         <el-col :span="8">
-          <div class="search-container">
+          <div class="shipment-search-container">
             <el-input
               v-model="customerInput"
               placeholder="输入客户名"
@@ -34,17 +32,17 @@
               style="width: 100%;"
             />
             <!-- 客户联想结果下拉框 -->
-            <div v-if="showCustomerSuggestions && customerSuggestions.length > 0" class="suggestions-dropdown">
+            <div v-if="showCustomerSuggestions && customerSuggestions.length > 0" class="shipment-suggestions-dropdown">
               <div 
                 v-for="(item, index) in customerSuggestions" 
                 :key="index"
-                class="suggestion-item"
+                class="shipment-suggestion-item"
                 @click="selectCustomerSuggestion(item)"
               >
                 {{ item }}
               </div>
               <!-- 客户联想分页 -->
-              <div v-if="customerTotal > customerPageSize" class="suggestion-pagination">
+              <div v-if="customerTotal > customerPageSize" class="shipment-suggestion-pagination">
                 <el-pagination
                   small
                   layout="prev, pager, next, ->, total"
@@ -60,7 +58,7 @@
         </el-col>
         <el-col :span="2"></el-col>
         <el-col :span="8">
-          <div class="search-container">
+          <div class="shipment-search-container">
             <el-input
               v-model="productInput"
               placeholder="输入产品名"
@@ -69,17 +67,17 @@
               style="width: 100%;"
             />
             <!-- 产品联想结果下拉框 -->
-            <div v-if="showProductSuggestions && productSuggestions.length > 0" class="suggestions-dropdown">
+            <div v-if="showProductSuggestions && productSuggestions.length > 0" class="shipment-suggestions-dropdown">
               <div 
                 v-for="(item, index) in productSuggestions" 
                 :key="index"
-                class="suggestion-item"
+                class="shipment-suggestion-item"
                 @click="selectProductSuggestion(item)"
               >
                 {{ item }}
               </div>
               <!-- 产品联想分页 -->
-              <div v-if="productTotal > productPageSize" class="suggestion-pagination">
+              <div v-if="productTotal > productPageSize" class="shipment-suggestion-pagination">
                 <el-pagination
                   small
                   layout="prev, pager, next, ->, total"
@@ -851,119 +849,179 @@ body {
   text-align: center;
   color: #303133;
   margin-bottom: 30px;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 600;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #667eea;
+  display: inline-block;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: fadeInDown 0.5s ease-out;
 }
 
 /* 内容容器 */
 #app {
   background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 30px;
   margin: 0 auto;
   max-width: 1400px;
+  animation: fadeInUp 0.5s ease-out;
 }
 
 /* 搜索容器 */
-.search-container {
+.shipment-search-container {
   position: relative;
   width: 100%;
 }
 
 /* 联想结果下拉框 */
-.suggestions-dropdown {
+.shipment-suggestions-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
   background-color: #ffffff;
   border: 1px solid #dcdfe6;
-  border-radius: 0 0 4px 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  max-height: 300px;
+  max-height: 350px;
   overflow-y: auto;
-  margin-top: 2px;
+  margin-top: 4px;
+  animation: fadeIn 0.3s ease-out;
 }
 
 /* 联想结果项 */
-.suggestion-item {
-  padding: 10px 15px;
+.shipment-suggestion-item {
+  padding: 12px 16px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #f0f0f0;
+  position: relative;
+  overflow: hidden;
 }
 
-.suggestion-item:hover {
-  background-color: #ecf5ff;
-  color: #409eff;
+.shipment-suggestion-item:hover {
+  background-color: #f5f7fa;
+  color: #667eea;
+  transform: translateX(5px);
+}
+
+.shipment-suggestion-item:last-child {
+  border-bottom: none;
 }
 
 /* 联想分页 */
-.suggestion-pagination {
-  padding: 10px;
+.shipment-suggestion-pagination {
+  padding: 12px;
   border-top: 1px solid #e4e7ed;
-  background-color: #f5f7fa;
+  background-color: #f9f9f9;
+  border-radius: 0 0 8px 8px;
 }
 
-.suggestion-pagination .el-pagination {
+.shipment-suggestion-pagination .el-pagination {
   margin-top: 0;
 }
 
 /* 表格样式 */
 .el-table {
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  animation: fadeInUp 0.5s ease-out 0.2s both;
 }
 
 .el-table th {
-  background-color: #f5f7fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
   font-weight: 600;
   color: #303133;
+  padding: 14px 12px;
 }
 
 .el-table tr:hover {
   background-color: #f5f7fa;
+  transition: all 0.3s ease;
+}
+
+.el-table--striped .el-table__row--striped {
+  background-color: #fafbfc;
 }
 
 /* 分页样式 */
 .el-pagination {
   margin-top: 30px;
   text-align: center;
+  animation: fadeInUp 0.5s ease-out 0.3s both;
+}
+
+.el-pagination__item:hover {
+  border-color: #667eea !important;
+  color: #667eea !important;
+}
+
+.el-pagination__item.active {
+  background-color: #667eea !important;
+  border-color: #667eea !important;
 }
 
 /* 按钮样式 */
 .el-button {
-  border-radius: 4px;
-  transition: all 0.3s;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  padding: 10px 18px !important;
+  font-weight: 500 !important;
 }
 
 .el-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.el-button--primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+}
+
+.el-button--danger {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+  border: none !important;
+}
+
+.el-button--success {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+  border: none !important;
 }
 
 /* 对话框样式 */
 .el-dialog {
-  border-radius: 8px;
-  overflow: hidden;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
 }
 
 .el-dialog__header {
-  background-color: #f5f7fa;
-  border-bottom: 1px solid #ebeef5;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-bottom: none !important;
+  padding: 20px 24px !important;
 }
 
 .el-dialog__title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: white !important;
+}
+
+.el-dialog__close {
+  color: white !important;
 }
 
 .el-dialog__body {
-  padding: 30px;
-  background-color: #ffffff;
+  padding: 30px !important;
+  background-color: #ffffff !important;
 }
 
 /* 表单样式 */
@@ -973,12 +1031,51 @@ body {
 }
 
 .el-form-item {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .el-form-item__label {
   font-weight: 500;
   color: #606266;
+  font-size: 14px;
+}
+
+.el-input {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-input:focus-within {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+  border-color: #667eea !important;
+}
+
+.el-date-picker {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-select {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-select:focus-within {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+  border-color: #667eea !important;
+}
+
+/* 批量操作按钮容器 */
+.batch-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  animation: fadeInUp 0.5s ease-out 0.4s both;
 }
 
 /* 响应式设计 */
@@ -992,12 +1089,27 @@ body {
   }
   
   #shipment h1 {
-    font-size: 20px;
+    font-size: 22px;
     margin-bottom: 20px;
   }
   
   .el-dialog__body {
-    padding: 20px;
+    padding: 20px !important;
+  }
+  
+  .batch-actions {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .el-table {
+    font-size: 12px;
+  }
+  
+  .el-table th,
+  .el-table td {
+    padding: 10px 8px !important;
   }
   
   .el-form {
@@ -1005,7 +1117,41 @@ body {
   }
   
   .suggestions-dropdown {
-    max-height: 200px;
+    max-height: 250px;
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

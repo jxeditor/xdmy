@@ -2,7 +2,7 @@
   <div id="turnover">
     <h1>{{ msg }}</h1>
     <div id="app">
-      <el-row style="width:100%;padding: 20px;">
+      <el-row type="flex" justify="space-between" align="center" style="width:100%;padding: 20px;">
         <el-col :span="10">
           <el-date-picker v-model="billDateInput"
                           type="daterange"
@@ -10,20 +10,24 @@
                           start-placeholder="开始日期"
                           end-placeholder="结束日期"
                           value-format="YYYY-MM-DD"
+                          style="width: 100%;"
           />
         </el-col>
-        <el-col :span="2">
-          <el-input v-model="payerInput" placeholder="输入付款人"/>
-        </el-col>
-        <el-col :span="2"></el-col>
-        <el-col :span="2">
-          <el-input v-model="payeeInput" placeholder="输入收款人"/>
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="searchTurnover">搜索</el-button>
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="onAddTurnover">记录流水</el-button>
+        <el-col :span="8">
+          <el-row type="flex" justify="space-between" align="center" :gutter="10">
+            <el-col :span="8">
+              <el-input v-model="payerInput" placeholder="输入付款人" style="width: 100%;"/>
+            </el-col>
+            <el-col :span="8">
+              <el-input v-model="payeeInput" placeholder="输入收款人" style="width: 100%;"/>
+            </el-col>
+            <el-col :span="4">
+              <el-button type="primary" @click="searchTurnover" style="width: 100%;">搜索</el-button>
+            </el-col>
+            <el-col :span="4">
+              <el-button type="primary" @click="onAddTurnover" style="width: 100%;">记录流水</el-button>
+            </el-col>
+          </el-row>
         </el-col>
       </el-row>
       <el-table ref="multipleTable" stripe :data="TurnoverData" style="width: 100%;">
@@ -325,30 +329,280 @@ export default {
 </script>
 
 <style>
-#turnover {
+/* 全局样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  background-color: #f5f7fa;
 }
 
-h3 {
-  margin: 40px 0 0;
+/* 页面容器 */
+#turnover {
+  min-height: 100vh;
+  padding: 20px;
 }
 
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
+#turnover h1 {
+  text-align: center;
+  color: #303133;
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: 600;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #667eea;
   display: inline-block;
-  margin: 0 10px;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: fadeInDown 0.5s ease-out;
 }
 
-a {
-  color: #42b983;
+/* 内容容器 */
+#app {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  margin: 0 auto;
+  max-width: 1400px;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* 表格样式 */
+.el-table {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 24px;
+  animation: fadeInUp 0.5s ease-out 0.2s both;
+}
+
+.el-table th {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  font-weight: 600;
+  color: #303133;
+  padding: 14px 12px;
+}
+
+.el-table tr:hover {
+  background-color: #f5f7fa;
+  transition: all 0.3s ease;
+}
+
+.el-table--striped .el-table__row--striped {
+  background-color: #fafbfc;
+}
+
+/* 分页样式 */
+.el-pagination {
+  margin-top: 30px;
+  text-align: center;
+  animation: fadeInUp 0.5s ease-out 0.3s both;
+}
+
+.el-pagination__item:hover {
+  border-color: #667eea !important;
+  color: #667eea !important;
+}
+
+.el-pagination__item.active {
+  background-color: #667eea !important;
+  border-color: #667eea !important;
+}
+
+/* 按钮样式 */
+.el-button {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  padding: 10px 18px !important;
+  font-weight: 500 !important;
+}
+
+.el-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.el-button--primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+}
+
+.el-button--danger {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+  border: none !important;
+}
+
+.el-button--success {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+  border: none !important;
+}
+
+/* 对话框样式 */
+.el-dialog {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+.el-dialog__header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-bottom: none !important;
+  padding: 20px 24px !important;
+}
+
+.el-dialog__title {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: white !important;
+}
+
+.el-dialog__close {
+  color: white !important;
+}
+
+.el-dialog__body {
+  padding: 30px !important;
+  background-color: #ffffff !important;
+}
+
+/* 表单样式 */
+.el-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.el-form-item {
+  margin-bottom: 24px;
+}
+
+.el-form-item__label {
+  font-weight: 500;
+  color: #606266;
+  font-size: 14px;
+}
+
+.el-input {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-input:focus-within {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+  border-color: #667eea !important;
+}
+
+.el-date-picker {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+/* 搜索行样式 */
+.el-row {
+  margin-bottom: 20px;
+  animation: fadeInUp 0.5s ease-out 0.1s both;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  #turnover {
+    padding: 10px;
+  }
+  
+  #app {
+    padding: 15px;
+  }
+  
+  #turnover h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+  
+  .el-dialog__body {
+    padding: 20px !important;
+  }
+  
+  .el-form {
+    max-width: 100%;
+  }
+  
+  .el-table {
+    font-size: 12px;
+  }
+  
+  .el-table th,
+  .el-table td {
+    padding: 10px 8px !important;
+  }
+  
+  .el-row {
+    flex-wrap: wrap;
+  }
+  
+  .el-col {
+    margin-bottom: 10px;
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 </style>

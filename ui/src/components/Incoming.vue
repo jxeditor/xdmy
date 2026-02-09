@@ -3,7 +3,7 @@
     <h1>{{ msg }}</h1>
     <div id="app">
       <!-- 第一行：时间筛选 -->
-      <el-row style="width:100%;padding: 10px 20px;">
+      <el-row type="flex" justify="space-between" align="center" style="width:100%;padding: 10px 20px;">
         <el-col :span="12">
           <el-date-picker v-model="billDateInput"
                           type="daterange"
@@ -14,10 +14,8 @@
                           style="width: 100%;"
           />
         </el-col>
-        <el-col :span="4">
+        <el-col :span="8" style="display: flex; justify-content: flex-end; gap: 10px;">
           <el-button type="primary" @click="searchIncoming">搜索</el-button>
-        </el-col>
-        <el-col :span="4">
           <el-button type="primary" @click="onAddIncoming">入货</el-button>
         </el-col>
       </el-row>
@@ -25,7 +23,7 @@
       <!-- 第二行：供应商和产品筛选 -->
       <el-row style="width:100%;padding: 0 20px 20px;">
         <el-col :span="8">
-          <div class="search-container">
+          <div class="incoming-search-container">
             <el-input
               v-model="producerInput"
               placeholder="输入供应商"
@@ -34,17 +32,17 @@
               style="width: 100%;"
             />
             <!-- 供应商联想结果下拉框 -->
-            <div v-if="showProducerSuggestions && producerSuggestions.length > 0" class="suggestions-dropdown">
+            <div v-if="showProducerSuggestions && producerSuggestions.length > 0" class="incoming-suggestions-dropdown">
               <div 
                 v-for="(item, index) in producerSuggestions" 
                 :key="index"
-                class="suggestion-item"
+                class="incoming-suggestion-item"
                 @click="selectProducerSuggestion(item)"
               >
                 {{ item }}
               </div>
               <!-- 供应商联想分页 -->
-              <div v-if="producerTotal > producerPageSize" class="suggestion-pagination">
+              <div v-if="producerTotal > producerPageSize" class="incoming-suggestion-pagination">
                 <el-pagination
                   small
                   layout="prev, pager, next, ->, total"
@@ -60,7 +58,7 @@
         </el-col>
         <el-col :span="2"></el-col>
         <el-col :span="8">
-          <div class="search-container">
+          <div class="incoming-search-container">
             <el-input
               v-model="productInput"
               placeholder="输入产品名"
@@ -69,17 +67,17 @@
               style="width: 100%;"
             />
             <!-- 产品联想结果下拉框 -->
-            <div v-if="showProductSuggestions && productSuggestions.length > 0" class="suggestions-dropdown">
+            <div v-if="showProductSuggestions && productSuggestions.length > 0" class="incoming-suggestions-dropdown">
               <div 
                 v-for="(item, index) in productSuggestions" 
                 :key="index"
-                class="suggestion-item"
+                class="incoming-suggestion-item"
                 @click="selectProductSuggestion(item)"
               >
                 {{ item }}
               </div>
               <!-- 产品联想分页 -->
-              <div v-if="productTotal > productPageSize" class="suggestion-pagination">
+              <div v-if="productTotal > productPageSize" class="incoming-suggestion-pagination">
                 <el-pagination
                   small
                   layout="prev, pager, next, ->, total"
@@ -583,106 +581,357 @@ export default {
 </script>
 
 <style>
-#incoming {
+/* 全局样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  background-color: #f5f7fa;
 }
 
-h3 {
-  margin: 40px 0 0;
+/* 页面容器 */
+#incoming {
+  min-height: 100vh;
+  padding: 20px;
 }
 
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
+#incoming h1 {
+  text-align: center;
+  color: #303133;
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: 600;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #667eea;
   display: inline-block;
-  margin: 0 10px;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: fadeInDown 0.5s ease-out;
 }
 
-a {
-  color: #42b983;
+/* 内容容器 */
+#app {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  margin: 0 auto;
+  max-width: 1400px;
+  animation: fadeInUp 0.5s ease-out;
 }
 
-/* 搜索联想下拉框样式 */
-.search-container {
+/* 搜索容器 */
+.incoming-search-container {
   position: relative;
   width: 100%;
 }
 
-.suggestions-dropdown {
+/* 联想结果下拉框 */
+.incoming-suggestions-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
-  background: white;
+  background-color: #ffffff;
   border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  max-height: 300px;
+  max-height: 350px;
   overflow-y: auto;
   margin-top: 4px;
+  animation: fadeIn 0.3s ease-out;
 }
 
-.suggestion-item {
-  padding: 10px 15px;
+/* 联想结果项 */
+.incoming-suggestion-item {
+  padding: 12px 16px;
   cursor: pointer;
-  text-align: left;
-  transition: background-color 0.3s;
-}
-
-.suggestion-item:hover {
-  background-color: #f5f7fa;
-}
-
-.suggestion-pagination {
-  padding: 10px;
-  border-top: 1px solid #dcdfe6;
-  text-align: center;
-}
-
-/* 表格样式优化 */
-.el-table {
-  margin: 0 20px;
-  border-radius: 4px;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #f0f0f0;
+  position: relative;
   overflow: hidden;
+  text-align: left;
 }
 
-.el-pagination {
-  margin: 20px;
+.incoming-suggestion-item:hover {
+  background-color: #f5f7fa;
+  color: #667eea;
+  transform: translateX(5px);
+}
+
+.incoming-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+/* 联想分页 */
+.incoming-suggestion-pagination {
+  padding: 12px;
+  border-top: 1px solid #e4e7ed;
+  background-color: #f9f9f9;
+  border-radius: 0 0 8px 8px;
   text-align: center;
 }
 
-/* 按钮样式优化 */
-.el-button {
-  margin: 0 5px;
+.incoming-suggestion-pagination .el-pagination {
+  margin-top: 0;
 }
 
-/* 表单样式优化 */
+/* 表格样式 */
+.el-table {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  animation: fadeInUp 0.5s ease-out 0.2s both;
+}
+
+.el-table th {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  font-weight: 600;
+  color: #303133;
+  padding: 14px 12px;
+}
+
+.el-table tr:hover {
+  background-color: #f5f7fa;
+  transition: all 0.3s ease;
+}
+
+.el-table--striped .el-table__row--striped {
+  background-color: #fafbfc;
+}
+
+/* 分页样式 */
+.el-pagination {
+  margin-top: 30px;
+  text-align: center;
+  animation: fadeInUp 0.5s ease-out 0.3s both;
+}
+
+.el-pagination__item:hover {
+  border-color: #667eea !important;
+  color: #667eea !important;
+}
+
+.el-pagination__item.active {
+  background-color: #667eea !important;
+  border-color: #667eea !important;
+}
+
+/* 按钮样式 */
+.el-button {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  padding: 10px 18px !important;
+  font-weight: 500 !important;
+}
+
+.el-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.el-button--primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+}
+
+.el-button--danger {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+  border: none !important;
+}
+
+.el-button--success {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+  border: none !important;
+}
+
+/* 对话框样式 */
 .el-dialog {
-  border-radius: 4px;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+.el-dialog__header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-bottom: none !important;
+  padding: 20px 24px !important;
+}
+
+.el-dialog__title {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: white !important;
+}
+
+.el-dialog__close {
+  color: white !important;
+}
+
+.el-dialog__body {
+  padding: 30px !important;
+  background-color: #ffffff !important;
+}
+
+/* 表单样式 */
+.el-form {
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .el-form-item {
-  margin-bottom: 15px;
+  margin-bottom: 24px;
 }
 
-/* 响应式布局调整 */
-@media screen and (max-width: 1200px) {
-  .el-row {
-    flex-wrap: wrap;
+.el-form-item__label {
+  font-weight: 500;
+  color: #606266;
+  font-size: 14px;
+}
+
+.el-input {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-input:focus-within {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+  border-color: #667eea !important;
+}
+
+.el-date-picker {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-select {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.el-select:focus-within {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+  border-color: #667eea !important;
+}
+
+/* 批量操作按钮容器 */
+.batch-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  animation: fadeInUp 0.5s ease-out 0.4s both;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  #incoming {
+    padding: 10px;
   }
   
-  .el-col {
-    margin-bottom: 10px;
+  #app {
+    padding: 15px;
   }
+  
+  #incoming h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+  
+  .el-dialog__body {
+    padding: 20px !important;
+  }
+  
+  .batch-actions {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .el-table {
+    font-size: 12px;
+  }
+  
+  .el-table th,
+  .el-table td {
+    padding: 10px 8px !important;
+  }
+  
+  .el-form {
+    max-width: 100%;
+  }
+  
+  .suggestions-dropdown {
+    max-height: 250px;
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 </style>
 

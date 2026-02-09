@@ -14,13 +14,25 @@ import java.util.List;
 @Service
 public class StockService extends BaseService implements IStockService {
     @Override
-    public JSONObject findAllStock(int pageNum, int pageSize, String productName) {
+    public JSONObject findAllStock(int pageNum, int pageSize, String productName, boolean hideZeroStock) {
         DBContextHolder.setDbType("primary");
-        List<Stock> stockList = daoFacade.getStockDao().findAllStock(pageNum, pageSize, productName);
-        int total = daoFacade.getStockDao().getAllTotalSize(productName);
+        List<Stock> stockList = daoFacade.getStockDao().findAllStock(pageNum, pageSize, productName, hideZeroStock);
+        int total = daoFacade.getStockDao().getAllTotalSize(productName, hideZeroStock);
         JSONObject result = toJSONObject(stockList);
         result.put("total", total);
         return result;
+    }
+
+    @Override
+    public int flattenStock() {
+        DBContextHolder.setDbType("primary");
+        return daoFacade.getStockDao().flattenStock();
+    }
+
+    @Override
+    public int getFlattenStockCount() {
+        DBContextHolder.setDbType("primary");
+        return daoFacade.getStockDao().getFlattenStockCount();
     }
 
     @Override
