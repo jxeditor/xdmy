@@ -54,23 +54,121 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
 
     @Override
     public int addShipment(Shipment shipment) {
-        String sql = "INSERT INTO shipment(odd,customer,product,billdate,amount,unitprice,money,paystatus,boardcost,fireproofboardcost,costmoney,profit,remark) " +
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
-        return jdbcTemplate.update(sql, shipment.getOdd(), shipment.getCustomer(), shipment.getProduct(), shipment.getBilldate(), shipment.getAmount(), shipment.getUnitprice(), shipment.getMoney(), shipment.getPaystatus(), shipment.getBoardcost(), shipment.getFireproofboardcost(), shipment.getCostmoney(), shipment.getProfit(), shipment.getRemark());
+        // 开始事务
+        jdbcTemplate.execute("START TRANSACTION");
+        try {
+            // 添加出货记录
+            String sql = "INSERT INTO shipment(odd,customer,product,billdate,amount,unitprice,money,paystatus,boardcost,fireproofboardcost,costmoney,profit,remark) " +
+                    "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            int result = jdbcTemplate.update(sql, shipment.getOdd(), shipment.getCustomer(), shipment.getProduct(), shipment.getBilldate(), shipment.getAmount(), shipment.getUnitprice(), shipment.getMoney(), shipment.getPaystatus(), shipment.getBoardcost(), shipment.getFireproofboardcost(), shipment.getCostmoney(), shipment.getProfit(), shipment.getRemark());
+            
+            // 检查stock表中是否存在对应产品的记录
+            String checkSql = "SELECT COUNT(*) FROM stock WHERE product = ?";
+            int count = jdbcTemplate.queryForObject(checkSql, Integer.class, shipment.getProduct());
+            
+            if (count == 0) {
+                // 如果不存在，插入一条新记录
+                String insertSql = "INSERT INTO stock(product, unitstock, unitprice, inamount, outamount, lastoutdate, stockstatus) " +
+                        "VALUES(?, 0, ?, 0, ?, ?, '1')";
+                jdbcTemplate.update(insertSql, shipment.getProduct(), shipment.getUnitprice(), shipment.getAmount(), shipment.getBilldate());
+            } else {
+                // 如果存在，更新outamount和lastoutdate字段
+                String updateSql = "UPDATE stock SET outamount = outamount + ?, lastoutdate = ? WHERE product = ?";
+                jdbcTemplate.update(updateSql, shipment.getAmount(), shipment.getBilldate(), shipment.getProduct());
+            }
+            
+            // 提交事务
+            jdbcTemplate.execute("COMMIT");
+            return result;
+        } catch (Exception e) {
+            // 回滚事务
+            jdbcTemplate.execute("ROLLBACK");
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int deleteShipmentById(int id) {
-        String sql = "UPDATE shipment set is_delete = 1 WHERE id = ?";
-        return jdbcTemplate.update(sql, id);
+        // 开始事务
+        jdbcTemplate.execute("START TRANSACTION");
+        try {
+            // 先查询要删除的出货记录的产品和数量
+            String querySql = "SELECT product, amount, billdate FROM shipment WHERE id = ?";
+            Shipment shipment = jdbcTemplate.queryForObject(querySql, new Object[]{id}, new ShipmentRowMapper());
+            
+            // 删除出货记录
+            String sql = "UPDATE shipment set is_delete = 1 WHERE id = ?";
+            int result = jdbcTemplate.update(sql, id);
+            
+            // 更新stock表中对应产品的outamount字段
+            String updateSql = "UPDATE stock SET outamount = outamount - ?, lastoutdate = (SELECT MAX(billdate) FROM shipment WHERE product = ? AND is_delete = 0) WHERE product = ?";
+            jdbcTemplate.update(updateSql, shipment.getAmount(), shipment.getProduct(), shipment.getProduct());
+            
+            // 提交事务
+            jdbcTemplate.execute("COMMIT");
+            return result;
+        } catch (Exception e) {
+            // 回滚事务
+            jdbcTemplate.execute("ROLLBACK");
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int updateShipment(Shipment shipment) {
-        String sql = "UPDATE shipment set odd = ?,customer = ?,product = ?,billdate = ?,amount = ?,unitprice = ?,money = ?" +
-                ",paystatus = ?,boardcost = ?,fireproofboardcost = ?,costmoney = ?,profit = ?,remark = ?" +
-                "WHERE id = ? ";
-        return jdbcTemplate.update(sql, shipment.getOdd(), shipment.getCustomer(), shipment.getProduct(), shipment.getBilldate(), shipment.getAmount(), shipment.getUnitprice(), shipment.getMoney(), shipment.getPaystatus(), shipment.getBoardcost(), shipment.getFireproofboardcost(), shipment.getCostmoney(), shipment.getProfit(), shipment.getRemark(), shipment.getId());
+        // 开始事务
+        jdbcTemplate.execute("START TRANSACTION");
+        try {
+            // 先查询原出货记录的产品和数量
+            String querySql = "SELECT product, amount FROM shipment WHERE id = ?";
+            Shipment oldShipment = jdbcTemplate.queryForObject(querySql, new Object[]{shipment.getId()}, new ShipmentRowMapper());
+            
+            // 更新出货记录
+            String sql = "UPDATE shipment set odd = ?,customer = ?,product = ?,billdate = ?,amount = ?,unitprice = ?,money = ?" +
+                    ",paystatus = ?,boardcost = ?,fireproofboardcost = ?,costmoney = ?,profit = ?,remark = ?" +
+                    "WHERE id = ? ";
+            int result = jdbcTemplate.update(sql, shipment.getOdd(), shipment.getCustomer(), shipment.getProduct(), shipment.getBilldate(), shipment.getAmount(), shipment.getUnitprice(), shipment.getMoney(), shipment.getPaystatus(), shipment.getBoardcost(), shipment.getFireproofboardcost(), shipment.getCostmoney(), shipment.getProfit(), shipment.getRemark(), shipment.getId());
+            
+            // 如果产品没有变化
+            if (oldShipment.getProduct().equals(shipment.getProduct())) {
+                // 更新stock表中对应产品的outamount字段
+                int amountDiff = shipment.getAmount() - oldShipment.getAmount();
+                String updateSql = "UPDATE stock SET outamount = outamount + ?, lastoutdate = ? WHERE product = ?";
+                jdbcTemplate.update(updateSql, amountDiff, shipment.getBilldate(), shipment.getProduct());
+            } else {
+                // 如果产品变化了，需要更新两个产品的outamount字段
+                // 减少原产品的outamount
+                String updateOldSql = "UPDATE stock SET outamount = outamount - ?, lastoutdate = (SELECT MAX(billdate) FROM shipment WHERE product = ? AND is_delete = 0) WHERE product = ?";
+                jdbcTemplate.update(updateOldSql, oldShipment.getAmount(), oldShipment.getProduct(), oldShipment.getProduct());
+                
+                // 增加新产品的outamount
+                // 检查新产品是否在stock表中存在
+                String checkSql = "SELECT COUNT(*) FROM stock WHERE product = ?";
+                int count = jdbcTemplate.queryForObject(checkSql, Integer.class, shipment.getProduct());
+                
+                if (count == 0) {
+                    // 如果不存在，插入一条新记录
+                    String insertSql = "INSERT INTO stock(product, unitstock, unitprice, inamount, outamount, lastoutdate, stockstatus) " +
+                            "VALUES(?, 0, ?, 0, ?, ?, '1')";
+                    jdbcTemplate.update(insertSql, shipment.getProduct(), shipment.getUnitprice(), shipment.getAmount(), shipment.getBilldate());
+                } else {
+                    // 如果存在，更新outamount和lastoutdate字段
+                    String updateNewSql = "UPDATE stock SET outamount = outamount + ?, lastoutdate = ? WHERE product = ?";
+                    jdbcTemplate.update(updateNewSql, shipment.getAmount(), shipment.getBilldate(), shipment.getProduct());
+                }
+            }
+            
+            // 提交事务
+            jdbcTemplate.execute("COMMIT");
+            return result;
+        } catch (Exception e) {
+            // 回滚事务
+            jdbcTemplate.execute("ROLLBACK");
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override

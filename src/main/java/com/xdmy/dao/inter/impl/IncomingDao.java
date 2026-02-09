@@ -55,23 +55,127 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
 
     @Override
     public int addIncoming(Incoming incoming) {
-        String sql = "INSERT INTO incoming(odd,producer,product,billdate,amount,unitprice,money,paystatus,remark) " +
-                "VALUES(?,?,?,?,?,?,?,?,?)";
-        return jdbcTemplate.update(sql, incoming.getOdd(), incoming.getProducer(), incoming.getProduct(), incoming.getBilldate(), incoming.getAmount(), incoming.getUnitprice(), incoming.getMoney(), incoming.getPaystatus(), incoming.getRemark());
+        // 开始事务
+        jdbcTemplate.execute("START TRANSACTION");
+        try {
+            // 添加入货记录
+            String sql = "INSERT INTO incoming(odd,producer,product,billdate,amount,unitprice,money,paystatus,remark) " +
+                    "VALUES(?,?,?,?,?,?,?,?,?)";
+            int result = jdbcTemplate.update(sql, incoming.getOdd(), incoming.getProducer(), incoming.getProduct(), incoming.getBilldate(), incoming.getAmount(), incoming.getUnitprice(), incoming.getMoney(), incoming.getPaystatus(), incoming.getRemark());
+            
+            // 检查stock表中是否存在对应产品的记录
+            String checkSql = "SELECT COUNT(*) FROM stock WHERE product = ?";
+            int count = jdbcTemplate.queryForObject(checkSql, Integer.class, incoming.getProduct());
+            
+            if (count == 0) {
+                // 如果不存在，插入一条新记录
+                String insertSql = "INSERT INTO stock(product, unitstock, unitprice, purchaseprice, inamount, outamount, lastindate, stockstatus) " +
+                        "VALUES(?, 0, ?, ?, ?, 0, ?, '1')";
+                jdbcTemplate.update(insertSql, incoming.getProduct(), incoming.getUnitprice(), incoming.getUnitprice(), incoming.getAmount(), incoming.getBilldate());
+            } else {
+                // 如果存在，更新inamount、purchaseprice和lastindate字段
+                String updateSql = "UPDATE stock SET inamount = inamount + ?, purchaseprice = ?, lastindate = ? WHERE product = ?";
+                jdbcTemplate.update(updateSql, incoming.getAmount(), incoming.getUnitprice(), incoming.getBilldate(), incoming.getProduct());
+            }
+            
+            // 提交事务
+            jdbcTemplate.execute("COMMIT");
+            return result;
+        } catch (Exception e) {
+            // 回滚事务
+            jdbcTemplate.execute("ROLLBACK");
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int deleteIncomingById(int id) {
-        String sql = "UPDATE incoming set is_delete = 1 WHERE id = ?";
-        return jdbcTemplate.update(sql, id);
+        // 开始事务
+        jdbcTemplate.execute("START TRANSACTION");
+        try {
+            // 先查询要删除的入货记录的产品和数量
+            String querySql = "SELECT product, amount, billdate, unitprice FROM incoming WHERE id = ?";
+            Incoming incoming = jdbcTemplate.queryForObject(querySql, new Object[]{id}, new IncomingRowMapper());
+            
+            // 删除入货记录
+            String sql = "UPDATE incoming set is_delete = 1 WHERE id = ?";
+            int result = jdbcTemplate.update(sql, id);
+            
+            // 更新stock表中对应产品的inamount和purchaseprice字段
+            String updateSql = "UPDATE stock SET inamount = inamount - ?, " +
+                    "purchaseprice = (SELECT unitprice FROM incoming WHERE product = ? AND is_delete = 0 ORDER BY billdate DESC LIMIT 1), " +
+                    "lastindate = (SELECT MAX(billdate) FROM incoming WHERE product = ? AND is_delete = 0) " +
+                    "WHERE product = ?";
+            jdbcTemplate.update(updateSql, incoming.getAmount(), incoming.getProduct(), incoming.getProduct(), incoming.getProduct());
+            
+            // 提交事务
+            jdbcTemplate.execute("COMMIT");
+            return result;
+        } catch (Exception e) {
+            // 回滚事务
+            jdbcTemplate.execute("ROLLBACK");
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override
     public int updateIncoming(Incoming incoming) {
-        String sql = "UPDATE incoming set odd = ?,producer = ?,product = ?,billdate = ?,amount = ?,unitprice = ?,money = ? " +
-                ",paystatus = ?,remark = ? " +
-                "WHERE id = ? ";
-        return jdbcTemplate.update(sql, incoming.getOdd(), incoming.getProducer(), incoming.getProduct(), incoming.getBilldate(), incoming.getAmount(), incoming.getUnitprice(), incoming.getMoney(), incoming.getPaystatus(), incoming.getRemark(), incoming.getId());
+        // 开始事务
+        jdbcTemplate.execute("START TRANSACTION");
+        try {
+            // 先查询原入货记录的产品和数量
+            String querySql = "SELECT product, amount FROM incoming WHERE id = ?";
+            Incoming oldIncoming = jdbcTemplate.queryForObject(querySql, new Object[]{incoming.getId()}, new IncomingRowMapper());
+            
+            // 更新入货记录
+            String sql = "UPDATE incoming set odd = ?,producer = ?,product = ?,billdate = ?,amount = ?,unitprice = ?,money = ? " +
+                    ",paystatus = ?,remark = ? " +
+                    "WHERE id = ? ";
+            int result = jdbcTemplate.update(sql, incoming.getOdd(), incoming.getProducer(), incoming.getProduct(), incoming.getBilldate(), incoming.getAmount(), incoming.getUnitprice(), incoming.getMoney(), incoming.getPaystatus(), incoming.getRemark(), incoming.getId());
+            
+            // 如果产品没有变化
+            if (oldIncoming.getProduct().equals(incoming.getProduct())) {
+                // 更新stock表中对应产品的inamount字段
+                int amountDiff = incoming.getAmount() - oldIncoming.getAmount();
+                String updateSql = "UPDATE stock SET inamount = inamount + ?, purchaseprice = ?, lastindate = ? WHERE product = ?";
+                jdbcTemplate.update(updateSql, amountDiff, incoming.getUnitprice(), incoming.getBilldate(), incoming.getProduct());
+            } else {
+                // 如果产品变化了，需要更新两个产品的inamount字段
+                // 减少原产品的inamount
+                String updateOldSql = "UPDATE stock SET inamount = inamount - ?, " +
+                        "purchaseprice = (SELECT unitprice FROM incoming WHERE product = ? AND is_delete = 0 ORDER BY billdate DESC LIMIT 1), " +
+                        "lastindate = (SELECT MAX(billdate) FROM incoming WHERE product = ? AND is_delete = 0) " +
+                        "WHERE product = ?";
+                jdbcTemplate.update(updateOldSql, oldIncoming.getAmount(), oldIncoming.getProduct(), oldIncoming.getProduct(), oldIncoming.getProduct());
+                
+                // 增加新产品的inamount
+                // 检查新产品是否在stock表中存在
+                String checkSql = "SELECT COUNT(*) FROM stock WHERE product = ?";
+                int count = jdbcTemplate.queryForObject(checkSql, Integer.class, incoming.getProduct());
+                
+                if (count == 0) {
+                    // 如果不存在，插入一条新记录
+                    String insertSql = "INSERT INTO stock(product, unitstock, unitprice, purchaseprice, inamount, outamount, lastindate, stockstatus) " +
+                            "VALUES(?, 0, ?, ?, ?, 0, ?, '1')";
+                    jdbcTemplate.update(insertSql, incoming.getProduct(), incoming.getUnitprice(), incoming.getUnitprice(), incoming.getAmount(), incoming.getBilldate());
+                } else {
+                    // 如果存在，更新inamount、purchaseprice和lastindate字段
+                    String updateNewSql = "UPDATE stock SET inamount = inamount + ?, purchaseprice = ?, lastindate = ? WHERE product = ?";
+                    jdbcTemplate.update(updateNewSql, incoming.getAmount(), incoming.getUnitprice(), incoming.getBilldate(), incoming.getProduct());
+                }
+            }
+            
+            // 提交事务
+            jdbcTemplate.execute("COMMIT");
+            return result;
+        } catch (Exception e) {
+            // 回滚事务
+            jdbcTemplate.execute("ROLLBACK");
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     @Override

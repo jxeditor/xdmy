@@ -1,6 +1,6 @@
 spring:
   datasource:
     primary:
-      url: jdbc:mysql://localhost:12345/xdmy?useSSL=false&characterEncoding=UTF-8&useOldAliasMetadataBehavior=true&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai
+      url: jdbc:mysql://127.0.0.1:12345/xdmy?useSSL=false&characterEncoding=UTF-8&useOldAliasMetadataBehavior=true&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai
     secondary:
-      url: jdbc:mysql://localhost:12345/temp?useSSL=false&characterEncoding=UTF-8&useOldAliasMetadataBehavior=true&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai
+      url: jdbc:mysql://127.0.0.1:12345/temp?useSSL=false&characterEncoding=UTF-8&useOldAliasMetadataBehavior=true&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai
