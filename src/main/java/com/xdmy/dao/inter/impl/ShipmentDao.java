@@ -94,7 +94,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
         jdbcTemplate.execute("START TRANSACTION");
         try {
             // 先查询要删除的出货记录的产品和数量
-            String querySql = "SELECT product, amount, billdate FROM shipment WHERE id = ?";
+            String querySql = "SELECT * FROM shipment WHERE id = ?";
             Shipment shipment = jdbcTemplate.queryForObject(querySql, new Object[]{id}, new ShipmentRowMapper());
             
             // 删除出货记录
@@ -122,7 +122,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
         jdbcTemplate.execute("START TRANSACTION");
         try {
             // 先查询原出货记录的产品和数量
-            String querySql = "SELECT product, amount FROM shipment WHERE id = ?";
+            String querySql = "SELECT * FROM shipment WHERE id = ?";
             Shipment oldShipment = jdbcTemplate.queryForObject(querySql, new Object[]{shipment.getId()}, new ShipmentRowMapper());
             
             // 更新出货记录

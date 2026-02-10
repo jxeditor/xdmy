@@ -95,7 +95,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
         jdbcTemplate.execute("START TRANSACTION");
         try {
             // 先查询要删除的入货记录的产品和数量
-            String querySql = "SELECT product, amount, billdate, unitprice FROM incoming WHERE id = ?";
+            String querySql = "SELECT * FROM incoming WHERE id = ?";
             Incoming incoming = jdbcTemplate.queryForObject(querySql, new Object[]{id}, new IncomingRowMapper());
             
             // 删除入货记录
@@ -126,7 +126,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
         jdbcTemplate.execute("START TRANSACTION");
         try {
             // 先查询原入货记录的产品和数量
-            String querySql = "SELECT product, amount FROM incoming WHERE id = ?";
+            String querySql = "SELECT * FROM incoming WHERE id = ?";
             Incoming oldIncoming = jdbcTemplate.queryForObject(querySql, new Object[]{incoming.getId()}, new IncomingRowMapper());
             
             // 更新入货记录
