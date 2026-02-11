@@ -21,10 +21,16 @@ public interface IShipmentDao {
     int deleteShipmentById(int id);
 
     int updateShipment(Shipment shipment);
+    
+    int updateShipment(Shipment shipment, String materialRelationsStr);
 
     int updatePaystatusShipmentById(int id);
 
     List<String> findCustomerNamesByPrefix(String prefix, int pageNum, int pageSize);
 
     int getCustomerNamesCount(String prefix);
+
+    List<java.util.Map<String, Object>> findMaterialOperationsByShipmentId(int shipmentId);
+
+    Shipment findShipmentById(int id);
 }

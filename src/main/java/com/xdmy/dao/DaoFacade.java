@@ -21,6 +21,15 @@ public class DaoFacade {
     IStockDao stockDao;
 
     @Autowired
+    IMaterialStockDao materialStockDao;
+
+    @Autowired
+    IProductMaterialRelationDao productMaterialRelationDao;
+
+    @Autowired
+    IProductDao productDao;
+
+    @Autowired
     IAdminDao adminDao;
 
     @Autowired
@@ -39,6 +48,18 @@ public class DaoFacade {
 
     public IStockDao getStockDao() {
         return stockDao;
+    }
+
+    public IMaterialStockDao getMaterialStockDao() {
+        return materialStockDao;
+    }
+
+    public IProductMaterialRelationDao getProductMaterialRelationDao() {
+        return productMaterialRelationDao;
+    }
+
+    public IProductDao getProductDao() {
+        return productDao;
     }
 
     public IAdminDao getAdminDao() {

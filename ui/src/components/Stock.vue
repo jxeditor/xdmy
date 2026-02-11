@@ -45,7 +45,9 @@
           <el-button type="danger" @click="flattenStock">抹平</el-button>
         </el-col>
       </el-row>
-      <el-table ref="multipleTable" stripe :data="StockData" style="width: 100%;">
+      <el-table ref="multipleTable" stripe :data="StockData" style="width: 100%;" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="55" align="center">
+        </el-table-column>
         <el-table-column prop="id" label="UID" align="center">
         </el-table-column>
         <el-table-column prop="product" label="产品" width="240px" align="center">
@@ -70,9 +72,10 @@
         </el-table-column>
         <el-table-column prop="stockstatus" :formatter="setStockStatus" label="是否初始化库存" width="140" align="center">
         </el-table-column>
-        <el-table-column fixed="right" label="操作" align="center" width="180">
+        <el-table-column fixed="right" label="操作" align="center" width="220">
           <template #default="opt">
             <el-button type="primary" @click="onUpdateStock(opt.row)">修改</el-button>
+            <el-button type="danger" @click="onDeleteStock(opt.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -85,6 +88,10 @@
         style="margin-top: 20px; text-align: center;"
       >
       </el-pagination>
+      <div style="margin-top: 20px">
+        <el-button type="danger" @click="batchDeleteStock" :disabled="selectedStock.length === 0">批量删除</el-button>
+        <el-button @click="onClearSelection">取消选择</el-button>
+      </div>
       <el-dialog title="初始化库存" v-model="addStockVisible" width="80%">
         <el-form ref="addStockForm" :rules="addStockFormRules" :model="addStockForm" label-width="120px">
           <el-form-item label="产品:" prop="product">
@@ -374,6 +381,70 @@ export default {
         }).catch(function (error) {
           that.$message.error('获取需要抹平的库存数据数量失败：' + error);
         })
+    },
+    // 处理表格选择变化
+    handleSelectionChange(val) {
+      this.selectedStock = val;
+    },
+    // 单条删除库存
+    onDeleteStock(id) {
+      const that = this;
+      this.$confirm('确定要删除这条库存数据吗？', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        that.$axios.delete(`${process.env.VUE_APP_API_BASE_URL}/stock/deleteStockById?id=${id}`)
+          .then(function (response) {
+            if (response.data.code === 1) {
+              that.$message.success('删除成功');
+              that.getAllStock();
+            } else {
+              that.$message.error(response.data.msg);
+            }
+          }).catch(function (error) {
+            that.$message.error('删除失败：' + error);
+          });
+      }).catch(() => {
+        // 取消操作
+      });
+    },
+    // 批量删除库存
+    batchDeleteStock() {
+      const that = this;
+      if (that.selectedStock.length === 0) {
+        that.$message.warning('请先选择要删除的数据');
+        return;
+      }
+      
+      this.$confirm(`确定要删除选中的 ${that.selectedStock.length} 条库存数据吗？`, '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        // 提取选中数据的id列表
+        const ids = that.selectedStock.map(item => item.id).join(',');
+        
+        that.$axios.delete(`${process.env.VUE_APP_API_BASE_URL}/stock/batchDeleteStock?ids=${ids}`)
+          .then(function (response) {
+            if (response.data.code === 1) {
+              that.$message.success('批量删除成功');
+              that.getAllStock();
+              that.selectedStock = [];
+            } else {
+              that.$message.error(response.data.msg);
+            }
+          }).catch(function (error) {
+            that.$message.error('批量删除失败：' + error);
+          });
+      }).catch(() => {
+        // 取消操作
+      });
+    },
+    // 取消选择
+    onClearSelection() {
+      this.$refs.multipleTable.clearSelection();
+      this.selectedStock = [];
     }
   },
   watch: {
@@ -442,7 +513,9 @@ export default {
       suggestPageSize: 10,
       showSuggestions: false,
       // 隐藏零库存状态
-      hideZeroStock: false
+      hideZeroStock: false,
+      // 选中的库存数据
+      selectedStock: []
     }
   }
 }

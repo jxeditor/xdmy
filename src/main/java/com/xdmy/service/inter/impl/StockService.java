@@ -55,6 +55,12 @@ public class StockService extends BaseService implements IStockService {
     }
 
     @Override
+    public int batchDeleteStock(String ids) {
+        DBContextHolder.setDbType("primary");
+        return daoFacade.getStockDao().batchDeleteStock(ids);
+    }
+
+    @Override
     public int updateStock(Stock stock) {
         DBContextHolder.setDbType("primary");
         return daoFacade.getStockDao().updateStock(stock);
@@ -99,5 +105,7 @@ public class StockService extends BaseService implements IStockService {
         }
         return result;
     }
+
+
 
 }

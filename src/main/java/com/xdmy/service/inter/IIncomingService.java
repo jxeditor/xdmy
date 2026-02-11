@@ -6,9 +6,13 @@ import com.xdmy.domain.Incoming;
 public interface IIncomingService {
     JSONObject findAllIncoming(int pageNum, int pageSize, String producerName, String productName, String bizStartDate, String bizEndDate);
 
+    int addIncoming(Incoming Incoming, String materialRelationsStr);
+
     int addIncoming(Incoming Incoming);
 
     int deleteIncomingById(int id);
+
+    int updateIncoming(Incoming Incoming, String materialRelationsStr);
 
     int updateIncoming(Incoming Incoming);
 
@@ -17,4 +21,8 @@ public interface IIncomingService {
     JSONObject getIncomingStatement(String producerName, String bizStartDate, String bizEndDate);
 
     JSONObject findProducerNamesByPrefix(String prefix, int pageNum, int pageSize);
+
+    JSONObject getIncomingMaterialOperations(int id);
+
+    JSONObject findIncomingById(int id);
 }

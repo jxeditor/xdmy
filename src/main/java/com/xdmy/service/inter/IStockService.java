@@ -21,4 +21,6 @@ public interface IStockService {
     int flattenStock();
     
     int getFlattenStockCount();
+    
+    int batchDeleteStock(String ids);
 }

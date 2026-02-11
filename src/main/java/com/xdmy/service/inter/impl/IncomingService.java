@@ -37,9 +37,15 @@ public class IncomingService extends BaseService implements IIncomingService {
     }
 
     @Override
+    public int addIncoming(Incoming incoming, String materialRelationsStr) {
+        DBContextHolder.setDbType("primary");
+        return daoFacade.getIncomingDao().addIncoming(incoming, materialRelationsStr);
+    }
+
+    @Override
     public int addIncoming(Incoming incoming) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getIncomingDao().addIncoming(incoming);
+        return daoFacade.getIncomingDao().addIncoming(incoming, null);
     }
 
     @Override
@@ -49,9 +55,54 @@ public class IncomingService extends BaseService implements IIncomingService {
     }
 
     @Override
+    public int updateIncoming(Incoming incoming, String materialRelationsStr) {
+        DBContextHolder.setDbType("primary");
+        return daoFacade.getIncomingDao().updateIncoming(incoming, materialRelationsStr);
+    }
+
+    @Override
     public int updateIncoming(Incoming incoming) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getIncomingDao().updateIncoming(incoming);
+        return daoFacade.getIncomingDao().updateIncoming(incoming, null);
+    }
+
+    @Override
+    public JSONObject getIncomingMaterialOperations(int id) {
+        DBContextHolder.setDbType("primary");
+        List<java.util.Map<String, Object>> operations = daoFacade.getIncomingDao().getIncomingMaterialOperations(id);
+        JSONArray data = new JSONArray();
+        for (java.util.Map<String, Object> operation : operations) {
+            JSONObject obj = new JSONObject();
+            obj.put("material_name", operation.get("material_name"));
+            obj.put("quantity", operation.get("quantity"));
+            data.add(obj);
+        }
+        JSONObject result = new JSONObject();
+        result.put("data", data);
+        return result;
+    }
+
+    @Override
+    public JSONObject findIncomingById(int id) {
+        DBContextHolder.setDbType("primary");
+        Incoming incoming = daoFacade.getIncomingDao().findIncomingById(id);
+        JSONObject result = new JSONObject();
+        if (incoming != null) {
+            JSONObject data = new JSONObject();
+            data.put("id", incoming.getId());
+            data.put("odd", incoming.getOdd());
+            data.put("producer", incoming.getProducer());
+            data.put("product", incoming.getProduct());
+            data.put("billdate", incoming.getBilldate());
+            data.put("amount", incoming.getAmount());
+            data.put("unitprice", incoming.getUnitprice());
+            data.put("money", incoming.getMoney());
+            data.put("paystatus", incoming.getPaystatus());
+            data.put("remark", incoming.getRemark());
+            data.put("operate_material", incoming.getOperate_material());
+            result.put("data", data);
+        }
+        return result;
     }
 
     @Override
@@ -98,6 +149,7 @@ public class IncomingService extends BaseService implements IIncomingService {
                     obj.put("money", incoming.getMoney());
                     obj.put("paystatus", incoming.getPaystatus());
                     obj.put("remark", incoming.getRemark());
+                    obj.put("operate_material", incoming.getOperate_material());
                     data.add(obj);
                 }
             }

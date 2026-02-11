@@ -14,8 +14,14 @@ public interface IShipmentService {
     int deleteShipmentById(int id);
 
     int updateShipment(Shipment shipment);
+    
+    int updateShipment(Shipment shipment, String materialRelationsStr);
 
     int updatePaystatusShipmentById(int id);
 
     JSONObject findCustomerNamesByPrefix(String prefix, int pageNum, int pageSize);
+
+    JSONObject findMaterialOperationsByShipmentId(int shipmentId);
+
+    Shipment findShipmentById(int id);
 }

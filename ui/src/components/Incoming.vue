@@ -116,6 +116,13 @@
         </el-table-column>
         <el-table-column prop="remark" label="备注" width="100px" align="center" show-overflow-tooltip>
         </el-table-column>
+        <el-table-column prop="operate_material" label="是否操作原材料" width="150px" align="center">
+          <template #default="scope">
+            <el-tag :type="scope.row.operate_material === 1 ? 'success' : 'info'">
+              {{ scope.row.operate_material === 1 ? '是' : '否' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column fixed="right" label="操作" align="center" width="180">
           <template #default="opt">
             <el-button type="primary" @click="onUpdateIncoming(opt.row)">修改</el-button>
@@ -144,7 +151,7 @@
             <el-input v-model="addIncomingForm.producer"></el-input>
           </el-form-item>
           <el-form-item label="产品:" prop="product">
-            <el-input v-model="addIncomingForm.product"></el-input>
+            <el-input v-model="addIncomingForm.product" @input="handleProductChange('add')"></el-input>
           </el-form-item>
           <el-form-item label="日期:" prop="billdate">
             <el-date-picker
@@ -171,6 +178,40 @@
           <el-form-item label="备注:" prop="remark">
             <el-input v-model="addIncomingForm.remark"></el-input>
           </el-form-item>
+          <el-form-item label="是否操作原材料:" prop="operate_material" label-width="120px">
+            <el-switch v-model="addIncomingForm.operate_material" :active-value="1" :inactive-value="0" @change="handleAddOperateMaterialChange"></el-switch>
+          </el-form-item>
+          <!-- 原材料关系展示 -->
+          <el-form-item v-if="addIncomingForm.operate_material === 1" label="原材料关系:">
+            <el-table :data="addMaterialRelations" style="width: 100%">
+              <el-table-column prop="materialName" label="原材料名称"></el-table-column>
+              <el-table-column prop="quantity" label="数量" width="150">
+                <template #default="scope">
+                  <el-input-number v-model="scope.row.quantity" :min="1" :step="1" style="width: 100%" />
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="150" fixed="right">
+                <template #default="scope">
+                  <el-button type="danger" size="small" @click="removeAddMaterialRelation(scope.$index)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <!-- 添加原材料表单 -->
+            <div v-if="addIncomingForm.operate_material === 1" style="margin-top: 15px; padding: 15px; border: 1px solid #e4e7ed; border-radius: 4px;">
+              <h4 style="margin-bottom: 10px;">添加原材料</h4>
+              <el-row :gutter="20">
+                <el-col :span="10">
+                  <el-input v-model="newAddMaterial.materialName" placeholder="原材料名称" style="width: 100%" />
+                </el-col>
+                <el-col :span="8">
+                  <el-input-number v-model="newAddMaterial.quantity" :min="1" :step="1" placeholder="数量" style="width: 100%" />
+                </el-col>
+                <el-col :span="6">
+                  <el-button type="primary" @click="addNewAddMaterial">添加</el-button>
+                </el-col>
+              </el-row>
+            </div>
+          </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onAddIncomingCommit(`addIncomingForm`)">确定</el-button>
             <el-button @click="onAddIncomingCancel">取消</el-button>
@@ -187,7 +228,7 @@
             <el-input v-model="updateIncomingForm.producer"></el-input>
           </el-form-item>
           <el-form-item label="产品:" prop="product">
-            <el-input v-model="updateIncomingForm.product"></el-input>
+            <el-input v-model="updateIncomingForm.product" @input="handleProductChange('update')"></el-input>
           </el-form-item>
           <el-form-item label="日期:" prop="billdate">
             <el-date-picker
@@ -213,6 +254,40 @@
           </el-form-item>
           <el-form-item label="备注:" prop="remark">
             <el-input v-model="updateIncomingForm.remark"></el-input>
+          </el-form-item>
+          <el-form-item label="是否操作原材料:" prop="operate_material" label-width="120px">
+            <el-switch v-model="updateIncomingForm.operate_material" :active-value="1" :inactive-value="0" @change="handleUpdateOperateMaterialChange"></el-switch>
+          </el-form-item>
+          <!-- 原材料关系展示 -->
+          <el-form-item v-if="updateIncomingForm.operate_material === 1" label="原材料关系:">
+            <el-table :data="updateMaterialRelations" style="width: 100%">
+              <el-table-column prop="materialName" label="原材料名称"></el-table-column>
+              <el-table-column prop="quantity" label="数量" width="150">
+                <template #default="scope">
+                  <el-input-number v-model="scope.row.quantity" :min="1" :step="1" style="width: 100%" />
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="150" fixed="right">
+                <template #default="scope">
+                  <el-button type="danger" size="small" @click="removeUpdateMaterialRelation(scope.$index)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <!-- 添加原材料表单 -->
+            <div v-if="updateIncomingForm.operate_material === 1" style="margin-top: 15px; padding: 15px; border: 1px solid #e4e7ed; border-radius: 4px;">
+              <h4 style="margin-bottom: 10px;">添加原材料</h4>
+              <el-row :gutter="20">
+                <el-col :span="10">
+                  <el-input v-model="newUpdateMaterial.materialName" placeholder="原材料名称" style="width: 100%" />
+                </el-col>
+                <el-col :span="8">
+                  <el-input-number v-model="newUpdateMaterial.quantity" :min="1" :step="1" placeholder="数量" style="width: 100%" />
+                </el-col>
+                <el-col :span="6">
+                  <el-button type="primary" @click="addNewUpdateMaterial">添加</el-button>
+                </el-col>
+              </el-row>
+            </div>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onUpdateIncomingCommit(`updateIncomingForm`)">确定</el-button>
@@ -296,66 +371,365 @@ export default {
     },
     onAddIncoming() {
       this.addIncomingVisible = true
+      // 重置原材料关系数据
+      this.addMaterialRelations = []
+      this.newAddMaterial = { material_name: '', quantity: 1 }
     },
     onUpdateIncoming(incoming) {
+      console.log('修改入货单数据:', incoming)
       this.updateIncomingForm = incoming
+      // 存储初始的operate_material状态
+      this.initialOperateMaterial = incoming.operate_material
       this.updateIncomingVisible = true
+      // 重置原材料关系数据
+      this.updateMaterialRelations = []
+      this.newUpdateMaterial = { material_name: '', quantity: 1 }
+      // 如果操作原材料开关是打开的，获取历史操作记录
+      console.log('operate_material值:', incoming.operate_material, '类型:', typeof incoming.operate_material)
+      if (incoming.operate_material == 1) {
+        console.log('操作原材料开关是打开的，获取历史操作记录:', incoming.id)
+        this.getIncomingMaterialOperations(incoming.id)
+      } else {
+        console.log('操作原材料开关是关闭的，清空原材料关系')
+        this.updateMaterialRelations = []
+      }
+    },
+    // 处理添加入货单时操作原材料开关变化
+    handleAddOperateMaterialChange(val) {
+      console.log('添加入货单操作原材料开关变化:', val)
+      if (val === 1) {
+        console.log('添加入货单开关开启，获取原材料关系:', this.addIncomingForm.product)
+        this.getMaterialRelations(this.addIncomingForm.product, 'add')
+      } else {
+        console.log('添加入货单开关关闭，清空原材料关系')
+        this.addMaterialRelations = []
+      }
+    },
+    // 处理修改入货单时操作原材料开关变化
+    handleUpdateOperateMaterialChange(val) {
+      console.log('修改入货单操作原材料开关变化:', val)
+      if (val === 1) {
+        console.log('修改入货单开关开启，根据当前产品名获取原材料关系:', this.updateIncomingForm.product)
+        this.getMaterialRelations(this.updateIncomingForm.product, 'update')
+      } else {
+        console.log('修改入货单开关关闭，清空原材料关系')
+        this.updateMaterialRelations = []
+      }
+    },
+    // 处理产品名变化
+    handleProductChange(type) {
+      console.log('产品名变化，类型:', type)
+      if (type === 'add') {
+        console.log('添加入货单产品名变化:', this.addIncomingForm.product)
+        if (this.addIncomingForm.operate_material === 1) {
+          console.log('添加入货单操作原材料开关开启，重新获取原材料关系')
+          this.getMaterialRelations(this.addIncomingForm.product, 'add')
+        }
+      } else if (type === 'update') {
+        console.log('修改入货单产品名变化:', this.updateIncomingForm.product)
+        if (this.updateIncomingForm.operate_material === 1) {
+          console.log('修改入货单操作原材料开关开启，重新获取原材料关系')
+          this.getMaterialRelations(this.updateIncomingForm.product, 'update')
+        }
+      }
+    },
+    // 添加入货单时添加新的原材料
+    addNewAddMaterial() {
+      if (this.newAddMaterial.materialName && this.newAddMaterial.quantity > 0) {
+        this.addMaterialRelations.push({
+          materialName: this.newAddMaterial.materialName,
+          quantity: this.newAddMaterial.quantity
+        })
+        this.newAddMaterial = { materialName: '', quantity: 1 }
+      } else {
+        this.$message.error('请输入原材料名称和数量')
+      }
+    },
+    // 添加入货单时删除原材料
+    removeAddMaterialRelation(index) {
+      this.addMaterialRelations.splice(index, 1)
+    },
+    // 修改入货单时添加新的原材料
+    addNewUpdateMaterial() {
+      if (this.newUpdateMaterial.materialName && this.newUpdateMaterial.quantity > 0) {
+        this.updateMaterialRelations.push({
+          materialName: this.newUpdateMaterial.materialName,
+          quantity: this.newUpdateMaterial.quantity
+        })
+        this.newUpdateMaterial = { materialName: '', quantity: 1 }
+      } else {
+        this.$message.error('请输入原材料名称和数量')
+      }
+    },
+    // 修改入货单时删除原材料
+    removeUpdateMaterialRelation(index) {
+      this.updateMaterialRelations.splice(index, 1)
+    },
+    // 根据产品名称获取原材料关系
+    getMaterialRelations(productName, type) {
+      if (!productName) {
+        return
+      }
+      const that = this
+      // 使用硬编码的API基础URL，与getAllIncoming方法保持一致
+      const apiBaseUrl = 'http://127.0.0.1:8088';
+      console.log('获取原材料关系API URL:', `${apiBaseUrl}/productMaterialRelation/findRelationsByProductName?productName=${productName}`)
+      this.$axios.get(`${apiBaseUrl}/productMaterialRelation/findRelationsByProductName?productName=${productName}`)
+        .then(function (response) {
+          console.log('获取原材料关系响应:', response)
+          if (response.data.code === 1) {
+            const relations = response.data.data
+            console.log('获取到的原材料关系:', relations)
+            if (type === 'add') {
+              that.addMaterialRelations = relations
+              console.log('添加入货单原材料关系更新为:', that.addMaterialRelations)
+            } else if (type === 'update') {
+              that.updateMaterialRelations = relations
+              console.log('修改入货单原材料关系更新为:', that.updateMaterialRelations)
+            }
+          } else {
+            console.log('获取原材料关系失败，响应码:', response.data.code)
+            // 检索不到原材料关系时，保持列表为空，不弹出错误提示
+            if (type === 'add') {
+              that.addMaterialRelations = []
+            } else if (type === 'update') {
+              that.updateMaterialRelations = []
+            }
+          }
+        }).catch(function (error) {
+        console.error('获取原材料关系失败:', error)
+        // 网络错误时也不弹出错误提示，保持列表为空
+        if (type === 'add') {
+          that.addMaterialRelations = []
+        } else if (type === 'update') {
+          that.updateMaterialRelations = []
+        }
+      })
+    },
+    // 根据入货单ID获取原材料操作记录
+    getIncomingMaterialOperations(incomingId) {
+      const that = this
+      this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/incoming/getIncomingMaterialOperations?id=${incomingId}`)
+        .then(function (response) {
+          if (response.data.code === 1) {
+            that.updateMaterialRelations = response.data.data
+          } else {
+            that.$message.error(response.data.msg)
+          }
+        }).catch(function (error) {
+        console.error('获取原材料操作记录失败:', error)
+        that.$message.error('获取原材料操作记录失败')
+      })
+    },
+    // 校验原材料库存
+    validateMaterialStock(materialRelations, amount) {
+      return new Promise((resolve, reject) => {
+        if (!materialRelations || materialRelations.length === 0) {
+          resolve()
+          return
+        }
+        
+        const validationPromises = materialRelations.map(relation => {
+          return new Promise((innerResolve, innerReject) => {
+            // 检查materialName是否存在
+            if (!relation.materialName || relation.materialName.trim() === '') {
+              innerReject('原材料名称不能为空')
+              return
+            }
+            this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/stock/checkMaterialExist?materialName=${relation.materialName}`)
+              .then(response => {
+                if (response.data.code === 1) {
+                  innerResolve()
+                } else {
+                  innerReject(`原材料 ${relation.materialName} 不存在`)
+                }
+              })
+              .catch(error => {
+                innerReject(`校验原材料 ${relation.materialName} 库存失败: ${error}`)
+              })
+          })
+        })
+        
+        Promise.all(validationPromises)
+          .then(() => {
+            resolve()
+          })
+          .catch(errorMessage => {
+            reject(errorMessage)
+          })
+      })
+    },
+    // 操作原材料库存
+    operateMaterialStock(materialRelations, amount, operationType) {
+      return new Promise((resolve, reject) => {
+        if (!materialRelations || materialRelations.length === 0) {
+          resolve()
+          return
+        }
+        
+        const operationPromises = materialRelations.map(relation => {
+          return new Promise((innerResolve, innerReject) => {
+            // 检查materialName是否存在
+            if (!relation.materialName || relation.materialName.trim() === '') {
+              innerReject('原材料名称不能为空')
+              return
+            }
+            const totalQuantity = relation.quantity * amount
+            const stockChange = operationType === 'increase' ? totalQuantity : -totalQuantity
+            
+            this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/operateMaterialStock`, {
+              materialName: relation.materialName,
+              stockChange: stockChange
+            })
+              .then(response => {
+                if (response.data.code === 1) {
+                  innerResolve()
+                } else {
+                  innerReject(`操作原材料 ${relation.materialName} 库存失败: ${response.data.msg}`)
+                }
+              })
+              .catch(error => {
+                innerReject(`操作原材料 ${relation.materialName} 库存失败: ${error}`)
+              })
+          })
+        })
+        
+        Promise.all(operationPromises)
+          .then(() => {
+            resolve()
+          })
+          .catch(errorMessage => {
+            reject(errorMessage)
+          })
+      })
     },
     onAddIncomingCommit(addIncomingForm) {
       const that = this
       this.$refs[addIncomingForm].validate((valid) => {
         if (valid) {
-          let param = new URLSearchParams()
-          param.append(`odd`, this.addIncomingForm.odd)
-          param.append(`producer`, this.addIncomingForm.producer)
-          param.append(`product`, this.addIncomingForm.product)
-          param.append(`billdate`, this.addIncomingForm.billdate)
-          param.append(`amount`, this.addIncomingForm.amount)
-          param.append(`unitprice`, this.addIncomingForm.unitprice)
-          param.append(`paystatus`, this.addIncomingForm.paystatus)
-          param.append(`remark`, this.addIncomingForm.remark)
-          this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/incoming/addIncoming`, param).then(function (response) {
-            if (response.data.code === 1) {
-              that.addIncomingVisible = false
-              that.getAllIncoming()
-            } else {
-              that.$message.error(response.data.msg);
-            }
-          }).catch(function (error) {
-            that.$message.error(error);
-          })
+          // 如果开启了操作原材料，校验库存
+          if (that.addIncomingForm.operate_material === 1) {
+            that.validateMaterialStock(that.addMaterialRelations, that.addIncomingForm.amount)
+              .then(() => {
+                // 库存校验通过，继续入货
+                that.doAddIncoming()
+              })
+              .catch(errorMessage => {
+                that.$message.error(errorMessage)
+              })
+          } else {
+            // 未开启操作原材料，直接入货
+            that.doAddIncoming()
+          }
         } else {
           return false
         }
+      })
+    },
+    // 执行添加入货单操作
+    doAddIncoming() {
+      const that = this
+      let param = new URLSearchParams()
+      param.append(`odd`, this.addIncomingForm.odd)
+      param.append(`producer`, this.addIncomingForm.producer)
+      param.append(`product`, this.addIncomingForm.product)
+      param.append(`billdate`, this.addIncomingForm.billdate)
+      param.append(`amount`, this.addIncomingForm.amount)
+      param.append(`unitprice`, this.addIncomingForm.unitprice)
+      param.append(`paystatus`, this.addIncomingForm.paystatus)
+      param.append(`remark`, this.addIncomingForm.remark)
+      param.append(`operate_material`, this.addIncomingForm.operate_material)
+      // 添加原材料关系数据
+      if (this.addIncomingForm.operate_material === 1) {
+        param.append(`materialRelations`, JSON.stringify(this.addMaterialRelations))
+      }
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/incoming/addIncoming`, param).then(function (response) {
+        if (response.data.code === 1) {
+          // 入货成功，操作原材料库存
+            if (that.addIncomingForm.operate_material === 1) {
+                that.operateMaterialStock(that.addMaterialRelations, that.addIncomingForm.amount, 'increase')
+                  .then(() => {
+                    console.log('原材料库存操作成功')
+                  })
+                  .catch(errorMessage => {
+                    console.error('原材料库存操作失败:', errorMessage)
+                    // 库存操作失败不影响入货结果，只记录错误
+                  })
+            }
+          that.addIncomingVisible = false
+          that.getAllIncoming()
+        } else {
+          that.$message.error(response.data.msg);
+        }
+      }).catch(function (error) {
+        that.$message.error(error);
       })
     },
     onUpdateIncomingCommit(updateIncomingForm) {
       const that = this
       this.$refs[updateIncomingForm].validate((valid) => {
         if (valid) {
-          let param = new URLSearchParams()
-          param.append(`id`, this.updateIncomingForm.id)
-          param.append(`odd`, this.updateIncomingForm.odd)
-          param.append(`producer`, this.updateIncomingForm.producer)
-          param.append(`product`, this.updateIncomingForm.product)
-          param.append(`billdate`, this.updateIncomingForm.billdate)
-          param.append(`amount`, this.updateIncomingForm.amount)
-          param.append(`unitprice`, this.updateIncomingForm.unitprice)
-          param.append(`paystatus`, this.updateIncomingForm.paystatus)
-          param.append(`remark`, this.updateIncomingForm.remark)
-          this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/incoming/updateIncoming`, param).then(function (response) {
-            if (response.data.code === 1) {
-              that.updateIncomingVisible = false
-              that.getAllIncoming()
-            } else {
-              that.$message.error(response.data.msg);
-            }
-          }).catch(function (error) {
-            that.$message.error(error);
-          })
+          // 如果开启了操作原材料，需要处理库存
+          if (that.updateIncomingForm.operate_material === 1) {
+            // 1. 获取原有入货单信息，用于恢复库存
+            that.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/incoming/findIncomingById?id=${that.updateIncomingForm.id}`)
+              .then(oldIncomingResponse => {
+                if (oldIncomingResponse.data.code === 1) {
+                  const oldIncoming = oldIncomingResponse.data.data
+                  // 2. 校验新的原材料库存
+                  return that.validateMaterialStock(that.updateMaterialRelations, that.updateIncomingForm.amount)
+                    .then(() => {
+                      return oldIncoming
+                    })
+                } else {
+                  throw new Error('获取原有入货单信息失败')
+                }
+              })
+              .then(oldIncoming => {
+                // 3. 库存校验通过，执行修改操作
+                return that.doUpdateIncoming(oldIncoming)
+              })
+              .catch(errorMessage => {
+                that.$message.error(errorMessage.toString())
+              })
+          } else {
+            // 未开启操作原材料，直接修改
+            that.doUpdateIncoming(null)
+          }
         } else {
           return false
         }
+      })
+    },
+    // 执行修改入货单操作
+    doUpdateIncoming(oldIncoming) {
+      const that = this
+      let param = new URLSearchParams()
+      param.append(`id`, this.updateIncomingForm.id)
+      param.append(`odd`, this.updateIncomingForm.odd)
+      param.append(`producer`, this.updateIncomingForm.producer)
+      param.append(`product`, this.updateIncomingForm.product)
+      param.append(`billdate`, this.updateIncomingForm.billdate)
+      param.append(`amount`, this.updateIncomingForm.amount)
+      param.append(`unitprice`, this.updateIncomingForm.unitprice)
+      param.append(`paystatus`, this.updateIncomingForm.paystatus)
+      param.append(`remark`, this.updateIncomingForm.remark)
+      param.append(`operate_material`, this.updateIncomingForm.operate_material)
+      // 添加原材料关系数据
+      if (this.updateIncomingForm.operate_material === 1) {
+        param.append(`materialRelations`, JSON.stringify(this.updateMaterialRelations))
+      }
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/incoming/updateIncoming`, param).then(function (response) {
+        if (response.data.code === 1) {
+          // 修改成功，后端会自动处理原材料库存
+          console.log('修改入货单成功')
+          that.updateIncomingVisible = false
+          that.getAllIncoming()
+        } else {
+          that.$message.error(response.data.msg);
+        }
+      }).catch(function (error) {
+        that.$message.error(error);
       })
     },
     onDeleteIncoming(id) {
@@ -373,16 +747,23 @@ export default {
     },
     getAllIncoming() {
       const that = this;
-      this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/incoming/findAllIncoming` +
+      // 硬编码API地址，测试是否能够连接
+      const apiBaseUrl = 'http://127.0.0.1:8088';
+      console.log('Hardcoded API Base URL:', apiBaseUrl);
+      const url = `${apiBaseUrl}/incoming/findAllIncoming` +
         `?pageNum=` + that.page.index + `&pageSize=` + that.page.size +
         `&producerName=` + that.producerInput +
         `&productName=` + that.productInput +
-        `&bizStartDate=` + (that.billDateInput ? that.billDateInput[0] : ``) + `&bizEndDate=` + (that.billDateInput ? that.billDateInput[1] : ``))
+        `&bizStartDate=` + (that.billDateInput ? that.billDateInput[0] : ``) + `&bizEndDate=` + (that.billDateInput ? that.billDateInput[1] : ``);
+      console.log('API URL:', url);
+      this.$axios.get(url)
         .then(function (response) {
+          console.log('API Response:', response);
           that.IncomingData = response.data.data
           that.page.total = response.data.total
         }).catch(function (error) {
-        that.$message.error(error);
+        console.error('API Error:', error);
+        that.$message.error('连接失败，请检查网络或服务状态');
       })
     },
     searchIncoming() {
@@ -513,7 +894,8 @@ export default {
         amount: 0,
         unitprice: 0,
         paystatus: `0`,
-        remark: `无`
+        remark: `无`,
+        operate_material: 0
       },
       updateIncomingForm: {
         odd: ``,
@@ -523,8 +905,21 @@ export default {
         amount: 0,
         unitprice: 0,
         paystatus: `0`,
-        remark: `无`
+        remark: `无`,
+        operate_material: 0
       },
+      // 原材料关系相关数据
+      addMaterialRelations: [],
+      newAddMaterial: {
+        material_name: '',
+        quantity: 1
+      },
+      updateMaterialRelations: [],
+      newUpdateMaterial: {
+        material_name: '',
+        quantity: 1
+      },
+      initialOperateMaterial: 0,
       addIncomingFormRules: {
         odd: [
           {required: true, message: `请输入单号`, trigger: `blur`}

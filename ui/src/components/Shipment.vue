@@ -124,6 +124,13 @@
         </el-table-column>
         <el-table-column prop="remark" label="备注" width="100px" align="center" show-overflow-tooltip>
         </el-table-column>
+        <el-table-column prop="operate_material" label="是否操作原材料" width="150px" align="center">
+          <template #default="scope">
+            <el-tag :type="scope.row.operate_material === 1 ? 'success' : 'info'">
+              {{ scope.row.operate_material === 1 ? '是' : '否' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column fixed="right" label="操作" align="center" width="180">
           <template #default="opt">
             <el-button type="primary" @click="onUpdateShipment(opt.row)">修改</el-button>
@@ -144,7 +151,7 @@
         <el-button @click="onClearSelection()">取消选择</el-button>
       </div>
       <el-dialog title="开单" v-model="addShipmentVisible" width="80%">
-        <el-form ref="addShipmentForm" :rules="addShipmentFormRules" :model="addShipmentForm" label-width="100px">
+        <el-form ref="addShipmentForm" :rules="addShipmentFormRules" :model="addShipmentForm" label-width="180px">
           <el-form-item label="单号:" prop="odd">
             <el-input v-model="addShipmentForm.odd"></el-input>
           </el-form-item>
@@ -166,7 +173,7 @@
           </el-form-item>
           <el-form-item label="产品:" prop="product">
             <div class="search-container">
-              <el-input v-model="addShipmentForm.product" placeholder="请输入产品名称"></el-input>
+              <el-input v-model="addShipmentForm.product" placeholder="请输入产品名称" @input="handleAddProductChange"></el-input>
               <!-- 产品联想结果下拉框 -->
               <div v-if="showAddProductSuggestions && addProductSuggestions.length > 0" class="suggestions-dropdown">
                 <div 
@@ -210,6 +217,40 @@
           <el-form-item label="备注:" prop="remark">
             <el-input v-model="addShipmentForm.remark"></el-input>
           </el-form-item>
+          <el-form-item label="是否操作原材料:" prop="operate_material">
+            <el-switch v-model="addShipmentForm.operate_material" :active-value="1" :inactive-value="0" @change="handleAddOperateMaterialChange"></el-switch>
+          </el-form-item>
+          <!-- 原材料关系展示 -->
+          <el-form-item v-if="addShipmentForm.operate_material === 1" label="原材料关系:">
+            <el-table :data="addMaterialRelations" style="width: 100%">
+              <el-table-column prop="material_name" label="原材料名称"></el-table-column>
+              <el-table-column prop="quantity" label="数量" width="150">
+                <template #default="scope">
+                  <el-input-number v-model="scope.row.quantity" :min="1" :step="1" style="width: 100%" />
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="150" fixed="right">
+                <template #default="scope">
+                  <el-button type="danger" size="small" @click="removeAddMaterialRelation(scope.$index)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <!-- 添加原材料表单 -->
+            <div v-if="addShipmentForm.operate_material === 1" style="margin-top: 15px; padding: 15px; border: 1px solid #e4e7ed; border-radius: 4px;">
+              <h4 style="margin-bottom: 10px;">添加原材料</h4>
+              <el-row :gutter="20">
+                <el-col :span="10">
+                  <el-input v-model="newAddMaterial.material_name" placeholder="原材料名称" style="width: 100%" />
+                </el-col>
+                <el-col :span="8">
+                  <el-input-number v-model="newAddMaterial.quantity" :min="1" :step="1" placeholder="数量" style="width: 100%" />
+                </el-col>
+                <el-col :span="6">
+                  <el-button type="primary" @click="addNewAddMaterial">添加</el-button>
+                </el-col>
+              </el-row>
+            </div>
+          </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onAddShipmentCommit(`addShipmentForm`)">确定</el-button>
             <el-button @click="onAddShipmentCancel">取消</el-button>
@@ -218,7 +259,7 @@
       </el-dialog>
       <el-dialog title="修改单据信息" v-model="updateShipmentVisible" width="80%">
         <el-form ref="updateShipmentForm" :rules="updateShipmentFormRules" :model="updateShipmentForm"
-                 label-width="100px">
+                 label-width="180px">
           <el-form-item label="单号:" prop="odd">
             <el-input v-model="updateShipmentForm.odd"></el-input>
           </el-form-item>
@@ -240,7 +281,7 @@
           </el-form-item>
           <el-form-item label="产品:" prop="product">
             <div class="search-container">
-              <el-input v-model="updateShipmentForm.product" placeholder="请输入产品名称"></el-input>
+              <el-input v-model="updateShipmentForm.product" placeholder="请输入产品名称" @input="handleUpdateProductChange"></el-input>
               <!-- 产品联想结果下拉框 -->
               <div v-if="showUpdateProductSuggestions && updateProductSuggestions.length > 0" class="suggestions-dropdown">
                 <div 
@@ -283,6 +324,40 @@
           </el-form-item>
           <el-form-item label="备注:" prop="remark">
             <el-input v-model="updateShipmentForm.remark"></el-input>
+          </el-form-item>
+          <el-form-item label="是否操作原材料:" prop="operate_material">
+            <el-switch v-model="updateShipmentForm.operate_material" :active-value="1" :inactive-value="0" @change="handleUpdateOperateMaterialChange"></el-switch>
+          </el-form-item>
+          <!-- 原材料关系展示 -->
+          <el-form-item v-if="updateShipmentForm.operate_material === 1" label="原材料关系:">
+            <el-table :data="updateMaterialRelations" style="width: 100%">
+              <el-table-column prop="material_name" label="原材料名称"></el-table-column>
+              <el-table-column prop="quantity" label="数量" width="150">
+                <template #default="scope">
+                  <el-input-number v-model="scope.row.quantity" :min="1" :step="1" style="width: 100%" />
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="150" fixed="right">
+                <template #default="scope">
+                  <el-button type="danger" size="small" @click="removeUpdateMaterialRelation(scope.$index)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <!-- 添加原材料表单 -->
+            <div v-if="updateShipmentForm.operate_material === 1" style="margin-top: 15px; padding: 15px; border: 1px solid #e4e7ed; border-radius: 4px;">
+              <h4 style="margin-bottom: 10px;">添加原材料</h4>
+              <el-row :gutter="20">
+                <el-col :span="10">
+                  <el-input v-model="newUpdateMaterial.material_name" placeholder="原材料名称" style="width: 100%" />
+                </el-col>
+                <el-col :span="8">
+                  <el-input-number v-model="newUpdateMaterial.quantity" :min="1" :step="1" placeholder="数量" style="width: 100%" />
+                </el-col>
+                <el-col :span="6">
+                  <el-button type="primary" @click="addNewUpdateMaterial">添加</el-button>
+                </el-col>
+              </el-row>
+            </div>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onUpdateShipmentCommit(`updateShipmentForm`)">确定</el-button>
@@ -365,68 +440,152 @@ export default {
       this.addShipmentVisible = true
     },
     onUpdateShipment(Shipment) {
+      console.log('修改出货单数据:', Shipment)
       this.updateShipmentForm = Shipment
+      // 存储初始的operate_material状态
+      this.initialOperateMaterial = Shipment.operate_material
       this.updateShipmentVisible = true
+      // 如果操作原材料开关是打开的，获取历史操作记录
+      console.log('operate_material值:', Shipment.operate_material, '类型:', typeof Shipment.operate_material)
+      if (Shipment.operate_material == 1) {
+        console.log('操作原材料开关是打开的，获取历史操作记录:', Shipment.id)
+        this.getShipmentMaterialOperations(Shipment.id)
+      } else {
+        console.log('操作原材料开关是关闭的，清空原材料关系')
+        this.updateMaterialRelations = []
+      }
     },
     onAddShipmentCommit(addShipmentForm) {
       const that = this
       this.$refs[addShipmentForm].validate((valid) => {
         if (valid) {
-          let param = new URLSearchParams()
-          param.append(`odd`, this.addShipmentForm.odd)
-          param.append(`customer`, this.addShipmentForm.customer)
-          param.append(`product`, this.addShipmentForm.product)
-          param.append(`billdate`, this.addShipmentForm.billdate)
-          param.append(`amount`, this.addShipmentForm.amount)
-          param.append(`unitprice`, this.addShipmentForm.unitprice)
-          param.append(`paystatus`, this.addShipmentForm.paystatus)
-          param.append(`boardcost`, this.addShipmentForm.boardcost)
-          param.append(`fireproofboardcost`, this.addShipmentForm.fireproofboardcost)
-          param.append(`remark`, this.addShipmentForm.remark)
-          this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/shipment/addShipment`, param).then(function (response) {
-            if (response.data.code === 1) {
-              that.addShipmentVisible = false
-              that.getAllShipment()
-            } else {
-              that.$message.error(response.data.msg);
-            }
-          }).catch(function (error) {
-            that.$message.error(error);
-          })
+          // 如果开启了操作原材料，校验库存
+          if (that.addShipmentForm.operate_material === 1) {
+            that.validateMaterialStock(that.addMaterialRelations, that.addShipmentForm.amount)
+              .then(() => {
+                // 库存校验通过，继续开单
+                that.doAddShipment()
+              })
+              .catch(errorMessage => {
+                that.$message.error(errorMessage)
+              })
+          } else {
+            // 未开启操作原材料，直接开单
+            that.doAddShipment()
+          }
         } else {
           return false
         }
+      })
+    },
+    // 执行开单操作
+    doAddShipment() {
+      const that = this
+      let param = new URLSearchParams()
+      param.append(`odd`, this.addShipmentForm.odd)
+      param.append(`customer`, this.addShipmentForm.customer)
+      param.append(`product`, this.addShipmentForm.product)
+      param.append(`billdate`, this.addShipmentForm.billdate)
+      param.append(`amount`, this.addShipmentForm.amount)
+      param.append(`unitprice`, this.addShipmentForm.unitprice)
+      param.append(`paystatus`, this.addShipmentForm.paystatus)
+      param.append(`boardcost`, this.addShipmentForm.boardcost)
+      param.append(`fireproofboardcost`, this.addShipmentForm.fireproofboardcost)
+      param.append(`remark`, this.addShipmentForm.remark)
+      param.append(`operate_material`, this.addShipmentForm.operate_material)
+      // 添加原材料关系数据
+      if (this.addShipmentForm.operate_material === 1) {
+        param.append(`materialRelations`, JSON.stringify(this.addMaterialRelations))
+      }
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/shipment/addShipment`, param).then(function (response) {
+        if (response.data.code === 1) {
+          // 开单成功，操作原材料库存
+            if (that.addShipmentForm.operate_material === 1) {
+                that.operateMaterialStock(that.addMaterialRelations, that.addShipmentForm.amount, 'increase')
+                  .then(() => {
+                    console.log('原材料库存操作成功')
+                  })
+                  .catch(errorMessage => {
+                    console.error('原材料库存操作失败:', errorMessage)
+                    // 库存操作失败不影响开单结果，只记录错误
+                  })
+            }
+          that.addShipmentVisible = false
+          that.getAllShipment()
+        } else {
+          that.$message.error(response.data.msg);
+        }
+      }).catch(function (error) {
+        that.$message.error(error);
       })
     },
     onUpdateShipmentCommit(updateShipmentForm) {
       const that = this
       this.$refs[updateShipmentForm].validate((valid) => {
         if (valid) {
-          let param = new URLSearchParams()
-          param.append(`id`, this.updateShipmentForm.id)
-          param.append(`odd`, this.updateShipmentForm.odd)
-          param.append(`customer`, this.updateShipmentForm.customer)
-          param.append(`product`, this.updateShipmentForm.product)
-          param.append(`billdate`, this.updateShipmentForm.billdate)
-          param.append(`amount`, this.updateShipmentForm.amount)
-          param.append(`unitprice`, this.updateShipmentForm.unitprice)
-          param.append(`paystatus`, this.updateShipmentForm.paystatus)
-          param.append(`boardcost`, this.updateShipmentForm.boardcost)
-          param.append(`fireproofboardcost`, this.updateShipmentForm.fireproofboardcost)
-          param.append(`remark`, this.updateShipmentForm.remark)
-          this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/shipment/updateShipment`, param).then(function (response) {
-            if (response.data.code === 1) {
-              that.updateShipmentVisible = false
-              that.getAllShipment()
-            } else {
-              that.$message.error(response.data.msg);
-            }
-          }).catch(function (error) {
-            that.$message.error(error);
-          })
+          // 如果开启了操作原材料，需要处理库存
+          if (that.updateShipmentForm.operate_material === 1) {
+            // 1. 获取原有出货单信息，用于恢复库存
+            that.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/shipment/findShipmentById?id=${that.updateShipmentForm.id}`)
+              .then(oldShipmentResponse => {
+                if (oldShipmentResponse.data.code === 1) {
+                  const oldShipment = oldShipmentResponse.data.data
+                  // 2. 校验新的原材料库存
+                  return that.validateMaterialStock(that.updateMaterialRelations, that.updateShipmentForm.amount)
+                    .then(() => {
+                      return oldShipment
+                    })
+                } else {
+                  throw new Error('获取原有出货单信息失败')
+                }
+              })
+              .then(oldShipment => {
+                // 3. 库存校验通过，执行修改操作
+                return that.doUpdateShipment(oldShipment)
+              })
+              .catch(errorMessage => {
+                that.$message.error(errorMessage.toString())
+              })
+          } else {
+            // 未开启操作原材料，直接修改
+            that.doUpdateShipment(null)
+          }
         } else {
           return false
         }
+      })
+    },
+    // 执行修改操作
+    doUpdateShipment(oldShipment) {
+      const that = this
+      let param = new URLSearchParams()
+      param.append(`id`, this.updateShipmentForm.id)
+      param.append(`odd`, this.updateShipmentForm.odd)
+      param.append(`customer`, this.updateShipmentForm.customer)
+      param.append(`product`, this.updateShipmentForm.product)
+      param.append(`billdate`, this.updateShipmentForm.billdate)
+      param.append(`amount`, this.updateShipmentForm.amount)
+      param.append(`unitprice`, this.updateShipmentForm.unitprice)
+      param.append(`paystatus`, this.updateShipmentForm.paystatus)
+      param.append(`boardcost`, this.updateShipmentForm.boardcost)
+      param.append(`fireproofboardcost`, this.updateShipmentForm.fireproofboardcost)
+      param.append(`remark`, this.updateShipmentForm.remark)
+      param.append(`operate_material`, this.updateShipmentForm.operate_material)
+      // 添加原材料关系数据
+      if (this.updateShipmentForm.operate_material === 1) {
+        param.append(`materialRelations`, JSON.stringify(this.updateMaterialRelations))
+      }
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/shipment/updateShipment`, param).then(function (response) {
+        if (response.data.code === 1) {
+          // 修改成功，后端会自动处理原材料库存
+          console.log('修改出货单成功')
+          that.updateShipmentVisible = false
+          that.getAllShipment()
+        } else {
+          that.$message.error(response.data.msg);
+        }
+      }).catch(function (error) {
+        that.$message.error(error);
       })
     },
     onDeleteShipment(id) {
@@ -643,6 +802,246 @@ export default {
     selectUpdateProductSuggestion(item) {
       this.updateShipmentForm.product = item
       this.showUpdateProductSuggestions = false
+    },
+    // 获取产品的原材料关系
+    getMaterialRelations(productName, type) {
+      console.log('获取原材料关系:', { productName, type })
+      if (!productName) {
+        console.log('产品名称为空，清空原材料关系')
+        if (type === 'add') {
+          this.addMaterialRelations = []
+        } else {
+          this.updateMaterialRelations = []
+        }
+        return
+      }
+      const that = this
+      const url = `${process.env.VUE_APP_API_BASE_URL}/productMaterialRelation/findRelationsByProductName?productName=${encodeURIComponent(productName)}`
+      console.log('请求原材料关系URL:', url)
+      this.$axios.get(url)
+        .then(function (response) {
+          console.log('获取原材料关系响应:', response.data)
+          // 调整数据处理逻辑，适配后端返回的数据格式
+          let relations = []
+          if (response.data.data && Array.isArray(response.data.data)) {
+            // 如果data直接是数组
+            relations = response.data.data
+          } else if (response.data.data && response.data.data.data && Array.isArray(response.data.data.data)) {
+            // 如果data.data是数组
+            relations = response.data.data.data
+          }
+          console.log('处理后的原材料关系:', relations)
+          // 转换字段名，确保表格能正确显示
+          const formattedRelations = relations.map(item => ({
+            material_name: item.materialName || item.material_name,
+            quantity: item.quantity
+          }))
+          console.log('格式化后的原材料关系:', formattedRelations)
+          if (type === 'add') {
+            that.addMaterialRelations = formattedRelations
+            console.log('添加表单原材料关系:', that.addMaterialRelations)
+          } else {
+            that.updateMaterialRelations = formattedRelations
+            console.log('修改表单原材料关系:', that.updateMaterialRelations)
+          }
+        }).catch(function (error) {
+        console.error('获取原材料关系失败:', error)
+        if (type === 'add') {
+          that.addMaterialRelations = []
+        } else {
+          that.updateMaterialRelations = []
+        }
+      })
+    },
+    // 获取出货单的原材料操作记录
+    getShipmentMaterialOperations(shipmentId) {
+      const that = this
+      this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/shipment/findMaterialOperationsByShipmentId?shipmentId=${shipmentId}`)
+        .then(function (response) {
+          console.log('获取原材料操作记录响应:', response.data)
+          // 调整数据处理逻辑，适配后端返回的数据格式
+          let operations = []
+          if (response.data.data && Array.isArray(response.data.data)) {
+            // 如果data直接是数组
+            operations = response.data.data
+          } else if (response.data.data && response.data.data.data && Array.isArray(response.data.data.data)) {
+            // 如果data.data是数组
+            operations = response.data.data.data
+          }
+          console.log('处理后的原材料操作记录:', operations)
+          // 转换字段名，确保表格能正确显示
+          const formattedOperations = operations.map(item => ({
+            material_name: item.material_name || item.materialName,
+            quantity: item.quantity
+          }))
+          console.log('格式化后的原材料操作记录:', formattedOperations)
+          that.updateMaterialRelations = formattedOperations
+        }).catch(function (error) {
+        console.error('获取原材料操作记录失败:', error)
+        that.updateMaterialRelations = []
+      })
+    },
+    // 处理添加表单操作原材料开关变化
+    handleAddOperateMaterialChange(val) {
+      console.log('添加表单操作原材料开关变化:', val)
+      if (val === 1) {
+        console.log('添加表单开关开启，获取原材料关系:', this.addShipmentForm.product)
+        this.getMaterialRelations(this.addShipmentForm.product, 'add')
+      } else {
+        console.log('添加表单开关关闭，清空原材料关系')
+        this.addMaterialRelations = []
+      }
+    },
+    // 处理修改表单操作原材料开关变化
+    handleUpdateOperateMaterialChange(val) {
+      console.log('修改表单操作原材料开关变化:', val)
+      console.log('初始operate_material状态:', this.initialOperateMaterial)
+      if (val === 1) {
+        console.log('修改表单开关开启')
+        // 第一种情况：如果本身未开启操作原材料，此时开启操作原材料
+        if (this.initialOperateMaterial != 1) {
+          console.log('从"未开启"状态切换到"开启"状态，从原材料关系中根据产品名称检索数据:', this.updateShipmentForm.product)
+          this.getMaterialRelations(this.updateShipmentForm.product, 'update')
+        } else {
+          // 第二种情况：如果本身已经开启操作原材料，此时从原材料操作记录中根据id检索数据
+          console.log('从"开启"状态切换到"开启"状态，从原材料操作记录中根据id检索数据:', this.updateShipmentForm.id)
+          this.getShipmentMaterialOperations(this.updateShipmentForm.id)
+        }
+      } else {
+        console.log('修改表单开关关闭，清空原材料关系')
+        this.updateMaterialRelations = []
+      }
+    },
+    // 处理添加表单产品名称变化
+    handleAddProductChange() {
+      console.log('添加表单产品名称变化:', this.addShipmentForm.product)
+      if (this.addShipmentForm.operate_material === 1) {
+        console.log('添加表单操作原材料开关开启，重新获取原材料关系')
+        this.getMaterialRelations(this.addShipmentForm.product, 'add')
+      }
+    },
+    // 处理修改表单产品名称变化
+    handleUpdateProductChange() {
+      console.log('修改表单产品名称变化:', this.updateShipmentForm.product)
+      if (this.updateShipmentForm.operate_material === 1) {
+        console.log('修改表单操作原材料开关开启，重新获取原材料关系')
+        this.getMaterialRelations(this.updateShipmentForm.product, 'update')
+      }
+    },
+    // 删除添加表单中的原材料关系
+    removeAddMaterialRelation(index) {
+      this.addMaterialRelations.splice(index, 1)
+    },
+    // 在添加表单中添加新的原材料
+    addNewAddMaterial() {
+      if (!this.newAddMaterial.material_name || this.newAddMaterial.quantity < 1) {
+        this.$message.error('请填写原材料名称和数量')
+        return
+      }
+      this.addMaterialRelations.push({
+        material_name: this.newAddMaterial.material_name,
+        quantity: this.newAddMaterial.quantity
+      })
+      // 清空表单
+      this.newAddMaterial = {
+        material_name: '',
+        quantity: 1
+      }
+    },
+    // 删除修改表单中的原材料关系
+    removeUpdateMaterialRelation(index) {
+      this.updateMaterialRelations.splice(index, 1)
+    },
+    // 在修改表单中添加新的原材料
+    addNewUpdateMaterial() {
+      if (!this.newUpdateMaterial.material_name || this.newUpdateMaterial.quantity < 1) {
+        this.$message.error('请填写原材料名称和数量')
+        return
+      }
+      this.updateMaterialRelations.push({
+        material_name: this.newUpdateMaterial.material_name,
+        quantity: this.newUpdateMaterial.quantity
+      })
+      // 清空表单
+      this.newUpdateMaterial = {
+        material_name: '',
+        quantity: 1
+      }
+    },
+    // 校验原材料库存
+    validateMaterialStock(materialRelations, productAmount) {
+      return new Promise((resolve, reject) => {
+        if (!materialRelations || materialRelations.length === 0) {
+          resolve(true)
+          return
+        }
+        
+        // 遍历所有原材料，检查是否存在于库存中
+        const checkPromises = materialRelations.map(relation => {
+          return new Promise((checkResolve) => {
+            this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/stock/checkMaterialExist?materialName=${encodeURIComponent(relation.material_name)}`)
+              .then(response => {
+                if (response.data.code !== 1) {
+                  checkResolve({ success: false, message: response.data.msg })
+                } else {
+                  checkResolve({ success: true })
+                }
+              })
+              .catch(error => {
+                console.error('检查原材料存在失败:', error)
+                checkResolve({ success: false, message: `未找到原材料"${relation.material_name}"的库存信息` })
+              })
+          })
+        })
+        
+        Promise.all(checkPromises)
+          .then(results => {
+            const failedResult = results.find(result => !result.success)
+            if (failedResult) {
+              reject(failedResult.message)
+            } else {
+              resolve(true)
+            }
+          })
+      })
+    },
+    // 操作原材料库存
+    operateMaterialStock(materialRelations, productAmount, operationType) {
+      return new Promise((resolve, reject) => {
+        if (!materialRelations || materialRelations.length === 0) {
+          resolve(true)
+          return
+        }
+        
+        // 遍历所有原材料，操作库存
+        const operatePromises = materialRelations.map(relation => {
+          return new Promise((operateResolve) => {
+            const stockChange = relation.quantity * productAmount
+            this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/operateMaterialStock?materialName=${encodeURIComponent(relation.material_name)}&stockChange=${operationType === 'decrease' ? -stockChange : stockChange}`)
+              .then(response => {
+                if (response.data.code !== 1) {
+                  operateResolve({ success: false, message: response.data.msg })
+                } else {
+                  operateResolve({ success: true })
+                }
+              })
+              .catch(error => {
+                console.error('操作原材料库存失败:', error)
+                operateResolve({ success: false, message: `操作原材料"${relation.material_name}"库存失败` })
+              })
+          })
+        })
+        
+        Promise.all(operatePromises)
+          .then(results => {
+            const failedResult = results.find(result => !result.success)
+            if (failedResult) {
+              reject(failedResult.message)
+            } else {
+              resolve(true)
+            }
+          })
+      })
     }
   },
   watch: {
@@ -718,7 +1117,8 @@ export default {
         paystatus: `0`,
         boardcost: 0,
         fireproofboardcost: 0,
-        remark: `无`
+        remark: `无`,
+        operate_material: 0
       },
       updateShipmentForm: {
         odd: ``,
@@ -730,7 +1130,8 @@ export default {
         paystatus: `0`,
         boardcost: 0,
         fireproofboardcost: 0,
-        remark: `无`
+        remark: `无`,
+        operate_material: 0
       },
       addShipmentFormRules: {
         odd: [
@@ -817,7 +1218,19 @@ export default {
       showUpdateCustomerSuggestions: false,
       // 修改产品联想功能参数
       updateProductSuggestions: [],
-      showUpdateProductSuggestions: false
+      showUpdateProductSuggestions: false,
+      // 原材料关系相关
+      addMaterialRelations: [],
+      updateMaterialRelations: [],
+      // 新添加的原材料信息
+      newAddMaterial: {
+        material_name: '',
+        quantity: 1
+      },
+      newUpdateMaterial: {
+        material_name: '',
+        quantity: 1
+      }
     }
   }
 }

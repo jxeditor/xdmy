@@ -50,7 +50,12 @@ public class ShipmentService extends BaseService implements IShipmentService {
     @Override
     public int updateShipment(Shipment shipment) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getShipmentDao().updateShipment(shipment);
+        return daoFacade.getShipmentDao().updateShipment(shipment, null);
+    }
+    
+    public int updateShipment(Shipment shipment, String materialRelationsStr) {
+        DBContextHolder.setDbType("primary");
+        return daoFacade.getShipmentDao().updateShipment(shipment, materialRelationsStr);
     }
 
     @Override
@@ -101,6 +106,7 @@ public class ShipmentService extends BaseService implements IShipmentService {
                     obj.put("costmoney", shipment.getCostmoney());
                     obj.put("profit", shipment.getProfit());
                     obj.put("remark", shipment.getRemark());
+                    obj.put("operate_material", shipment.getOperate_material());
                     data.add(obj);
                 }
             }
@@ -109,6 +115,34 @@ public class ShipmentService extends BaseService implements IShipmentService {
             e.printStackTrace();
         }
         return result;
+    }
+
+    @Override
+    public JSONObject findMaterialOperationsByShipmentId(int shipmentId) {
+        DBContextHolder.setDbType("primary");
+        List<java.util.Map<String, Object>> operations = daoFacade.getShipmentDao().findMaterialOperationsByShipmentId(shipmentId);
+        JSONObject result = new JSONObject();
+        JSONArray data = new JSONArray();
+        try {
+            if (operations != null) {
+                for (java.util.Map<String, Object> operation : operations) {
+                    JSONObject obj = new JSONObject();
+                    obj.put("material_name", operation.get("material_name"));
+                    obj.put("quantity", operation.get("quantity"));
+                    data.add(obj);
+                }
+            }
+            result.put("data", data);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @Override
+    public Shipment findShipmentById(int id) {
+        DBContextHolder.setDbType("primary");
+        return daoFacade.getShipmentDao().findShipmentById(id);
     }
 
 }

@@ -4,11 +4,15 @@ import router from './router'
 import store from './store'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import axios from 'axios'
+
+console.log('Environment Variables:', process.env);
+console.log('API Base URL from main.js:', process.env.VUE_APP_API_BASE_URL);
 
 const app = createApp(App)
 app.config.globalProperties.$axios = axios
-app.use(store).use(router).use(ElementPlus).mount('#app')
+app.use(store).use(router).use(ElementPlus, { locale: zhCn }).mount('#app')
 
 // 用户无操作检测，2小时后自动退出登录
 let inactivityTimer;

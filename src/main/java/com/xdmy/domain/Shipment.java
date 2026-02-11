@@ -20,6 +20,7 @@ public class Shipment {
     double costmoney;
     double profit;
     String remark;
+    int operate_material;
 
     public Shipment() {
     }
@@ -134,6 +135,14 @@ public class Shipment {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public int getOperate_material() {
+        return operate_material;
+    }
+
+    public void setOperate_material(int operate_material) {
+        this.operate_material = operate_material;
     }
 }
 

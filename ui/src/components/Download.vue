@@ -6,7 +6,7 @@
       <!-- 出货对账单下载 -->
       <div class="download-card">
         <h2>出货对账单</h2>
-        <el-row type="flex" justify="space-between" align="center" class="search-row">
+        <el-row type="flex" justify="space-between" align="center" class="search-row" :gutter="20">
           <el-col :span="12">
             <el-date-picker v-model="shipmentBillDateInput"
                             type="daterange"
@@ -14,16 +14,15 @@
                             start-placeholder="开始日期"
                             end-placeholder="结束日期"
                             value-format="YYYY-MM-DD"
+                            :locale="zhCn"
                             style="width: 100%;"
             />
           </el-col>
-          <el-col :span="10" style="display: flex; justify-content: flex-end; gap: 10px;">
-            <el-col :span="14">
-              <el-input v-model="customerInput" placeholder="输入客户名" style="width: 100%;"/>
-            </el-col>
-            <el-col :span="8">
-              <el-button type="primary" @click="downloadShipment" style="width: 100%;">下载出货对账单</el-button>
-            </el-col>
+          <el-col :span="6">
+            <el-input v-model="customerInput" placeholder="输入客户名" style="width: 100%;"/>
+          </el-col>
+          <el-col :span="4">
+            <el-button type="primary" @click="downloadShipment" style="width: 100%;">下载出货对账单</el-button>
           </el-col>
         </el-row>
       </div>
@@ -31,7 +30,7 @@
       <!-- 入货对账单下载 -->
       <div class="download-card">
         <h2>入货对账单</h2>
-        <el-row type="flex" justify="space-between" align="center" class="search-row">
+        <el-row type="flex" justify="space-between" align="center" class="search-row" :gutter="20">
           <el-col :span="12">
             <el-date-picker v-model="incomingBillDateInput"
                             type="daterange"
@@ -39,16 +38,15 @@
                             start-placeholder="开始日期"
                             end-placeholder="结束日期"
                             value-format="YYYY-MM-DD"
+                            :locale="zhCn"
                             style="width: 100%;"
             />
           </el-col>
-          <el-col :span="10" style="display: flex; justify-content: flex-end; gap: 10px;">
-            <el-col :span="14">
-              <el-input v-model="producerInput" placeholder="输入供应商" style="width: 100%;"/>
-            </el-col>
-            <el-col :span="8">
-              <el-button type="primary" @click="downloadIncoming" style="width: 100%;">下载入货对账单</el-button>
-            </el-col>
+          <el-col :span="6">
+            <el-input v-model="producerInput" placeholder="输入供应商" style="width: 100%;"/>
+          </el-col>
+          <el-col :span="4">
+            <el-button type="primary" @click="downloadIncoming" style="width: 100%;">下载入货对账单</el-button>
           </el-col>
         </el-row>
       </div>
@@ -57,6 +55,8 @@
 </template>
 
 <script>
+import { zhCn } from "element-plus/dist/locale/zh-cn.mjs";
+
 export default {
   name: "Download",
   methods: {

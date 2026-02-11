@@ -41,7 +41,9 @@ public class IncomingController extends BaseController {
         incoming.setMoney(Integer.parseInt(params.get("amount")) * Double.parseDouble(params.get("unitprice")));
         incoming.setPaystatus(params.get("paystatus"));
         incoming.setRemark(params.get("remark"));
-        int result = serviceFacade.getIncomingService().addIncoming(incoming);
+        incoming.setOperate_material(Integer.parseInt(params.get("operate_material")));
+        String materialRelationsStr = params.get("materialRelations");
+        int result = serviceFacade.getIncomingService().addIncoming(incoming, materialRelationsStr);
         if (result > 0) {
             return new JSONReturn("success", "插入成功", 1).toString();
         } else {
@@ -63,12 +65,26 @@ public class IncomingController extends BaseController {
         incoming.setMoney(Integer.parseInt(params.get("amount")) * Double.parseDouble(params.get("unitprice")));
         incoming.setPaystatus(params.get("paystatus"));
         incoming.setRemark(params.get("remark"));
-        int result = serviceFacade.getIncomingService().updateIncoming(incoming);
+        incoming.setOperate_material(Integer.parseInt(params.get("operate_material")));
+        String materialRelationsStr = params.get("materialRelations");
+        int result = serviceFacade.getIncomingService().updateIncoming(incoming, materialRelationsStr);
         if (result > 0) {
             return new JSONReturn("success", "更新成功", 1).toString();
         } else {
             return new JSONReturn(ErrorCode.UPDATE_FAILED).toString();
         }
+    }
+
+    @RequestMapping(value = "/getIncomingMaterialOperations")
+    public String getIncomingMaterialOperations(@RequestParam(value = "id", defaultValue = "-1") Integer id) {
+        JSONObject result = serviceFacade.getIncomingService().getIncomingMaterialOperations(id);
+        return new JSONReturn(result).toString();
+    }
+
+    @RequestMapping(value = "/findIncomingById")
+    public String findIncomingById(@RequestParam(value = "id", defaultValue = "-1") Integer id) {
+        JSONObject result = serviceFacade.getIncomingService().findIncomingById(id);
+        return new JSONReturn(result).toString();
     }
 
     @RequestMapping("/deleteIncomingById")

@@ -35,7 +35,7 @@ public class StockDao extends BaseDao implements IStockDao {
                 stock.setPurchaseprice(rs.getDouble("purchaseprice"));
                 stock.setInamount(rs.getInt("inamount"));
                 stock.setOutamount(rs.getInt("outamount"));
-                stock.setStock(rs.getInt("unitstock"));
+                stock.setStock(rs.getInt("unitstock") + rs.getInt("inamount") - rs.getInt("outamount"));
                 stock.setMoney(rs.getInt("unitstock") * rs.getDouble("unitprice"));
                 stock.setLastindate(rs.getString("lastindate"));
                 stock.setLastoutdate(rs.getString("lastoutdate"));
@@ -232,6 +232,12 @@ public class StockDao extends BaseDao implements IStockDao {
     }
 
     @Override
+    public int batchDeleteStock(String ids) {
+        String sql = "DELETE FROM stock WHERE id IN (" + ids + ")";
+        return jdbcTemplate.update(sql);
+    }
+
+    @Override
     public int updateStock(Stock stock) {
         String sql = "UPDATE stock set product = ?,unitstock = ?,unitprice = ?,purchaseprice = ?,inamount = ?,outamount = ?,lastindate = ?,lastoutdate = ?,stockstatus = ?" +
                 " WHERE id = ? ";
@@ -299,5 +305,7 @@ public class StockDao extends BaseDao implements IStockDao {
         }
         return sql;
     }
+
+
 
 }

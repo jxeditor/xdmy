@@ -45,6 +45,7 @@ public class ShipmentController extends BaseController {
         shipment.setCostmoney((Double.parseDouble(params.get("boardcost")) + Double.parseDouble(params.get("fireproofboardcost"))) * Integer.parseInt(params.get("amount")));
         shipment.setProfit(Integer.parseInt(params.get("amount")) * Double.parseDouble(params.get("unitprice")) - (Double.parseDouble(params.get("boardcost")) + Double.parseDouble(params.get("fireproofboardcost"))) * Integer.parseInt(params.get("amount")));
         shipment.setRemark(params.get("remark"));
+        shipment.setOperate_material(Integer.parseInt(params.get("operate_material")));
         int result = serviceFacade.getShipmentService().addShipment(shipment);
         if (result > 0) {
             return new JSONReturn("success", "插入成功", 1).toString();
@@ -71,7 +72,10 @@ public class ShipmentController extends BaseController {
         shipment.setCostmoney((Double.parseDouble(params.get("boardcost")) + Double.parseDouble(params.get("fireproofboardcost"))) * Integer.parseInt(params.get("amount")));
         shipment.setProfit(Integer.parseInt(params.get("amount")) * Double.parseDouble(params.get("unitprice")) - (Double.parseDouble(params.get("boardcost")) + Double.parseDouble(params.get("fireproofboardcost"))) * Integer.parseInt(params.get("amount")));
         shipment.setRemark(params.get("remark"));
-        int result = serviceFacade.getShipmentService().updateShipment(shipment);
+        shipment.setOperate_material(Integer.parseInt(params.get("operate_material")));
+        // 获取原材料关系数据
+        String materialRelationsStr = params.get("materialRelations");
+        int result = serviceFacade.getShipmentService().updateShipment(shipment, materialRelationsStr);
         if (result > 0) {
             return new JSONReturn("success", "更新成功", 1).toString();
         } else {
@@ -106,6 +110,24 @@ public class ShipmentController extends BaseController {
         int pageSize = request.containsKey("pageSize") ? Integer.parseInt(request.get("pageSize").toString()) : 10;
         JSONObject result = serviceFacade.getShipmentService().findCustomerNamesByPrefix(prefix, pageNum, pageSize);
         return new JSONReturn(result).toString();
+    }
+
+    @RequestMapping("/findMaterialOperationsByShipmentId")
+    public String findMaterialOperationsByShipmentId(@RequestParam(value = "shipmentId") Integer shipmentId) {
+        JSONObject result = serviceFacade.getShipmentService().findMaterialOperationsByShipmentId(shipmentId);
+        return new JSONReturn(result).toString();
+    }
+
+    @RequestMapping("/findShipmentById")
+    public String findShipmentById(@RequestParam(value = "id") Integer id) {
+        Shipment shipment = serviceFacade.getShipmentService().findShipmentById(id);
+        if (shipment != null) {
+            JSONObject result = new JSONObject();
+            result.put("data", shipment);
+            return new JSONReturn(result).toString();
+        } else {
+            return new JSONReturn("error", "未找到数据", 0).toString();
+        }
     }
 
 }

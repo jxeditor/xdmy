@@ -24,5 +24,7 @@ public interface IStockDao {
     int flattenStock();
     
     int getFlattenStockCount();
+    
+    int batchDeleteStock(String ids);
 
 }

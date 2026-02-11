@@ -22,6 +22,15 @@ public class ServiceFacade {
     IStockService stockService;
 
     @Autowired
+    IMaterialStockService materialStockService;
+
+    @Autowired
+    IProductMaterialRelationService productMaterialRelationService;
+
+    @Autowired
+    IProductService productService;
+
+    @Autowired
     IAdminService adminService;
 
     @Autowired
@@ -40,6 +49,18 @@ public class ServiceFacade {
 
     public IStockService getStockService() {
         return stockService;
+    }
+
+    public IMaterialStockService getMaterialStockService() {
+        return materialStockService;
+    }
+
+    public IProductMaterialRelationService getProductMaterialRelationService() {
+        return productMaterialRelationService;
+    }
+
+    public IProductService getProductService() {
+        return productService;
     }
 
     public IAdminService getAdminService() {

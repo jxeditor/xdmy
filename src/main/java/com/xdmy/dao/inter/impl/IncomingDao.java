@@ -54,14 +54,33 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
     }
 
     @Override
-    public int addIncoming(Incoming incoming) {
+    public int addIncoming(Incoming incoming, String materialRelationsStr) {
         // 开始事务
         jdbcTemplate.execute("START TRANSACTION");
         try {
             // 添加入货记录
-            String sql = "INSERT INTO incoming(odd,producer,product,billdate,amount,unitprice,money,paystatus,remark) " +
-                    "VALUES(?,?,?,?,?,?,?,?,?)";
-            int result = jdbcTemplate.update(sql, incoming.getOdd(), incoming.getProducer(), incoming.getProduct(), incoming.getBilldate(), incoming.getAmount(), incoming.getUnitprice(), incoming.getMoney(), incoming.getPaystatus(), incoming.getRemark());
+            String sql = "INSERT INTO incoming(odd,producer,product,billdate,amount,unitprice,money,paystatus,remark,is_delete,operate_material) " +
+                    "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+            
+            // 使用GeneratedKeyHolder获取新插入记录的ID
+            org.springframework.jdbc.support.GeneratedKeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
+            jdbcTemplate.update(con -> {
+                java.sql.PreparedStatement ps = con.prepareStatement(sql, new String[]{"id"});
+                ps.setString(1, incoming.getOdd());
+                ps.setString(2, incoming.getProducer());
+                ps.setString(3, incoming.getProduct());
+                ps.setString(4, incoming.getBilldate());
+                ps.setInt(5, incoming.getAmount());
+                ps.setDouble(6, incoming.getUnitprice());
+                ps.setDouble(7, incoming.getMoney());
+                ps.setString(8, incoming.getPaystatus());
+                ps.setString(9, incoming.getRemark());
+                ps.setString(10, "0");
+                ps.setInt(11, incoming.getOperate_material());
+                return ps;
+            }, keyHolder);
+            
+            int result = keyHolder.getKey().intValue();
             
             // 检查stock表中是否存在对应产品的记录
             String checkSql = "SELECT COUNT(*) FROM stock WHERE product = ?";
@@ -78,6 +97,58 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
                 jdbcTemplate.update(updateSql, incoming.getAmount(), incoming.getUnitprice(), incoming.getBilldate(), incoming.getProduct());
             }
             
+            // 操作原材料
+            if (incoming.getOperate_material() == 1) {
+                java.util.List<java.util.Map<String, Object>> relations = new java.util.ArrayList<>();
+                
+                // 检查是否有前端传递的原材料关系数据
+                if (materialRelationsStr != null && !materialRelationsStr.isEmpty()) {
+                    // 解析前端传递的原材料关系数据
+                    try {
+                        com.alibaba.fastjson.JSONArray jsonArray = com.alibaba.fastjson.JSON.parseArray(materialRelationsStr);
+                        for (int i = 0; i < jsonArray.size(); i++) {
+                            com.alibaba.fastjson.JSONObject jsonObj = jsonArray.getJSONObject(i);
+                            java.util.Map<String, Object> relation = new java.util.HashMap<>();
+                            relation.put("materialName", jsonObj.getString("materialName"));
+                            relation.put("quantity", jsonObj.getInteger("quantity"));
+                            relations.add(relation);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                
+                // 如果没有前端传递的数据，从数据库查询
+                if (relations.isEmpty()) {
+                    String relationSql = "SELECT material_name, quantity FROM product_material_relation WHERE product_name = ? AND is_default = 1";
+                    relations = jdbcTemplate.queryForList(relationSql, new Object[]{incoming.getProduct()});
+                }
+                
+                for (java.util.Map<String, Object> relation : relations) {
+                    String materialName = (String) relation.get("materialName");
+                    // 检查materialName是否为null
+                    if (materialName == null || materialName.trim().isEmpty()) {
+                        continue;
+                    }
+                    int quantity = (int) relation.get("quantity");
+                    int totalQuantity = quantity * incoming.getAmount();
+                    
+                    // 更新原材料库存（入货减少原材料库存）
+                    String materialUpdateSql = "UPDATE material_stock SET unitstock = unitstock - ? WHERE material_name = ?";
+                    int materialResult = jdbcTemplate.update(materialUpdateSql, totalQuantity, materialName);
+                    
+                    if (materialResult == 0) {
+                        // 原材料不存在，创建新记录
+                        String materialInsertSql = "INSERT INTO material_stock(material_name, unitstock) VALUES(?, ?)";
+                        jdbcTemplate.update(materialInsertSql, materialName, -totalQuantity);
+                    }
+                    
+                    // 记录原材料操作
+                    String operationSql = "INSERT INTO incoming_material_operation(incoming_id, material_name, quantity, operation_date) VALUES(?, ?, ?, ?)";
+                    jdbcTemplate.update(operationSql, result, materialName, totalQuantity, new java.util.Date());
+                }
+            }
+            
             // 提交事务
             jdbcTemplate.execute("COMMIT");
             return result;
@@ -87,6 +158,11 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
             e.printStackTrace();
             return 0;
         }
+    }
+
+    @Override
+    public int addIncoming(Incoming incoming) {
+        return addIncoming(incoming, null);
     }
 
     @Override
@@ -109,6 +185,24 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
                     "WHERE product = ?";
             jdbcTemplate.update(updateSql, incoming.getAmount(), incoming.getProduct(), incoming.getProduct(), incoming.getProduct());
             
+            // 操作原材料
+            // 查询原有的原材料操作记录
+            String operationSql = "SELECT material_name, quantity FROM incoming_material_operation WHERE incoming_id = ?";
+            List<java.util.Map<String, Object>> operations = jdbcTemplate.queryForList(operationSql, new Object[]{id});
+            
+            for (java.util.Map<String, Object> operation : operations) {
+                String materialName = (String) operation.get("material_name");
+                int quantity = (int) operation.get("quantity");
+                
+                // 更新原材料库存（删除入货记录，增加原材料库存）
+                String materialUpdateSql = "UPDATE material_stock SET unitstock = unitstock + ? WHERE material_name = ?";
+                jdbcTemplate.update(materialUpdateSql, quantity, materialName);
+            }
+            
+            // 删除原材料操作记录
+            String deleteOperationSql = "DELETE FROM incoming_material_operation WHERE incoming_id = ?";
+            jdbcTemplate.update(deleteOperationSql, id);
+            
             // 提交事务
             jdbcTemplate.execute("COMMIT");
             return result;
@@ -121,7 +215,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
     }
 
     @Override
-    public int updateIncoming(Incoming incoming) {
+    public int updateIncoming(Incoming incoming, String materialRelationsStr) {
         // 开始事务
         jdbcTemplate.execute("START TRANSACTION");
         try {
@@ -131,9 +225,9 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
             
             // 更新入货记录
             String sql = "UPDATE incoming set odd = ?,producer = ?,product = ?,billdate = ?,amount = ?,unitprice = ?,money = ? " +
-                    ",paystatus = ?,remark = ? " +
+                    ",paystatus = ?,remark = ?,operate_material = ? " +
                     "WHERE id = ? ";
-            int result = jdbcTemplate.update(sql, incoming.getOdd(), incoming.getProducer(), incoming.getProduct(), incoming.getBilldate(), incoming.getAmount(), incoming.getUnitprice(), incoming.getMoney(), incoming.getPaystatus(), incoming.getRemark(), incoming.getId());
+            int result = jdbcTemplate.update(sql, incoming.getOdd(), incoming.getProducer(), incoming.getProduct(), incoming.getBilldate(), incoming.getAmount(), incoming.getUnitprice(), incoming.getMoney(), incoming.getPaystatus(), incoming.getRemark(), incoming.getOperate_material(), incoming.getId());
             
             // 如果产品没有变化
             if (oldIncoming.getProduct().equals(incoming.getProduct())) {
@@ -167,6 +261,117 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
                 }
             }
             
+            // 操作原材料
+            // 1. 如果需要操作原材料
+            if (incoming.getOperate_material() == 1) {
+                java.util.List<java.util.Map<String, Object>> relations = new java.util.ArrayList<>();
+                
+                // 检查是否有前端传递的原材料关系数据
+                if (materialRelationsStr != null && !materialRelationsStr.isEmpty()) {
+                    // 解析前端传递的原材料关系数据
+                    try {
+                        com.alibaba.fastjson.JSONArray jsonArray = com.alibaba.fastjson.JSON.parseArray(materialRelationsStr);
+                        for (int i = 0; i < jsonArray.size(); i++) {
+                            com.alibaba.fastjson.JSONObject jsonObj = jsonArray.getJSONObject(i);
+                            java.util.Map<String, Object> relation = new java.util.HashMap<>();
+                            relation.put("materialName", jsonObj.getString("materialName"));
+                            relation.put("quantity", jsonObj.getInteger("quantity"));
+                            relations.add(relation);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                
+                // 如果没有前端传递的数据，从数据库查询
+                if (relations.isEmpty()) {
+                    String relationSql = "SELECT material_name, quantity FROM product_material_relation WHERE product_name = ? AND is_default = 1";
+                    relations = jdbcTemplate.queryForList(relationSql, new Object[]{incoming.getProduct()});
+                }
+                
+                // 计算原有原材料操作记录的总量，用于恢复库存
+                java.util.Map<String, Integer> oldMaterialQuantities = new java.util.HashMap<>();
+                String oldOperationSql = "SELECT material_name, quantity FROM incoming_material_operation WHERE incoming_id = ?";
+                java.util.List<java.util.Map<String, Object>> oldOperations = jdbcTemplate.queryForList(oldOperationSql, new Object[]{incoming.getId()});
+                
+                // 删除原有的原材料操作记录
+                String deleteOperationSql = "DELETE FROM incoming_material_operation WHERE incoming_id = ?";
+                jdbcTemplate.update(deleteOperationSql, incoming.getId());
+                for (java.util.Map<String, Object> oldOp : oldOperations) {
+                    oldMaterialQuantities.put((String) oldOp.get("material_name"), (int) oldOp.get("quantity"));
+                }
+                
+                for (java.util.Map<String, Object> relation : relations) {
+                    String materialName = (String) relation.get("materialName");
+                    // 检查materialName是否为null
+                    if (materialName == null || materialName.trim().isEmpty()) {
+                        continue;
+                    }
+                    int quantity = (int) relation.get("quantity");
+                    int totalQuantity = quantity * incoming.getAmount();
+                    
+                    // 恢复原有库存
+                    if (oldMaterialQuantities.containsKey(materialName)) {
+                        int oldQuantity = oldMaterialQuantities.get(materialName);
+                        // 恢复库存（增加库存，因为原来的入货减少了库存）
+                        String restoreSql = "UPDATE material_stock SET unitstock = unitstock + ? WHERE material_name = ?";
+                        jdbcTemplate.update(restoreSql, oldQuantity, materialName);
+                    }
+                    
+                    // 更新原材料库存（入货减少原材料库存）
+                    String materialUpdateSql = "UPDATE material_stock SET unitstock = unitstock - ? WHERE material_name = ?";
+                    int materialResult = jdbcTemplate.update(materialUpdateSql, totalQuantity, materialName);
+                    
+                    if (materialResult == 0) {
+                        // 原材料不存在，创建新记录
+                        String materialInsertSql = "INSERT INTO material_stock(material_name, unitstock) VALUES(?, ?)";
+                        jdbcTemplate.update(materialInsertSql, materialName, -totalQuantity);
+                    }
+                    
+                    // 记录原材料操作
+                    String operationSql = "INSERT INTO incoming_material_operation(incoming_id, material_name, quantity, operation_date) VALUES(?, ?, ?, ?)";
+                    jdbcTemplate.update(operationSql, incoming.getId(), materialName, totalQuantity, new java.util.Date());
+                }
+                
+                // 处理不再使用的原材料，恢复它们的库存
+                for (java.util.Map.Entry<String, Integer> entry : oldMaterialQuantities.entrySet()) {
+                    String materialName = entry.getKey();
+                    // 检查material_name是否为null
+                    if (materialName == null || materialName.trim().isEmpty()) {
+                        continue;
+                    }
+                    boolean stillUsed = false;
+                    for (java.util.Map<String, Object> relation : relations) {
+                        String relMaterialName = (String) relation.get("material_name");
+                        if (materialName.equals(relMaterialName)) {
+                            stillUsed = true;
+                            break;
+                        }
+                    }
+                    if (!stillUsed) {
+                        int oldQuantity = entry.getValue();
+                        // 恢复库存（增加库存，因为原来的入货减少了库存）
+                        String restoreSql = "UPDATE material_stock SET unitstock = unitstock + ? WHERE material_name = ?";
+                        jdbcTemplate.update(restoreSql, oldQuantity, materialName);
+                    }
+                }
+            } else {
+                // 如果不再操作原材料，需要恢复所有原有原材料的库存
+                String oldOperationSql = "SELECT material_name, quantity FROM incoming_material_operation WHERE incoming_id = ?";
+                java.util.List<java.util.Map<String, Object>> oldOperations = jdbcTemplate.queryForList(oldOperationSql, new Object[]{incoming.getId()});
+                for (java.util.Map<String, Object> oldOp : oldOperations) {
+                    String materialName = (String) oldOp.get("material_name");
+                    // 检查material_name是否为null
+                    if (materialName == null || materialName.trim().isEmpty()) {
+                        continue;
+                    }
+                    int oldQuantity = (int) oldOp.get("quantity");
+                    // 恢复库存（增加库存，因为原来的入货减少了库存）
+                    String restoreSql = "UPDATE material_stock SET unitstock = unitstock + ? WHERE material_name = ?";
+                    jdbcTemplate.update(restoreSql, oldQuantity, materialName);
+                }
+            }
+            
             // 提交事务
             jdbcTemplate.execute("COMMIT");
             return result;
@@ -176,6 +381,11 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
             e.printStackTrace();
             return 0;
         }
+    }
+
+    @Override
+    public int updateIncoming(Incoming incoming) {
+        return updateIncoming(incoming, null);
     }
 
     @Override
@@ -198,6 +408,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
             incoming.setMoney(rs.getDouble("money"));
             incoming.setPaystatus(rs.getString("paystatus"));
             incoming.setRemark(rs.getString("remark"));
+            incoming.setOperate_material(rs.getInt("operate_material"));
             return incoming;
         }
     }
@@ -251,6 +462,23 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%"  // 包含前缀中每个字符
         }, Integer.class);
+    }
+
+    @Override
+    public java.util.List<java.util.Map<String, Object>> getIncomingMaterialOperations(int id) {
+        String sql = "SELECT material_name, quantity FROM incoming_material_operation WHERE incoming_id = ?";
+        return jdbcTemplate.queryForList(sql, new Object[]{id});
+    }
+
+    @Override
+    public Incoming findIncomingById(int id) {
+        String sql = "SELECT * FROM incoming WHERE id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new Object[]{id}, new IncomingRowMapper());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

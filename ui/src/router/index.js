@@ -38,6 +38,33 @@ const routes = [
     }
   },
   {
+    path: '/product',
+    name: 'product',
+    component: () => import('../views/ProductView.vue'),
+    meta: {
+      requireAuth: true,
+      role: "ADMIN"
+    }
+  },
+  {
+    path: '/materialStock',
+    name: 'materialStock',
+    component: () => import('../views/MaterialStockView.vue'),
+    meta: {
+      requireAuth: true,
+      role: "ADMIN"
+    }
+  },
+  {
+    path: '/productMaterialRelation',
+    name: 'productMaterialRelation',
+    component: () => import('../views/ProductMaterialRelationView.vue'),
+    meta: {
+      requireAuth: true,
+      role: "ADMIN"
+    }
+  },
+  {
     path: '/turnover',
     name: 'turnover',
     component: () => import('../views/TurnoverView.vue'),
@@ -59,6 +86,15 @@ const routes = [
     path: '/download',
     name: 'download',
     component: () => import('../views/DownloadView.vue'),
+    meta: {
+      requireAuth: true,
+      role: "ADMIN"
+    }
+  },
+  {
+    path: '/materialOperation',
+    name: 'materialOperation',
+    component: () => import('../views/MaterialOperationView.vue'),
     meta: {
       requireAuth: true,
       role: "ADMIN"

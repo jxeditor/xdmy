@@ -9,7 +9,16 @@
         <nav class="main-nav">
           <router-link to="/shipment" class="nav-link">出货</router-link>
           <router-link to="/incoming" class="nav-link">入货</router-link>
-          <router-link to="/stock" class="nav-link">库存</router-link>
+          <div class="dropdown">
+            <button class="dropdown-toggle">产品管理</button>
+            <div class="dropdown-menu">
+              <router-link to="/product" class="dropdown-item">产品</router-link>
+              <router-link to="/stock" class="dropdown-item">产品库存</router-link>
+              <router-link to="/materialStock" class="dropdown-item">原材料库存</router-link>
+              <router-link to="/productMaterialRelation" class="dropdown-item">原材料关系</router-link>
+              <router-link to="/materialOperation" class="dropdown-item">原材料操作记录</router-link>
+            </div>
+          </div>
           <router-link to="/turnover" class="nav-link">流水</router-link>
           <router-link to="/screen" class="nav-link">大屏</router-link>
           <router-link to="/download" class="nav-link">下载</router-link>
@@ -176,6 +185,78 @@ export default {
 .logout-button:hover {
   background: rgba(255, 0, 0, 0.3);
   transform: translateY(-2px);
+}
+
+/* 下拉菜单样式 */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.dropdown-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  z-index: 1000;
+  margin-top: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.dropdown:hover .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #2c3e50;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+  margin: 2px 0;
+}
+
+.dropdown-item:hover {
+  background: #f5f7fa;
+  color: #667eea;
+  transform: translateX(4px);
+}
+
+.dropdown-item.router-link-exact-active {
+  background: #f5f7fa;
+  color: #667eea;
+  font-weight: bold;
 }
 
 .app-content {

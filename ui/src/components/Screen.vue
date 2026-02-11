@@ -6,7 +6,7 @@
       <!-- 第一个图表 -->
       <div class="chart-card">
         <div class="chart-header">
-          <el-row type="flex" justify="start" align="middle" class="search-row">
+          <el-row type="flex" justify="start" align="middle" class="search-row" :gutter="20">
             <el-col :span="12">
               <el-date-picker v-model="billDateInput1"
                               type="daterange"

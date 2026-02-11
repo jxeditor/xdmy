@@ -69,6 +69,16 @@ public class StockController extends BaseController {
         }
     }
 
+    @RequestMapping("/batchDeleteStock")
+    public String batchDeleteStock(@RequestParam(value = "ids") String ids) {
+        int result = serviceFacade.getStockService().batchDeleteStock(ids);
+        if (result > 0) {
+            return new JSONReturn("success", "批量删除成功", 1).toString();
+        } else {
+            return new JSONReturn(ErrorCode.DELETE_FAILED).toString();
+        }
+    }
+
     @RequestMapping("/findProductNamesByPrefix")
     public String findProductNamesByPrefix(@RequestBody java.util.Map<String, Object> request) {
         String prefix = (String) request.getOrDefault("prefix", "");
@@ -93,6 +103,54 @@ public class StockController extends BaseController {
         int count = serviceFacade.getStockService().getFlattenStockCount();
         JSONObject result = new JSONObject();
         result.put("data", count);
+        return new JSONReturn(result).toString();
+    }
+
+    @RequestMapping("/checkMaterialExist")
+    public String checkMaterialExist(@RequestParam(value = "materialName") String materialName) {
+        boolean exists = serviceFacade.getMaterialStockService().checkMaterialExist(materialName);
+        if (exists) {
+            return new JSONReturn("success", "原材料存在", 1).toString();
+        } else {
+            return new JSONReturn("error", "未找到原材料库存信息", 0).toString();
+        }
+    }
+
+    @RequestMapping("/operateMaterialStock")
+    public String operateMaterialStock(HttpServletRequest request) {
+        HashMap<String, String> params = getRequestParam(request);
+        String materialName = params.get("materialName");
+        String stockChangeStr = params.get("stockChange");
+        
+        // 非空校验
+        if (materialName == null || materialName.isEmpty() || stockChangeStr == null || stockChangeStr.isEmpty()) {
+            return new JSONReturn(ErrorCode.PARAMS_ERROR).toString();
+        }
+        
+        try {
+            int stockChange = Integer.parseInt(stockChangeStr);
+            boolean isIncrease = stockChange > 0;
+            int quantity = Math.abs(stockChange);
+            int result = serviceFacade.getMaterialStockService().operateMaterialStock(materialName, quantity, isIncrease);
+            if (result > 0) {
+                return new JSONReturn("success", "操作成功", 1).toString();
+            } else {
+                return new JSONReturn("error", "操作失败", 0).toString();
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            return new JSONReturn(ErrorCode.PARAMS_ERROR).toString();
+        }
+    }
+
+    @RequestMapping("/findMaterialOperations")
+    public String findMaterialOperations(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                                         @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+                                         @RequestParam(value = "materialName", defaultValue = "") String materialName,
+                                         @RequestParam(value = "operationType", defaultValue = "") String operationType,
+                                         @RequestParam(value = "startDate", defaultValue = "") String startDate,
+                                         @RequestParam(value = "endDate", defaultValue = "") String endDate) {
+        JSONObject result = serviceFacade.getMaterialStockService().findMaterialOperations(pageNum, pageSize, materialName, operationType, startDate, endDate);
         return new JSONReturn(result).toString();
     }
 }

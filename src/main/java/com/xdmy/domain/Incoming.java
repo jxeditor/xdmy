@@ -16,6 +16,7 @@ public class Incoming {
     double money;
     String paystatus;
     String remark;
+    int operate_material;
 
     public Incoming() {
     }
@@ -98,5 +99,13 @@ public class Incoming {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public int getOperate_material() {
+        return operate_material;
+    }
+
+    public void setOperate_material(int operate_material) {
+        this.operate_material = operate_material;
     }
 }

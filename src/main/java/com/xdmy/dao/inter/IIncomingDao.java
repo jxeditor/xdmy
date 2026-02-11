@@ -9,9 +9,13 @@ public interface IIncomingDao {
 
     int getAllTotalSize(String producerName, String productName, String bizStartDate, String bizEndDate);
 
+    int addIncoming(Incoming Incoming, String materialRelationsStr);
+
     int addIncoming(Incoming Incoming);
 
     int deleteIncomingById(int id);
+
+    int updateIncoming(Incoming Incoming, String materialRelationsStr);
 
     int updateIncoming(Incoming Incoming);
 
@@ -26,5 +30,9 @@ public interface IIncomingDao {
     List<String> findProducerNamesByPrefix(String prefix, int pageNum, int pageSize);
 
     int getProducerNamesCount(String prefix);
+
+    java.util.List<java.util.Map<String, Object>> getIncomingMaterialOperations(int id);
+
+    Incoming findIncomingById(int id);
 
 }
