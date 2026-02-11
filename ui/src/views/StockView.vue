@@ -1,6 +1,6 @@
 <template>
   <div class="stock">
-    <Stock msg="雄达木业"/>
+    <Stock msg="产品库存"/>
   </div>
 </template>
 

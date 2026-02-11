@@ -5,6 +5,7 @@ import com.xdmy.dao.inter.IStockDao;
 import com.xdmy.domain.Stock;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.lang.NonNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,9 +25,9 @@ public class StockDao extends BaseDao implements IStockDao {
             sql += " AND unitstock != 0";
         }
         sql += " ORDER BY unitstock DESC LIMIT ? ,?";
-        return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new RowMapper<Stock>() {
+        return jdbcTemplate.query(sql, new RowMapper<Stock>() {
             @Override
-            public Stock mapRow(ResultSet rs, int rowNum) throws SQLException {
+            public Stock mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
                 Stock stock = new Stock();
                 stock.setId(rs.getInt("id"));
                 stock.setProduct(rs.getString("product"));
@@ -42,7 +43,7 @@ public class StockDao extends BaseDao implements IStockDao {
                 stock.setStockstatus(rs.getString("stockstatus"));
                 return stock;
             }
-        });
+        }, currOffset, pageSize);
     }
 
     @Override
@@ -141,7 +142,8 @@ public class StockDao extends BaseDao implements IStockDao {
         if (hideZeroStock) {
             sql += " AND unitstock != 0";
         }
-        return jdbcTemplate.queryForObject(sql, Integer.class);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        return count != null ? count : 0;
     }
 
     @Override
@@ -215,11 +217,26 @@ public class StockDao extends BaseDao implements IStockDao {
         Integer adjustCount = jdbcTemplate.queryForObject(adjustCountSql, Integer.class);
 
         // 返回总数量
-        return initCount + adjustCount;
+        int init = initCount != null ? initCount : 0;
+        int adjust = adjustCount != null ? adjustCount : 0;
+        return init + adjust;
     }
 
     @Override
     public int addStock(Stock stock) {
+        // 检查product表中是否存在对应产品的记录
+        String checkProductSql = "SELECT COUNT(*) FROM product WHERE product_name = ?";
+        Integer productCount = jdbcTemplate.queryForObject(checkProductSql, Integer.class, stock.getProduct());
+        productCount = productCount != null ? productCount : 0;
+        
+        if (productCount == 0) {
+            // 如果不存在，插入一条新记录到product表
+            String insertProductSql = "INSERT INTO product(product_name, suggested_price, cost_price, maintain_material) " +
+                    "VALUES(?, ?, ?, 0)";
+            jdbcTemplate.update(insertProductSql, stock.getProduct(), stock.getUnitprice(), stock.getPurchaseprice());
+        }
+        
+        // 添加库存
         String sql = "INSERT INTO stock(product,unitstock,unitprice,purchaseprice,inamount,outamount,lastindate,lastoutdate,stockstatus) " +
                 "VALUES(?,?,?,?,?,?,?,?,?)";
         return jdbcTemplate.update(sql, stock.getProduct(), stock.getUnitstock(), stock.getUnitprice(), stock.getPurchaseprice(), stock.getInamount(), stock.getOutamount(), stock.getLastindate(), stock.getLastoutdate(), "1");
@@ -258,13 +275,13 @@ public class StockDao extends BaseDao implements IStockDao {
                      "product " +
                      "LIMIT ? OFFSET ?";
         
-        return jdbcTemplate.queryForList(sql, new Object[]{
+        return jdbcTemplate.queryForList(sql, String.class, 
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%",  // 包含前缀中每个字符
             "%" + prefix + "%",  // 用于排序
             pageSize, 
             offset
-        }, String.class);
+        );
     }
 
     @Override
@@ -273,15 +290,15 @@ public class StockDao extends BaseDao implements IStockDao {
         String sql = "SELECT COUNT(DISTINCT product) FROM stock " +
                      "WHERE product LIKE ? OR product LIKE ?";
         
-        return jdbcTemplate.queryForObject(sql, new Object[]{
+        return jdbcTemplate.queryForObject(sql, Integer.class, 
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%"  // 包含前缀中每个字符
-        }, Integer.class);
+        );
     }
 
     static class StockRowMapper implements RowMapper<Stock> {
         @Override
-        public Stock mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Stock mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             Stock stock = new Stock();
             stock.setId(rs.getInt("id"));
             stock.setProduct(rs.getString("product"));
@@ -299,7 +316,7 @@ public class StockDao extends BaseDao implements IStockDao {
         }
     }
 
-    public String genFilterSql(String sql, String productName) {
+    public @NonNull String genFilterSql(@NonNull String sql, String productName) {
         if (!productName.equals("")) {
             sql += " AND product like '%" + productName + "%'";
         }

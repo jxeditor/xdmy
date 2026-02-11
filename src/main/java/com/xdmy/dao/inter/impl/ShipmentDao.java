@@ -4,10 +4,16 @@ package com.xdmy.dao.inter.impl;
 import com.xdmy.dao.inter.IShipmentDao;
 import com.xdmy.domain.Shipment;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.lang.NonNull;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.sql.Connection;
 import java.util.List;
 
 //
@@ -20,7 +26,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
         String sql = "SELECT * FROM shipment WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, customerName, productName, bizStartDate, bizEndDate);
         sql += " ORDER BY billdate DESC,odd DESC,id DESC LIMIT ? ,?";
-        return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new ShipmentRowMapper());
+        return jdbcTemplate.query(sql, new ShipmentRowMapper(), currOffset, pageSize);
     }
 
     @Override
@@ -28,28 +34,31 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
         String sql = "SELECT * FROM shipment WHERE 1=1 AND is_delete = 0 AND paystatus = 0" +
                 " AND customer = ? AND billdate >= ? AND billdate <= ?";
         sql += " ORDER BY billdate,odd,id";
-        return jdbcTemplate.query(sql, new Object[]{customerName, bizStartDate, bizEndDate}, new ShipmentRowMapper());
+        return jdbcTemplate.query(sql, new ShipmentRowMapper(), customerName, bizStartDate, bizEndDate);
     }
 
     @Override
     public int getAllTotalSize(String customerName, String productName, String bizStartDate, String bizEndDate) {
         String sql = "SELECT count(1) FROM shipment WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, customerName, productName, bizStartDate, bizEndDate);
-        return jdbcTemplate.queryForObject(sql, Integer.class);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        return count != null ? count : 0;
     }
 
     @Override
     public int getDistinctSize(String customerName, String bizStartDate, String bizEndDate) {
         String sql = "SELECT count(distinct odd) FROM shipment WHERE 1=1 AND is_delete = 0 AND paystatus = 0" +
                 " AND customer = ? AND billdate >= ? AND billdate <= ?";
-        return jdbcTemplate.queryForObject(sql, Integer.class, customerName, bizStartDate, bizEndDate);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, customerName, bizStartDate, bizEndDate);
+        return count != null ? count : 0;
     }
 
     @Override
     public double getSumPay(String customerName, String bizStartDate, String bizEndDate) {
         String sql = "SELECT sum(money) FROM shipment WHERE 1=1 AND is_delete = 0 AND paystatus = 0" +
                 " AND customer = ? AND billdate >= ? AND billdate <= ?";
-        return jdbcTemplate.queryForObject(sql, Double.class, customerName, bizStartDate, bizEndDate);
+        Double sum = jdbcTemplate.queryForObject(sql, Double.class, customerName, bizStartDate, bizEndDate);
+        return sum != null ? sum : 0.0;
     }
 
     @Override
@@ -61,11 +70,11 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
             String sql = "INSERT INTO shipment(odd,customer,product,billdate,amount,unitprice,money,paystatus,boardcost,fireproofboardcost,costmoney,profit,remark,is_delete,operate_material) " +
                     "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             // 使用KeyHolder获取新插入记录的ID
-            org.springframework.jdbc.support.GeneratedKeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
-            jdbcTemplate.update(new org.springframework.jdbc.core.PreparedStatementCreator() {
+            GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+            jdbcTemplate.update(new PreparedStatementCreator() {
                 @Override
-                public java.sql.PreparedStatement createPreparedStatement(java.sql.Connection connection) throws java.sql.SQLException {
-                    java.sql.PreparedStatement ps = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
+                public @NonNull PreparedStatement createPreparedStatement(@NonNull Connection connection) throws SQLException {
+                    java.sql.PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                     ps.setString(1, shipment.getOdd());
                     ps.setString(2, shipment.getCustomer());
                     ps.setString(3, shipment.getProduct());
@@ -85,11 +94,29 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
                 }
             }, keyHolder);
             // 获取新插入记录的ID
-            int result = keyHolder.getKey().intValue();
+            Integer id = keyHolder.getKeyAs(Integer.class);
+            if (id == null) {
+                jdbcTemplate.execute("ROLLBACK");
+                return 0;
+            }
+            int result = id;
+            
+            // 检查product表中是否存在对应产品的记录
+            String checkProductSql = "SELECT COUNT(*) FROM product WHERE product_name = ?";
+            Integer productCount = jdbcTemplate.queryForObject(checkProductSql, Integer.class, shipment.getProduct());
+            productCount = productCount != null ? productCount : 0;
+            
+            if (productCount == 0) {
+                // 如果不存在，插入一条新记录到product表
+                String insertProductSql = "INSERT INTO product(product_name, suggested_price, cost_price, maintain_material) " +
+                        "VALUES(?, ?, ?, 0)";
+                jdbcTemplate.update(insertProductSql, shipment.getProduct(), shipment.getUnitprice(), shipment.getUnitprice());
+            }
             
             // 检查stock表中是否存在对应产品的记录
             String checkSql = "SELECT COUNT(*) FROM stock WHERE product = ?";
-            int count = jdbcTemplate.queryForObject(checkSql, Integer.class, shipment.getProduct());
+            Integer countObj = jdbcTemplate.queryForObject(checkSql, Integer.class, shipment.getProduct());
+            int count = countObj != null ? countObj : 0;
             
             if (count == 0) {
                 // 如果不存在，插入一条新记录
@@ -106,7 +133,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
             if (shipment.getOperate_material() == 1) {
                 // 查询产品与原材料的关系
                 String relationSql = "SELECT material_name, quantity FROM product_material_relation WHERE product_name = ? AND is_default = 1";
-                List<java.util.Map<String, Object>> relations = jdbcTemplate.queryForList(relationSql, new Object[]{shipment.getProduct()});
+                List<java.util.Map<String, Object>> relations = jdbcTemplate.queryForList(relationSql, shipment.getProduct());
                 
                 for (java.util.Map<String, Object> relation : relations) {
                     String materialName = (String) relation.get("material_name");
@@ -147,20 +174,22 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
         try {
             // 先查询要删除的出货记录的产品和数量
             String querySql = "SELECT * FROM shipment WHERE id = ?";
-            Shipment shipment = jdbcTemplate.queryForObject(querySql, new Object[]{id}, new ShipmentRowMapper());
+            Shipment shipment = jdbcTemplate.queryForObject(querySql, new ShipmentRowMapper(), id);
             
             // 删除出货记录
             String sql = "UPDATE shipment set is_delete = 1 WHERE id = ?";
             int result = jdbcTemplate.update(sql, id);
             
             // 更新stock表中对应产品的outamount字段
-            String updateSql = "UPDATE stock SET outamount = outamount - ?, lastoutdate = (SELECT MAX(billdate) FROM shipment WHERE product = ? AND is_delete = 0) WHERE product = ?";
-            jdbcTemplate.update(updateSql, shipment.getAmount(), shipment.getProduct(), shipment.getProduct());
+            if (shipment != null) {
+                String updateSql = "UPDATE stock SET outamount = outamount - ?, lastoutdate = (SELECT MAX(billdate) FROM shipment WHERE product = ? AND is_delete = 0) WHERE product = ?";
+                jdbcTemplate.update(updateSql, shipment.getAmount(), shipment.getProduct(), shipment.getProduct());
+            }
             
             // 操作原材料
             // 查询原有的原材料操作记录
             String operationSql = "SELECT material_name, quantity FROM shipment_material_operation WHERE shipment_id = ?";
-            List<java.util.Map<String, Object>> operations = jdbcTemplate.queryForList(operationSql, new Object[]{id});
+            List<java.util.Map<String, Object>> operations = jdbcTemplate.queryForList(operationSql, id);
             
             for (java.util.Map<String, Object> operation : operations) {
                 String materialName = (String) operation.get("material_name");
@@ -191,13 +220,14 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
         return updateShipment(shipment, null);
     }
     
+    @SuppressWarnings("null")
     public int updateShipment(Shipment shipment, String materialRelationsStr) {
         // 开始事务
         jdbcTemplate.execute("START TRANSACTION");
         try {
             // 先查询原出货记录的产品和数量
             String querySql = "SELECT * FROM shipment WHERE id = ?";
-            Shipment oldShipment = jdbcTemplate.queryForObject(querySql, new Object[]{shipment.getId()}, new ShipmentRowMapper());
+            Shipment oldShipment = jdbcTemplate.queryForObject(querySql, new ShipmentRowMapper(), shipment.getId());
             
             // 更新出货记录
             String sql = "UPDATE shipment set odd = ?,customer = ?,product = ?,billdate = ?,amount = ?,unitprice = ?,money = ?" +
@@ -206,7 +236,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
             int result = jdbcTemplate.update(sql, shipment.getOdd(), shipment.getCustomer(), shipment.getProduct(), shipment.getBilldate(), shipment.getAmount(), shipment.getUnitprice(), shipment.getMoney(), shipment.getPaystatus(), shipment.getBoardcost(), shipment.getFireproofboardcost(), shipment.getCostmoney(), shipment.getProfit(), shipment.getRemark(), shipment.getOperate_material(), shipment.getId());
             
             // 如果产品没有变化
-            if (oldShipment.getProduct().equals(shipment.getProduct())) {
+            if (oldShipment != null && shipment != null && oldShipment.getProduct().equals(shipment.getProduct())) {
                 // 更新stock表中对应产品的outamount字段
                 int amountDiff = shipment.getAmount() - oldShipment.getAmount();
                 String updateSql = "UPDATE stock SET outamount = outamount + ?, lastoutdate = ? WHERE product = ?";
@@ -216,6 +246,18 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
                 // 减少原产品的outamount
                 String updateOldSql = "UPDATE stock SET outamount = outamount - ?, lastoutdate = (SELECT MAX(billdate) FROM shipment WHERE product = ? AND is_delete = 0) WHERE product = ?";
                 jdbcTemplate.update(updateOldSql, oldShipment.getAmount(), oldShipment.getProduct(), oldShipment.getProduct());
+                
+                // 检查新产品是否存在于product表中
+                String checkProductSql = "SELECT COUNT(*) FROM product WHERE product_name = ?";
+                Integer productCount = jdbcTemplate.queryForObject(checkProductSql, Integer.class, shipment.getProduct());
+                productCount = productCount != null ? productCount : 0;
+                
+                if (productCount == 0) {
+                    // 如果不存在，插入一条新记录到product表
+                    String insertProductSql = "INSERT INTO product(product_name, suggested_price, cost_price, maintain_material) " +
+                            "VALUES(?, ?, ?, 0)";
+                    jdbcTemplate.update(insertProductSql, shipment.getProduct(), shipment.getUnitprice(), shipment.getUnitprice());
+                }
                 
                 // 增加新产品的outamount
                 // 检查新产品是否在stock表中存在
@@ -237,7 +279,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
             // 操作原材料
             // 1. 查询原有的原材料操作记录
             String oldOperationSql = "SELECT material_name, quantity FROM shipment_material_operation WHERE shipment_id = ?";
-            List<java.util.Map<String, Object>> oldOperations = jdbcTemplate.queryForList(oldOperationSql, new Object[]{shipment.getId()});
+            List<java.util.Map<String, Object>> oldOperations = jdbcTemplate.queryForList(oldOperationSql, shipment.getId());
             
             // 2. 删除原有的原材料操作记录
             String deleteOperationSql = "DELETE FROM shipment_material_operation WHERE shipment_id = ?";
@@ -263,12 +305,12 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
                         e.printStackTrace();
                         // 解析失败，从数据库查询
                         String relationSql = "SELECT material_name, quantity FROM product_material_relation WHERE product_name = ? AND is_default = 1";
-                        relations = jdbcTemplate.queryForList(relationSql, new Object[]{shipment.getProduct()});
+                        relations = jdbcTemplate.queryForList(relationSql, shipment.getProduct());
                     }
                 } else {
                     // 从数据库查询产品与原材料的关系
                     String relationSql = "SELECT material_name, quantity FROM product_material_relation WHERE product_name = ? AND is_default = 1";
-                    relations = jdbcTemplate.queryForList(relationSql, new Object[]{shipment.getProduct()});
+                    relations = jdbcTemplate.queryForList(relationSql, shipment.getProduct());
                 }
                 
                 for (java.util.Map<String, Object> relation : relations) {
@@ -344,26 +386,26 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
     public List<String> findCustomerNamesByPrefix(String prefix, int pageNum, int pageSize) {
         int offset = (pageNum - 1) * pageSize;
         String sql = "SELECT DISTINCT customer FROM shipment WHERE customer LIKE ? AND is_delete = 0 ORDER BY customer LIMIT ? OFFSET ?";
-        return jdbcTemplate.queryForList(sql, new Object[]{"%" + prefix + "%", pageSize, offset}, String.class);
+        return jdbcTemplate.queryForList(sql, String.class, "%" + prefix + "%", pageSize, offset);
     }
 
     @Override
     public int getCustomerNamesCount(String prefix) {
         String sql = "SELECT COUNT(DISTINCT customer) FROM shipment WHERE customer LIKE ? AND is_delete = 0";
-        return jdbcTemplate.queryForObject(sql, new Object[]{"%" + prefix + "%"}, Integer.class);
+        return jdbcTemplate.queryForObject(sql, Integer.class, "%" + prefix + "%");
     }
 
     @Override
     public List<java.util.Map<String, Object>> findMaterialOperationsByShipmentId(int shipmentId) {
         String sql = "SELECT * FROM shipment_material_operation WHERE shipment_id = ?";
-        return jdbcTemplate.queryForList(sql, new Object[]{shipmentId});
+        return jdbcTemplate.queryForList(sql, shipmentId);
     }
 
     @Override
     public Shipment findShipmentById(int id) {
         String sql = "SELECT * FROM shipment WHERE id = ? AND is_delete = 0";
         try {
-            return jdbcTemplate.queryForObject(sql, new Object[]{id}, new ShipmentRowMapper());
+            return jdbcTemplate.queryForObject(sql, new ShipmentRowMapper(), id);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -372,7 +414,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
 
     static class ShipmentRowMapper implements RowMapper<Shipment> {
         @Override
-        public Shipment mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Shipment mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             Shipment shipment = new Shipment();
             shipment.setId(rs.getInt("id"));
             shipment.setOdd(rs.getString("odd"));
@@ -393,7 +435,7 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
         }
     }
 
-    public String genFilterSql(String sql, String customerName, String productName, String bizStartDate, String bizEndDate) {
+    public @NonNull String genFilterSql(@NonNull String sql, String customerName, String productName, String bizStartDate, String bizEndDate) {
         if (!customerName.equals("")) {
             sql += " AND customer LIKE '%" + customerName + "%'";
         }

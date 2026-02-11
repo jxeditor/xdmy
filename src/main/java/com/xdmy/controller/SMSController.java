@@ -2,7 +2,6 @@ package com.xdmy.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.xdmy.utils.JSONReturn;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -13,7 +12,7 @@ import java.io.IOException;
 /**
  * @Author xz
  * @Date 2022/9/13 09:38
- * @Description TODO
+ * @Description 短信发送控制器
  */
 @RestController
 @RequestMapping("/sms")

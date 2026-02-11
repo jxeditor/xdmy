@@ -1,6 +1,6 @@
 <template>
   <div class="incoming">
-    <Incoming msg="雄达木业"/>
+    <Incoming msg="入货"/>
   </div>
 </template>
 

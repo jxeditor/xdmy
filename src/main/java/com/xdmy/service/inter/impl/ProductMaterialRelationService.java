@@ -2,7 +2,6 @@ package com.xdmy.service.inter.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.xdmy.dao.DaoFacade;
-import com.xdmy.dao.inter.IProductMaterialRelationDao;
 import com.xdmy.domain.ProductMaterialRelation;
 import com.xdmy.service.inter.IProductMaterialRelationService;
 import com.xdmy.datasource.DBContextHolder;
@@ -67,6 +66,17 @@ public class ProductMaterialRelationService implements IProductMaterialRelationS
         DBContextHolder.setDbType("primary");
         List<ProductMaterialRelation> relationList = daoFacade.getProductMaterialRelationDao().findRelationsByProductName(productName);
         return toJSONObject(relationList);
+    }
+
+    @Override
+    public JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize) {
+        DBContextHolder.setDbType("primary");
+        List<String> productNames = daoFacade.getProductMaterialRelationDao().findProductNamesByPrefix(prefix, pageNum, pageSize);
+        int total = daoFacade.getProductMaterialRelationDao().getProductNamesCountByPrefix(prefix);
+        JSONObject result = new JSONObject();
+        result.put("data", productNames);
+        result.put("total", total);
+        return result;
     }
 
     private JSONObject toJSONObject(List<ProductMaterialRelation> relationList) {

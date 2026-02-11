@@ -2,10 +2,9 @@ package com.xdmy.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.xdmy.domain.ProductMaterialRelation;
-import com.xdmy.service.ServiceFacade;
-import com.xdmy.service.inter.IProductMaterialRelationService;
 import com.xdmy.utils.ErrorCode;
 import com.xdmy.utils.JSONReturn;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -125,6 +124,27 @@ public class ProductMaterialRelationController extends BaseController {
             return new JSONReturn(result).toString();
         }
         JSONObject result = serviceFacade.getProductMaterialRelationService().findRelationsByProductName(productName);
+        return new JSONReturn(result).toString();
+    }
+
+    @RequestMapping("/findProductNamesByPrefix")
+    public String findProductNamesByPrefix(@RequestBody JSONObject request) {
+        String prefix = request.getString("prefix");
+        int pageNum = request.getIntValue("pageNum");
+        int pageSize = request.getIntValue("pageSize");
+        
+        // 非空校验
+        if (prefix == null) {
+            prefix = "";
+        }
+        if (pageNum < 1) {
+            pageNum = 1;
+        }
+        if (pageSize < 1) {
+            pageSize = 10;
+        }
+        
+        JSONObject result = serviceFacade.getProductMaterialRelationService().findProductNamesByPrefix(prefix, pageNum, pageSize);
         return new JSONReturn(result).toString();
     }
 }

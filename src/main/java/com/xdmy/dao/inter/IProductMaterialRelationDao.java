@@ -17,4 +17,6 @@ public interface IProductMaterialRelationDao {
     List<ProductMaterialRelation> findRelationsByProductName(String productName);
     boolean checkRelationUnique(String productName, String materialName, Integer id);
     int batchDeleteRelation(String ids);
+    List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize);
+    int getProductNamesCountByPrefix(String prefix);
 }

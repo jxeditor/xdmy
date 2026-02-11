@@ -1,7 +1,6 @@
 package com.xdmy.dao;
 
 import com.xdmy.dao.inter.*;
-import com.xdmy.service.inter.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 

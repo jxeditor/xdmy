@@ -5,14 +5,32 @@
       <!-- 第一行：产品筛选 -->
       <el-row type="flex" justify="space-between" align="center" style="width:100%;padding: 10px 20px;">
         <el-col :span="12">
-          <el-input
-            v-model="productInput"
-            placeholder="输入产品名"
-            clearable
-            prefix-icon="el-icon-search"
-            style="width: 100%;"
-            @input="handleProductInput"
-          />
+          <div class="relation-search-container">
+            <el-input
+              v-model="productInput"
+              placeholder="输入产品名"
+              clearable
+              style="width: 100%;"
+              @input="handleProductInput"
+              @focus="showProductSuggestions = true"
+              @blur="handleProductBlur"
+            >
+              <template #prefix>
+                <el-icon><Search /></el-icon>
+              </template>
+            </el-input>
+            <!-- 产品联想结果下拉框 -->
+            <div v-if="showProductSuggestions && productSuggestions.length > 0" class="relation-suggestions-dropdown">
+              <div 
+                v-for="(item, index) in productSuggestions" 
+                :key="index"
+                class="relation-suggestion-item"
+                @click="selectProductSuggestion(item)"
+              >
+                {{ item }}
+              </div>
+            </div>
+          </div>
         </el-col>
         <el-col :span="8" style="display: flex; justify-content: flex-end; gap: 10px;">
           <el-button type="primary" @click="searchRelation">搜索</el-button>
@@ -62,14 +80,14 @@
       <el-dialog title="添加产品与原材料关系" v-model="addRelationVisible" width="80%">
         <el-form ref="addRelationForm" :rules="addRelationFormRules" :model="addRelationForm" label-width="120px">
           <el-form-item label="产品:" prop="productName">
-            <div class="search-container">
+            <div class="relation-search-container">
               <el-input v-model="addRelationForm.productName" placeholder="请输入产品名称" @input="getAddProductSuggestions"></el-input>
               <!-- 产品联想结果下拉框 -->
-              <div v-if="showAddProductSuggestions && addProductSuggestions.length > 0" class="suggestions-dropdown">
+              <div v-if="showAddProductSuggestions && addProductSuggestions.length > 0" class="relation-suggestions-dropdown">
                 <div 
                   v-for="(item, index) in addProductSuggestions" 
                   :key="index"
-                  class="suggestion-item"
+                  class="relation-suggestion-item"
                   @click="selectAddProductSuggestion(item)"
                 >
                   {{ item }}
@@ -78,14 +96,14 @@
             </div>
           </el-form-item>
           <el-form-item label="原材料:" prop="materialName">
-            <div class="search-container">
+            <div class="relation-search-container">
               <el-input v-model="addRelationForm.materialName" placeholder="请输入原材料名称" @input="getAddMaterialSuggestions"></el-input>
               <!-- 原材料联想结果下拉框 -->
-              <div v-if="showAddMaterialSuggestions && addMaterialSuggestions.length > 0" class="suggestions-dropdown">
+              <div v-if="showAddMaterialSuggestions && addMaterialSuggestions.length > 0" class="relation-suggestions-dropdown">
                 <div 
                   v-for="(item, index) in addMaterialSuggestions" 
                   :key="index"
-                  class="suggestion-item"
+                  class="relation-suggestion-item"
                   @click="selectAddMaterialSuggestion(item)"
                 >
                   {{ item }}
@@ -158,8 +176,13 @@
 </template>
 
 <script>
+import { Search } from '@element-plus/icons-vue';
+
 export default {
   name: "ProductMaterialRelation",
+  components: {
+    Search
+  },
   data() {
     return {
       msg: "产品与原材料关系维护",
@@ -219,12 +242,21 @@ export default {
       // 修改原材料联想功能参数
       updateMaterialSuggestions: [],
       showUpdateMaterialSuggestions: false,
+      // 产品筛选联想功能参数
+      productSuggestions: [],
+      showProductSuggestions: false,
       // 选中的关系数据
       selectedRelations: []
     };
   },
   mounted() {
     this.getAllRelation();
+    // 添加点击事件监听器，点击页面其他地方时隐藏下拉框
+    document.addEventListener('click', this.handleClickOutside)
+  },
+  beforeDestroy() {
+    // 移除点击事件监听器
+    document.removeEventListener('click', this.handleClickOutside)
   },
   methods: {
     handleCurrentChange(currentPage) {
@@ -428,6 +460,43 @@ export default {
     handleProductInput() {
       this.page.index = 1;
       this.getAllRelation();
+      this.getProductSuggestions();
+    },
+    // 获取产品联想建议（从原材料关系表中获取）
+    getProductSuggestions() {
+      const that = this;
+      if (that.productInput.length < 1) {
+        that.productSuggestions = [];
+        that.showProductSuggestions = false;
+        return;
+      }
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/productMaterialRelation/findProductNamesByPrefix`, {
+        prefix: that.productInput,
+        pageNum: 1,
+        pageSize: 10
+      })
+        .then(function (response) {
+          that.productSuggestions = response.data.data;
+          that.showProductSuggestions = true;
+        })
+        .catch(function (error) {
+          console.error(error);
+          that.productSuggestions = [];
+          that.showProductSuggestions = false;
+        });
+    },
+    // 选择产品联想建议
+    selectProductSuggestion(item) {
+      this.productInput = item;
+      this.showProductSuggestions = false;
+      this.page.index = 1;
+      this.getAllRelation();
+    },
+    // 处理产品筛选输入框失焦事件
+    handleProductBlur() {
+      setTimeout(() => {
+        this.showProductSuggestions = false;
+      }, 200);
     },
     // 获取添加产品联想建议
     getAddProductSuggestions() {
@@ -540,6 +609,26 @@ export default {
     selectUpdateMaterialSuggestion(item) {
       this.updateRelationForm.materialName = item;
       this.showUpdateMaterialSuggestions = false;
+    },
+    // 点击外部区域关闭下拉框
+    handleClickOutside(event) {
+      // 检查点击是否发生在任何搜索框或下拉框外部
+      const searchContainers = document.querySelectorAll('.relation-search-container');
+      let isClickInside = false;
+      
+      searchContainers.forEach(container => {
+        if (container.contains(event.target)) {
+          isClickInside = true;
+        }
+      });
+      
+      if (!isClickInside) {
+        this.showAddProductSuggestions = false;
+        this.showAddMaterialSuggestions = false;
+        this.showUpdateProductSuggestions = false;
+        this.showUpdateMaterialSuggestions = false;
+        this.showProductSuggestions = false;
+      }
     }
   }
 };
@@ -593,13 +682,13 @@ body {
 }
 
 /* 搜索容器 */
-.search-container {
+.relation-search-container {
   position: relative;
   width: 100%;
 }
 
 /* 联想结果下拉框 */
-.suggestions-dropdown {
+.relation-suggestions-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -616,7 +705,7 @@ body {
 }
 
 /* 联想结果项 */
-.suggestion-item {
+.relation-suggestion-item {
   padding: 12px 16px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -625,13 +714,13 @@ body {
   overflow: hidden;
 }
 
-.suggestion-item:hover {
+.relation-suggestion-item:hover {
   background-color: #f5f7fa;
   color: #667eea;
   transform: translateX(5px);
 }
 
-.suggestion-item:last-child {
+.relation-suggestion-item:last-child {
   border-bottom: none;
 }
 

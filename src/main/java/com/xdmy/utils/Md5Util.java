@@ -122,8 +122,8 @@ public class Md5Util {
     }
 
     public static void codePayValue(Map<String, String> params) {
-        Set keySet = params.keySet();
-        Iterator itr = keySet.iterator();
+        Set<String> keySet = params.keySet();
+        Iterator<String> itr = keySet.iterator();
 
         while(itr.hasNext()) {
             String key = (String)itr.next();
@@ -172,7 +172,7 @@ public class Md5Util {
     }
 
     public static void main(String[] args) {
-        HashMap map = new HashMap();
+        HashMap<String, String> map = new HashMap<>();
         map.put("activityId", "986736917");
         map.put("name", "测试");
         String str = getParamSimple("getActivity.do", map);

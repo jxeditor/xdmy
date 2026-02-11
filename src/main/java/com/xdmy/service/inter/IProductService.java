@@ -22,4 +22,6 @@ public interface IProductService {
     JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize);
     
     int batchDeleteProduct(String ids);
+    
+    boolean checkProductExist(String productName);
 }

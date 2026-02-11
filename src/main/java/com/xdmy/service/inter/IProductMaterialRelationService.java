@@ -16,4 +16,5 @@ public interface IProductMaterialRelationService {
     JSONObject findRelationsByProductName(String productName);
     boolean checkRelationUnique(String productName, String materialName, Integer id);
     int batchDeleteRelation(String ids);
+    JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize);
 }

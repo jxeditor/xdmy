@@ -150,39 +150,61 @@
         <el-button @click="onBatchDeleteShipment()">删除</el-button>
         <el-button @click="onClearSelection()">取消选择</el-button>
       </div>
-      <el-dialog title="开单" v-model="addShipmentVisible" width="80%">
+      <el-dialog title="开单" v-model="addShipmentVisible" width="80%" class="shipment-dialog">
         <el-form ref="addShipmentForm" :rules="addShipmentFormRules" :model="addShipmentForm" label-width="180px">
           <el-form-item label="单号:" prop="odd">
             <el-input v-model="addShipmentForm.odd"></el-input>
           </el-form-item>
           <el-form-item label="客户:" prop="customer">
-            <div class="search-container">
-              <el-input v-model="addShipmentForm.customer" placeholder="请输入客户名称"></el-input>
+            <div class="shipment-search-container">
+              <el-input v-model="addShipmentForm.customer" placeholder="请输入客户名称" @input="handleAddCustomerInput"></el-input>
               <!-- 客户联想结果下拉框 -->
-              <div v-if="showAddCustomerSuggestions && addCustomerSuggestions.length > 0" class="suggestions-dropdown">
+              <div v-if="showAddCustomerSuggestions && addCustomerSuggestions.length > 0" class="shipment-suggestions-dropdown">
                 <div 
                   v-for="(item, index) in addCustomerSuggestions" 
                   :key="index"
-                  class="suggestion-item"
+                  class="shipment-suggestion-item"
                   @click="selectAddCustomerSuggestion(item)"
                 >
                   {{ item }}
+                </div>
+                <!-- 客户联想分页 -->
+                <div v-if="addCustomerTotal > addCustomerPageSize" class="shipment-suggestion-pagination">
+                  <el-pagination
+                    small
+                    layout="prev, pager, next, ->, total"
+                    :total="addCustomerTotal"
+                    :page-size="addCustomerPageSize"
+                    :current-page="addCustomerCurrentPage"
+                    @current-change="handleAddCustomerPageChange"
+                  />
                 </div>
               </div>
             </div>
           </el-form-item>
           <el-form-item label="产品:" prop="product">
-            <div class="search-container">
-              <el-input v-model="addShipmentForm.product" placeholder="请输入产品名称" @input="handleAddProductChange"></el-input>
+            <div class="shipment-search-container">
+              <el-input v-model="addShipmentForm.product" placeholder="请输入产品名称" @input="handleAddProductInput"></el-input>
               <!-- 产品联想结果下拉框 -->
-              <div v-if="showAddProductSuggestions && addProductSuggestions.length > 0" class="suggestions-dropdown">
+              <div v-if="showAddProductSuggestions && addProductSuggestions.length > 0" class="shipment-suggestions-dropdown">
                 <div 
                   v-for="(item, index) in addProductSuggestions" 
                   :key="index"
-                  class="suggestion-item"
+                  class="shipment-suggestion-item"
                   @click="selectAddProductSuggestion(item)"
                 >
                   {{ item }}
+                </div>
+                <!-- 产品联想分页 -->
+                <div v-if="addProductTotal > addProductPageSize" class="shipment-suggestion-pagination">
+                  <el-pagination
+                    small
+                    layout="prev, pager, next, ->, total"
+                    :total="addProductTotal"
+                    :page-size="addProductPageSize"
+                    :current-page="addProductCurrentPage"
+                    @current-change="handleAddProductPageChange"
+                  />
                 </div>
               </div>
             </div>
@@ -257,40 +279,62 @@
           </el-form-item>
         </el-form>
       </el-dialog>
-      <el-dialog title="修改单据信息" v-model="updateShipmentVisible" width="80%">
+      <el-dialog title="修改单据信息" v-model="updateShipmentVisible" width="80%" class="shipment-dialog">
         <el-form ref="updateShipmentForm" :rules="updateShipmentFormRules" :model="updateShipmentForm"
                  label-width="180px">
           <el-form-item label="单号:" prop="odd">
             <el-input v-model="updateShipmentForm.odd"></el-input>
           </el-form-item>
           <el-form-item label="客户:" prop="customer">
-            <div class="search-container">
-              <el-input v-model="updateShipmentForm.customer" placeholder="请输入客户名称"></el-input>
+            <div class="shipment-search-container">
+              <el-input v-model="updateShipmentForm.customer" placeholder="请输入客户名称" @input="handleUpdateCustomerInput"></el-input>
               <!-- 客户联想结果下拉框 -->
-              <div v-if="showUpdateCustomerSuggestions && updateCustomerSuggestions.length > 0" class="suggestions-dropdown">
+              <div v-if="showUpdateCustomerSuggestions && updateCustomerSuggestions.length > 0" class="shipment-suggestions-dropdown">
                 <div 
                   v-for="(item, index) in updateCustomerSuggestions" 
                   :key="index"
-                  class="suggestion-item"
+                  class="shipment-suggestion-item"
                   @click="selectUpdateCustomerSuggestion(item)"
                 >
                   {{ item }}
+                </div>
+                <!-- 客户联想分页 -->
+                <div v-if="updateCustomerTotal > updateCustomerPageSize" class="shipment-suggestion-pagination">
+                  <el-pagination
+                    small
+                    layout="prev, pager, next, ->, total"
+                    :total="updateCustomerTotal"
+                    :page-size="updateCustomerPageSize"
+                    :current-page="updateCustomerCurrentPage"
+                    @current-change="handleUpdateCustomerPageChange"
+                  />
                 </div>
               </div>
             </div>
           </el-form-item>
           <el-form-item label="产品:" prop="product">
-            <div class="search-container">
-              <el-input v-model="updateShipmentForm.product" placeholder="请输入产品名称" @input="handleUpdateProductChange"></el-input>
+            <div class="shipment-search-container">
+              <el-input v-model="updateShipmentForm.product" placeholder="请输入产品名称" @input="handleUpdateProductInput"></el-input>
               <!-- 产品联想结果下拉框 -->
-              <div v-if="showUpdateProductSuggestions && updateProductSuggestions.length > 0" class="suggestions-dropdown">
+              <div v-if="showUpdateProductSuggestions && updateProductSuggestions.length > 0" class="shipment-suggestions-dropdown">
                 <div 
                   v-for="(item, index) in updateProductSuggestions" 
                   :key="index"
-                  class="suggestion-item"
+                  class="shipment-suggestion-item"
                   @click="selectUpdateProductSuggestion(item)"
                 >
                   {{ item }}
+                </div>
+                <!-- 产品联想分页 -->
+                <div v-if="updateProductTotal > updateProductPageSize" class="shipment-suggestion-pagination">
+                  <el-pagination
+                    small
+                    layout="prev, pager, next, ->, total"
+                    :total="updateProductTotal"
+                    :page-size="updateProductPageSize"
+                    :current-page="updateProductCurrentPage"
+                    @current-change="handleUpdateProductPageChange"
+                  />
                 </div>
               </div>
             </div>
@@ -375,9 +419,7 @@ export default {
   props: {
     msg: String
   },
-  mounted() {
-    this.getAllShipment()
-  },
+
   methods: {
     sleep(ms) { //sleep延迟方法2
       const time_ms = new Date().getTime();
@@ -432,16 +474,27 @@ export default {
     },
     onAddShipmentCancel() {
       this.addShipmentVisible = false
+      // 重置操作原材料状态
+      this.addShipmentForm.operate_material = 0
+      // 重置原材料关系数据
+      this.addMaterialRelations = []
+      this.newAddMaterial = { materialName: '', quantity: 1 }
     },
     onUpdateShipmentCancel() {
       this.updateShipmentVisible = false
+      // 重置操作原材料状态为关闭
+      this.updateShipmentForm.operate_material = 0
+      // 重置原材料关系数据
+      this.updateMaterialRelations = []
+      this.newUpdateMaterial = { materialName: '', quantity: 1 }
     },
     onAddShipment() {
       this.addShipmentVisible = true
     },
     onUpdateShipment(Shipment) {
       console.log('修改出货单数据:', Shipment)
-      this.updateShipmentForm = Shipment
+      // 深拷贝Shipment对象，避免直接引用影响原始数据
+      this.updateShipmentForm = JSON.parse(JSON.stringify(Shipment))
       // 存储初始的operate_material状态
       this.initialOperateMaterial = Shipment.operate_material
       this.updateShipmentVisible = true
@@ -461,6 +514,15 @@ export default {
         if (valid) {
           // 如果开启了操作原材料，校验库存
           if (that.addShipmentForm.operate_material === 1) {
+            // 检查是否添加了原材料关系
+            if (!that.addMaterialRelations || that.addMaterialRelations.length === 0) {
+              that.$message({
+                message: '开启操作原材料后，必须添加至少一条原材料关系',
+                type: 'error',
+                center: true
+              })
+              return false
+            }
             that.validateMaterialStock(that.addMaterialRelations, that.addShipmentForm.amount)
               .then(() => {
                 // 库存校验通过，继续开单
@@ -525,6 +587,15 @@ export default {
         if (valid) {
           // 如果开启了操作原材料，需要处理库存
           if (that.updateShipmentForm.operate_material === 1) {
+            // 检查是否添加了原材料关系
+            if (!that.updateMaterialRelations || that.updateMaterialRelations.length === 0) {
+              that.$message({
+                message: '开启操作原材料后，必须添加至少一条原材料关系',
+                type: 'error',
+                center: true
+              })
+              return false
+            }
             // 1. 获取原有出货单信息，用于恢复库存
             that.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/shipment/findShipmentById?id=${that.updateShipmentForm.id}`)
               .then(oldShipmentResponse => {
@@ -602,32 +673,40 @@ export default {
       })
     },
     getAllShipment() {
-      const that = this;
-      this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/shipment/findAllShipment` +
-        `?pageNum=` + that.page.index + `&pageSize=` + that.page.size +
-        `&customerName=` + that.customerInput +
-        `&productName=` + that.productInput +
-        `&bizStartDate=` + (that.billDateInput ? that.billDateInput[0] : ``) + `&bizEndDate=` + (that.billDateInput ? that.billDateInput[1] : ``))
-        .then(function (response) {
-          that.ShipmentData = response.data.data
-          that.page.total = response.data.total
-        }).catch(function (error) {
-        that.$message.error(error);
-      })
+      try {
+        const that = this;
+        const url = `${process.env.VUE_APP_API_BASE_URL}/shipment/findAllShipment?pageNum=${that.page.index}&pageSize=${that.page.size}&customerName=${that.customerInput}&productName=${that.productInput}&bizStartDate=${that.billDateInput ? that.billDateInput[0] : ''}&bizEndDate=${that.billDateInput ? that.billDateInput[1] : ''}`;
+        console.log('请求URL:', url);
+        this.$axios.get(url)
+          .then(function (response) {
+            console.log('响应数据:', response.data);
+            that.ShipmentData = response.data.data
+            that.page.total = response.data.total
+          }).catch(function (error) {
+          console.error('请求错误:', error);
+          that.$message.error('连接失败，请检查网络或服务状态');
+        })
+      } catch (error) {
+        console.error('getAllShipment方法执行错误:', error);
+      }
     },
     searchShipment() {
-      const that = this
-      this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/shipment/findAllShipment` +
-        `?pageNum=` + that.page.index + `&pageSize=` + that.page.size +
-        `&customerName=` + that.customerInput +
-        `&productName=` + that.productInput +
-        `&bizStartDate=` + (that.billDateInput ? that.billDateInput[0] : ``) + `&bizEndDate=` + (that.billDateInput ? that.billDateInput[1] : ``))
-        .then(function (response) {
-          that.ShipmentData = response.data.data
-          that.page.total = response.data.total
-        }).catch(function (error) {
-        that.$message.error(error);
-      })
+      try {
+        const that = this
+        const url = `${process.env.VUE_APP_API_BASE_URL}/shipment/findAllShipment?pageNum=${that.page.index}&pageSize=${that.page.size}&customerName=${that.customerInput}&productName=${that.productInput}&bizStartDate=${that.billDateInput ? that.billDateInput[0] : ''}&bizEndDate=${that.billDateInput ? that.billDateInput[1] : ''}`;
+        console.log('搜索请求URL:', url);
+        this.$axios.get(url)
+          .then(function (response) {
+            console.log('搜索响应数据:', response.data);
+            that.ShipmentData = response.data.data
+            that.page.total = response.data.total
+          }).catch(function (error) {
+          console.error('搜索请求错误:', error);
+          that.$message.error('连接失败，请检查网络或服务状态');
+        })
+      } catch (error) {
+        console.error('searchShipment方法执行错误:', error);
+      }
     },
     // 获取客户联想建议
     getCustomerSuggestions() {
@@ -695,6 +774,46 @@ export default {
       this.productCurrentPage = pageNum
       this.getProductSuggestions()
     },
+    // 处理修改对话框客户输入变化
+    handleUpdateCustomerInput() {
+      this.updateCustomerCurrentPage = 1
+      this.getUpdateCustomerSuggestions()
+    },
+    // 处理修改对话框客户分页
+    handleUpdateCustomerPageChange(pageNum) {
+      this.updateCustomerCurrentPage = pageNum
+      this.getUpdateCustomerSuggestions()
+    },
+    // 处理修改对话框产品输入变化
+    handleUpdateProductInput() {
+      this.updateProductCurrentPage = 1
+      this.getUpdateProductSuggestions()
+    },
+    // 处理修改对话框产品分页
+    handleUpdateProductPageChange(pageNum) {
+      this.updateProductCurrentPage = pageNum
+      this.getUpdateProductSuggestions()
+    },
+    // 处理添加对话框客户输入变化
+    handleAddCustomerInput() {
+      this.addCustomerCurrentPage = 1
+      this.getAddCustomerSuggestions()
+    },
+    // 处理添加对话框客户分页
+    handleAddCustomerPageChange(pageNum) {
+      this.addCustomerCurrentPage = pageNum
+      this.getAddCustomerSuggestions()
+    },
+    // 处理添加对话框产品输入变化
+    handleAddProductInput() {
+      this.addProductCurrentPage = 1
+      this.getAddProductSuggestions()
+    },
+    // 处理添加对话框产品分页
+    handleAddProductPageChange(pageNum) {
+      this.addProductCurrentPage = pageNum
+      this.getAddProductSuggestions()
+    },
     // 获取添加客户联想建议
     getAddCustomerSuggestions() {
       const that = this
@@ -705,15 +824,17 @@ export default {
       }
       this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/shipment/findCustomerNamesByPrefix`, {
         prefix: that.addShipmentForm.customer,
-        pageNum: 1,
-        pageSize: 10
+        pageNum: that.addCustomerCurrentPage,
+        pageSize: that.addCustomerPageSize
       })
         .then(function (response) {
           that.addCustomerSuggestions = response.data.data
+          that.addCustomerTotal = response.data.total
           that.showAddCustomerSuggestions = true
         }).catch(function (error) {
         console.error(error)
         that.addCustomerSuggestions = []
+        that.addCustomerTotal = 0
         that.showAddCustomerSuggestions = false
       })
     },
@@ -727,15 +848,17 @@ export default {
       }
       this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/findProductNamesByPrefix`, {
         prefix: that.addShipmentForm.product,
-        pageNum: 1,
-        pageSize: 10
+        pageNum: that.addProductCurrentPage,
+        pageSize: that.addProductPageSize
       })
         .then(function (response) {
           that.addProductSuggestions = response.data.data
+          that.addProductTotal = response.data.total
           that.showAddProductSuggestions = true
         }).catch(function (error) {
         console.error(error)
         that.addProductSuggestions = []
+        that.addProductTotal = 0
         that.showAddProductSuggestions = false
       })
     },
@@ -759,15 +882,17 @@ export default {
       }
       this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/shipment/findCustomerNamesByPrefix`, {
         prefix: that.updateShipmentForm.customer,
-        pageNum: 1,
-        pageSize: 10
+        pageNum: that.updateCustomerCurrentPage,
+        pageSize: that.updateCustomerPageSize
       })
         .then(function (response) {
           that.updateCustomerSuggestions = response.data.data
+          that.updateCustomerTotal = response.data.total
           that.showUpdateCustomerSuggestions = true
         }).catch(function (error) {
         console.error(error)
         that.updateCustomerSuggestions = []
+        that.updateCustomerTotal = 0
         that.showUpdateCustomerSuggestions = false
       })
     },
@@ -781,15 +906,17 @@ export default {
       }
       this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/findProductNamesByPrefix`, {
         prefix: that.updateShipmentForm.product,
-        pageNum: 1,
-        pageSize: 10
+        pageNum: that.updateProductCurrentPage,
+        pageSize: that.updateProductPageSize
       })
         .then(function (response) {
           that.updateProductSuggestions = response.data.data
+          that.updateProductTotal = response.data.total
           that.showUpdateProductSuggestions = true
         }).catch(function (error) {
         console.error(error)
         that.updateProductSuggestions = []
+        that.updateProductTotal = 0
         that.showUpdateProductSuggestions = false
       })
     },
@@ -801,6 +928,17 @@ export default {
     // 选择修改产品联想建议
     selectUpdateProductSuggestion(item) {
       this.updateShipmentForm.product = item
+      this.showUpdateProductSuggestions = false
+    },
+    // 处理点击页面其他地方的事件
+    handleClickOutside(event) {
+      // 隐藏所有客户联想下拉框
+      this.showCustomerSuggestions = false
+      this.showAddCustomerSuggestions = false
+      this.showUpdateCustomerSuggestions = false
+      // 隐藏所有产品联想下拉框
+      this.showProductSuggestions = false
+      this.showAddProductSuggestions = false
       this.showUpdateProductSuggestions = false
     },
     // 获取产品的原材料关系
@@ -915,6 +1053,9 @@ export default {
     // 处理添加表单产品名称变化
     handleAddProductChange() {
       console.log('添加表单产品名称变化:', this.addShipmentForm.product)
+      // 获取产品联想建议
+      this.getAddProductSuggestions()
+      // 如果开启了操作原材料，重新获取原材料关系
       if (this.addShipmentForm.operate_material === 1) {
         console.log('添加表单操作原材料开关开启，重新获取原材料关系')
         this.getMaterialRelations(this.addShipmentForm.product, 'add')
@@ -923,6 +1064,9 @@ export default {
     // 处理修改表单产品名称变化
     handleUpdateProductChange() {
       console.log('修改表单产品名称变化:', this.updateShipmentForm.product)
+      // 获取产品联想建议
+      this.getUpdateProductSuggestions()
+      // 如果开启了操作原材料，重新获取原材料关系
       if (this.updateShipmentForm.operate_material === 1) {
         console.log('修改表单操作原材料开关开启，重新获取原材料关系')
         this.getMaterialRelations(this.updateShipmentForm.product, 'update')
@@ -1210,15 +1354,27 @@ export default {
       // 添加客户联想功能参数
       addCustomerSuggestions: [],
       showAddCustomerSuggestions: false,
+      addCustomerCurrentPage: 1,
+      addCustomerPageSize: 10,
+      addCustomerTotal: 0,
       // 添加产品联想功能参数
       addProductSuggestions: [],
       showAddProductSuggestions: false,
-      // 修改客户联想功能参数
+      addProductCurrentPage: 1,
+      addProductPageSize: 10,
+      addProductTotal: 0,
+      // 修改对话框客户联想相关
       updateCustomerSuggestions: [],
       showUpdateCustomerSuggestions: false,
-      // 修改产品联想功能参数
+      updateCustomerCurrentPage: 1,
+      updateCustomerPageSize: 10,
+      updateCustomerTotal: 0,
+      // 修改对话框产品联想相关
       updateProductSuggestions: [],
       showUpdateProductSuggestions: false,
+      updateProductCurrentPage: 1,
+      updateProductPageSize: 10,
+      updateProductTotal: 0,
       // 原材料关系相关
       addMaterialRelations: [],
       updateMaterialRelations: [],
@@ -1232,6 +1388,20 @@ export default {
         quantity: 1
       }
     }
+  },
+  mounted() {
+    // 添加点击事件监听器，点击页面其他地方时隐藏下拉框
+    document.addEventListener('click', this.handleClickOutside)
+    // 页面首次加载时获取数据
+    console.log('Shipment页面mounted方法被调用');
+    this.getAllShipment()
+  },
+  beforeDestroy() {
+    if (this.timer) {
+      clearTimeout(this.timer)
+    }
+    // 移除点击事件监听器
+    document.removeEventListener('click', this.handleClickOutside)
   }
 }
 </script>
@@ -1409,27 +1579,66 @@ body {
   border: none !important;
 }
 
-/* 对话框样式 */
-.el-dialog {
+/* 出货单对话框样式 */
+.shipment-dialog {
   border-radius: 12px !important;
   overflow: hidden !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+  border: none !important;
 }
 
-.el-dialog__header {
+.shipment-dialog .el-dialog__header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   border-bottom: none !important;
   padding: 20px 24px !important;
+  margin: -20px -24px 0 !important;
+  width: calc(100% + 48px) !important;
+  box-sizing: border-box !important;
 }
 
-.el-dialog__title {
+.shipment-dialog .el-dialog__title {
   font-size: 18px !important;
   font-weight: 600 !important;
   color: white !important;
+  margin: 0 !important;
 }
 
-.el-dialog__close {
+.shipment-dialog .el-dialog__headerbtn {
+  top: 20px !important;
+  right: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.shipment-dialog .el-dialog__headerbtn .el-icon {
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 24px !important;
+  font-size: 16px !important;
+}
+
+.shipment-dialog .el-dialog__headerbtn .el-icon .el-dialog__close {
   color: white !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.shipment-dialog .el-dialog__headerbtn .el-icon .el-dialog__close svg {
+  width: 16px !important;
+  height: 16px !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
 }
 
 .el-dialog__body {

@@ -1,6 +1,6 @@
 <template>
   <div class="download">
-    <Download msg="雄达木业"/>
+    <Download msg="文件下载"/>
   </div>
 </template>
 

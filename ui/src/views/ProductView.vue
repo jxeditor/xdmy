@@ -1,6 +1,6 @@
 <template>
   <div class="product-view">
-    <Product />
+    <Product msg="产品"/>
   </div>
 </template>
 

@@ -5,6 +5,7 @@ import com.xdmy.dao.inter.IIncomingDao;
 import com.xdmy.domain.Incoming;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.lang.NonNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,7 +20,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
         String sql = "SELECT * FROM incoming WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, producerName, productName, bizStartDate, bizEndDate);
         sql += " ORDER BY billdate DESC,odd DESC,id DESC LIMIT ? ,?";
-        return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new IncomingRowMapper());
+        return jdbcTemplate.query(sql, new IncomingRowMapper(), currOffset, pageSize);
     }
 
     @Override
@@ -27,7 +28,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
         String sql = "SELECT * FROM incoming WHERE 1=1 AND is_delete = 0 AND paystatus != 2" +
                 " AND producer = ? AND billdate >= ? AND billdate <= ?";
         sql += " ORDER BY billdate,odd,id";
-        return jdbcTemplate.query(sql, new Object[]{producerName, bizStartDate, bizEndDate}, new IncomingRowMapper());
+        return jdbcTemplate.query(sql, new IncomingRowMapper(), producerName, bizStartDate, bizEndDate);
 
     }
 
@@ -50,7 +51,8 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
     public int getAllTotalSize(String producerName, String productName, String bizStartDate, String bizEndDate) {
         String sql = "SELECT count(1) FROM incoming WHERE 1=1 AND is_delete = 0";
         sql = genFilterSql(sql, producerName, productName, bizStartDate, bizEndDate);
-        return jdbcTemplate.queryForObject(sql, Integer.class);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        return count != null ? count : 0;
     }
 
     @Override
@@ -80,11 +82,25 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
                 return ps;
             }, keyHolder);
             
-            int result = keyHolder.getKey().intValue();
+            Number key = keyHolder.getKey();
+            int result = key != null ? key.intValue() : -1;
+            
+            // 检查product表中是否存在对应产品的记录
+            String checkProductSql = "SELECT COUNT(*) FROM product WHERE product_name = ?";
+            Integer productCount = jdbcTemplate.queryForObject(checkProductSql, Integer.class, incoming.getProduct());
+            productCount = productCount != null ? productCount : 0;
+            
+            if (productCount == 0) {
+                // 如果不存在，插入一条新记录到product表
+                String insertProductSql = "INSERT INTO product(product_name, suggested_price, cost_price, maintain_material) " +
+                        "VALUES(?, ?, ?, 0)";
+                jdbcTemplate.update(insertProductSql, incoming.getProduct(), incoming.getUnitprice(), incoming.getUnitprice());
+            }
             
             // 检查stock表中是否存在对应产品的记录
             String checkSql = "SELECT COUNT(*) FROM stock WHERE product = ?";
-            int count = jdbcTemplate.queryForObject(checkSql, Integer.class, incoming.getProduct());
+            Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, incoming.getProduct());
+            count = count != null ? count : 0;
             
             if (count == 0) {
                 // 如果不存在，插入一条新记录
@@ -121,7 +137,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
                 // 如果没有前端传递的数据，从数据库查询
                 if (relations.isEmpty()) {
                     String relationSql = "SELECT material_name, quantity FROM product_material_relation WHERE product_name = ? AND is_default = 1";
-                    relations = jdbcTemplate.queryForList(relationSql, new Object[]{incoming.getProduct()});
+                    relations = jdbcTemplate.queryForList(relationSql, incoming.getProduct());
                 }
                 
                 for (java.util.Map<String, Object> relation : relations) {
@@ -172,7 +188,13 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
         try {
             // 先查询要删除的入货记录的产品和数量
             String querySql = "SELECT * FROM incoming WHERE id = ?";
-            Incoming incoming = jdbcTemplate.queryForObject(querySql, new Object[]{id}, new IncomingRowMapper());
+            Incoming incoming = jdbcTemplate.queryForObject(querySql, new IncomingRowMapper(), id);
+            
+            // 检查incoming是否为null
+            if (incoming == null) {
+                jdbcTemplate.execute("ROLLBACK");
+                return 0;
+            }
             
             // 删除入货记录
             String sql = "UPDATE incoming set is_delete = 1 WHERE id = ?";
@@ -188,7 +210,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
             // 操作原材料
             // 查询原有的原材料操作记录
             String operationSql = "SELECT material_name, quantity FROM incoming_material_operation WHERE incoming_id = ?";
-            List<java.util.Map<String, Object>> operations = jdbcTemplate.queryForList(operationSql, new Object[]{id});
+            List<java.util.Map<String, Object>> operations = jdbcTemplate.queryForList(operationSql, id);
             
             for (java.util.Map<String, Object> operation : operations) {
                 String materialName = (String) operation.get("material_name");
@@ -221,7 +243,13 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
         try {
             // 先查询原入货记录的产品和数量
             String querySql = "SELECT * FROM incoming WHERE id = ?";
-            Incoming oldIncoming = jdbcTemplate.queryForObject(querySql, new Object[]{incoming.getId()}, new IncomingRowMapper());
+            Incoming oldIncoming = jdbcTemplate.queryForObject(querySql, new IncomingRowMapper(), incoming.getId());
+            
+            // 检查oldIncoming是否为null
+            if (oldIncoming == null) {
+                jdbcTemplate.execute("ROLLBACK");
+                return 0;
+            }
             
             // 更新入货记录
             String sql = "UPDATE incoming set odd = ?,producer = ?,product = ?,billdate = ?,amount = ?,unitprice = ?,money = ? " +
@@ -243,6 +271,18 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
                         "lastindate = (SELECT MAX(billdate) FROM incoming WHERE product = ? AND is_delete = 0) " +
                         "WHERE product = ?";
                 jdbcTemplate.update(updateOldSql, oldIncoming.getAmount(), oldIncoming.getProduct(), oldIncoming.getProduct(), oldIncoming.getProduct());
+                
+                // 检查新产品是否存在于product表中
+                String checkProductSql = "SELECT COUNT(*) FROM product WHERE product_name = ?";
+                Integer productCount = jdbcTemplate.queryForObject(checkProductSql, Integer.class, incoming.getProduct());
+                productCount = productCount != null ? productCount : 0;
+                
+                if (productCount == 0) {
+                    // 如果不存在，插入一条新记录到product表
+                    String insertProductSql = "INSERT INTO product(product_name, suggested_price, cost_price, maintain_material) " +
+                            "VALUES(?, ?, ?, 0)";
+                    jdbcTemplate.update(insertProductSql, incoming.getProduct(), incoming.getUnitprice(), incoming.getUnitprice());
+                }
                 
                 // 增加新产品的inamount
                 // 检查新产品是否在stock表中存在
@@ -292,7 +332,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
                 // 计算原有原材料操作记录的总量，用于恢复库存
                 java.util.Map<String, Integer> oldMaterialQuantities = new java.util.HashMap<>();
                 String oldOperationSql = "SELECT material_name, quantity FROM incoming_material_operation WHERE incoming_id = ?";
-                java.util.List<java.util.Map<String, Object>> oldOperations = jdbcTemplate.queryForList(oldOperationSql, new Object[]{incoming.getId()});
+                java.util.List<java.util.Map<String, Object>> oldOperations = jdbcTemplate.queryForList(oldOperationSql, incoming.getId());
                 
                 // 删除原有的原材料操作记录
                 String deleteOperationSql = "DELETE FROM incoming_material_operation WHERE incoming_id = ?";
@@ -396,7 +436,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
 
     static class IncomingRowMapper implements RowMapper<Incoming> {
         @Override
-        public Incoming mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Incoming mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             Incoming incoming = new Incoming();
             incoming.setId(rs.getInt("id"));
             incoming.setOdd(rs.getString("odd"));
@@ -443,13 +483,13 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
                      "producer " +
                      "LIMIT ? OFFSET ?";
         
-        return jdbcTemplate.queryForList(sql, new Object[]{
+        return jdbcTemplate.queryForList(sql, String.class, 
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%",  // 包含前缀中每个字符
             "%" + prefix + "%",  // 用于排序
             pageSize, 
             offset
-        }, String.class);
+        );
     }
 
     @Override
@@ -458,23 +498,23 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
         String sql = "SELECT COUNT(DISTINCT producer) FROM incoming " +
                      "WHERE is_delete = 0 AND (producer LIKE ? OR producer LIKE ?)";
         
-        return jdbcTemplate.queryForObject(sql, new Object[]{
+        return jdbcTemplate.queryForObject(sql, Integer.class, 
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%"  // 包含前缀中每个字符
-        }, Integer.class);
+        );
     }
 
     @Override
     public java.util.List<java.util.Map<String, Object>> getIncomingMaterialOperations(int id) {
         String sql = "SELECT material_name, quantity FROM incoming_material_operation WHERE incoming_id = ?";
-        return jdbcTemplate.queryForList(sql, new Object[]{id});
+        return jdbcTemplate.queryForList(sql, id);
     }
 
     @Override
     public Incoming findIncomingById(int id) {
         String sql = "SELECT * FROM incoming WHERE id = ?";
         try {
-            return jdbcTemplate.queryForObject(sql, new Object[]{id}, new IncomingRowMapper());
+            return jdbcTemplate.queryForObject(sql, new IncomingRowMapper(), id);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

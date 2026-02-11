@@ -50,15 +50,21 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    public Product findProductById(int id) {
+        DBContextHolder.setDbType("primary");
+        return daoFacade.getProductDao().findProductById(id);
+    }
+
+    @Override
     public int batchDeleteProduct(String ids) {
         DBContextHolder.setDbType("primary");
         return daoFacade.getProductDao().batchDeleteProduct(ids);
     }
 
     @Override
-    public Product findProductById(int id) {
+    public boolean checkProductExist(String productName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getProductDao().findProductById(id);
+        return daoFacade.getProductDao().checkProductExist(productName);
     }
 
     @Override

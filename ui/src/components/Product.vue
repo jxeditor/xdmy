@@ -1,123 +1,170 @@
 <template>
-  <el-row>
-    <el-col :span="24">
-      <el-card shadow="never" class="search-card" style="overflow: visible;">
-        <el-row :gutter="20">
-          <el-col :span="16">
-            <div style="display: flex; align-items: center; gap: 10px; position: relative;">
-              <el-input
-                v-model="searchQuery"
-                placeholder="请输入产品名称"
-                style="width: 300px"
-                @input="handleInput"
-                @focus="handleFocus"
-                @blur="handleBlur"
+  <div id="product">
+    <h1>{{ msg }}</h1>
+    <div id="app">
+      <!-- 搜索行 -->
+      <el-row type="flex" justify="space-between" align="center" style="width:100%;padding: 10px 20px; margin-bottom: 24px;">
+        <el-col :span="16">
+          <div class="shipment-search-container product-search-container" style="width: 400px;">
+            <el-input
+              v-model="searchQuery"
+              placeholder="请输入产品名称"
+              style="width: 400px"
+              @input="handleInput"
+              @focus="handleFocus"
+              @blur="handleBlur"
+            >
+              <template #prefix>
+                <el-icon><Search /></el-icon>
+              </template>
+            </el-input>
+            <!-- 产品联想结果下拉框 -->
+            <div
+              v-if="showDropdown && dropdownItems.length > 0"
+              class="shipment-suggestions-dropdown product-suggestions-dropdown"
+            >
+              <div class="product-dropdown-body">
+                <div
+                  v-for="(item, index) in dropdownItems"
+                  :key="index"
+                  class="shipment-suggestion-item product-dropdown-item"
+                  @mousedown="selectItem(item)"
+                >
+                  {{ item }}
+                </div>
+              </div>
+              <div
+                v-if="dropdownTotal > pageSize"
+                class="shipment-suggestion-pagination product-dropdown-footer"
               >
-                <template #prefix>
-                  <el-icon><Search /></el-icon>
-                </template>
-              </el-input>
-              <div v-if="showDropdown" class="dropdown-container product-dropdown">
-                <div class="dropdown-header">
-                  <span>共 {{ dropdownItems.length }} 条</span>
-                </div>
-                <div class="dropdown-body">
-                  <div
-                    v-for="(item, index) in dropdownItems"
-                    :key="index"
-                    class="dropdown-item"
-                    @mousedown="selectItem(item)"
-                  >
-                    {{ item }}
-                  </div>
-                </div>
-                <div class="dropdown-footer" v-if="total > pageSize">
+                <div class="product-dropdown-pagination-info">
+                  <span>共 {{ dropdownTotal }} 条</span>
                   <span>第 {{ currentPage }} / {{ totalPages }} 页</span>
-                  <div>
-                    <el-button
-                      type="text"
-                      size="small"
-                      @click="prevPage"
-                      :disabled="currentPage === 1"
-                    >
-                      上一页
-                    </el-button>
-                    <el-button
-                      type="text"
-                      size="small"
-                      @click="nextPage"
-                      :disabled="currentPage === totalPages"
-                    >
-                      下一页
-                    </el-button>
-                  </div>
+                </div>
+                <el-pagination
+                  small
+                  layout="prev, pager, next"
+                  :total="dropdownTotal"
+                  :page-size="pageSize"
+                  :current-page="currentPage"
+                  @current-change="handleDropdownPageChange"
+                  style="margin: 0; white-space: nowrap;"
+                />
+              </div>
+              <div
+                v-else
+                class="shipment-suggestion-pagination product-dropdown-footer"
+              >
+                <div class="product-dropdown-pagination-info">
+                  <span>共 {{ dropdownTotal }} 条</span>
                 </div>
               </div>
             </div>
-          </el-col>
-          <el-col :span="8" style="display: flex; justify-content: flex-end; gap: 10px;">
-            <el-button type="primary" @click="searchProduct">搜索</el-button>
-            <el-button type="primary" @click="onAddProduct">添加产品</el-button>
-          </el-col>
-        </el-row>
-      </el-card>
+          </div>
+        </el-col>
+        <el-col :span="8" style="display: flex; justify-content: flex-end; gap: 10px;">
+          <el-button type="primary" @click="searchProduct">搜索</el-button>
+          <el-button type="primary" @click="onAddProduct">添加产品</el-button>
+        </el-col>
+      </el-row>
 
-      <el-card shadow="never" class="data-card">
-        <el-table :data="productData" style="width: 100%" @selection-change="handleSelectionChange">
-          <el-table-column type="selection" width="55" align="center" />
-          <el-table-column prop="productName" label="产品名称" width="200" align="center" />
-          <el-table-column prop="suggestedPrice" label="建议售价" width="120" align="center">
-            <template #default="scope">
-              ¥{{ scope.row.suggestedPrice.toFixed(2) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="costPrice" label="成本价" width="120" align="center">
-            <template #default="scope">
-              ¥{{ scope.row.costPrice.toFixed(2) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="createTime" label="创建时间" width="180" align="center" />
-          <el-table-column prop="updateTime" label="更新时间" width="180" align="center" />
-          <el-table-column prop="maintainMaterial" label="是否维护原材料" width="150" align="center">
-            <template #default="scope">
-              <span :class="scope.row.maintainMaterial === 1 ? 'maintain-yes' : 'maintain-no'">
-                {{ scope.row.maintainMaterial === 1 ? '是' : '否' }}
-              </span>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="280" fixed="right" align="center">
-            <template #default="scope">
-              <el-button size="small" @click="onEditProduct(scope.row)" style="margin-right: 5px">编辑</el-button>
-              <el-button size="small" type="warning" @click="maintainMaterials(scope.row)" style="margin-right: 5px">维护原材料</el-button>
-              <el-button size="small" type="danger" @click="onDeleteProduct(scope.row.id)">
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <div class="pagination-container">
-          <el-pagination
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page="pageNum"
-            :page-sizes="[5, 10, 20, 50]"
-            :page-size="pageSize"
-            layout="total, sizes, prev, pager, next, jumper"
-            :total="total"
-          >
-          </el-pagination>
-        </div>
-        <div style="margin-top: 20px">
-          <el-button type="danger" @click="batchDeleteProduct" :disabled="selectedProducts.length === 0">批量删除</el-button>
-          <el-button @click="onClearSelection">取消选择</el-button>
-        </div>
-      </el-card>
+      <el-table :data="productData" style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column prop="productName" label="产品名称" width="200" align="center" />
+        <el-table-column prop="suggestedPrice" label="建议售价" width="120" align="center">
+          <template #default="scope">
+            ¥{{ scope.row.suggestedPrice.toFixed(2) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="costPrice" label="成本价" width="120" align="center">
+          <template #default="scope">
+            ¥{{ scope.row.costPrice.toFixed(2) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" width="180" align="center" />
+        <el-table-column prop="updateTime" label="更新时间" width="180" align="center" />
+        <el-table-column prop="maintainMaterial" label="是否维护原材料" width="150" align="center">
+          <template #default="scope">
+            <span :class="scope.row.maintainMaterial === 1 ? 'maintain-yes' : 'maintain-no'">
+              {{ scope.row.maintainMaterial === 1 ? '是' : '否' }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="280" fixed="right" align="center">
+          <template #default="scope">
+            <el-button size="small" @click="onEditProduct(scope.row)" style="margin-right: 5px">编辑</el-button>
+            <el-button size="small" type="warning" @click="maintainMaterials(scope.row)" style="margin-right: 5px">维护原材料</el-button>
+            <el-button size="small" type="danger" @click="onDeleteProduct(scope.row.id)">
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="pagination-container">
+        <el-pagination
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="pageNum"
+          :page-sizes="[5, 10, 20, 50]"
+          :page-size="pageSize"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+        >
+        </el-pagination>
+      </div>
+      <div style="margin-top: 20px">
+        <el-button type="danger" @click="batchDeleteProduct" :disabled="selectedProducts.length === 0">批量删除</el-button>
+        <el-button @click="onClearSelection">取消选择</el-button>
+      </div>
 
       <!-- 添加产品对话框 -->
       <el-dialog v-model="dialogVisible" title="添加产品" width="500px">
         <el-form :model="addProductForm" label-width="120px">
           <el-form-item label="产品名称:" prop="productName">
-            <el-input v-model="addProductForm.productName" placeholder="请输入产品名称" />
+            <div class="product-search-container">
+              <el-input
+                v-model="addProductForm.productName"
+                placeholder="请输入产品名称"
+                style="width: 300px"
+                @input="handleAddProductInput"
+                @focus="handleAddProductFocus"
+                @blur="handleAddProductBlur"
+              >
+                <template #prefix>
+                  <el-icon><Search /></el-icon>
+                </template>
+              </el-input>
+              <!-- 添加产品联想结果下拉框 -->
+              <div
+                v-if="showAddProductDropdown && addProductSuggestions.length > 0"
+                class="product-suggestions-dropdown"
+              >
+                <div class="product-dropdown-body">
+                  <div
+                    v-for="(item, index) in addProductSuggestions"
+                    :key="index"
+                    class="product-dropdown-item"
+                    @mousedown="selectAddProductSuggestion(item)"
+                  >
+                    {{ item }}
+                  </div>
+                </div>
+                <div
+                  v-if="addProductTotal > addProductPageSize"
+                  class="product-dropdown-footer"
+                >
+                  <el-pagination
+                    small
+                    layout="prev, pager, next"
+                    :total="addProductTotal"
+                    :page-size="addProductPageSize"
+                    :current-page="addProductCurrentPage"
+                    @current-change="handleAddProductPageChange"
+                    style="margin: 0; white-space: nowrap;"
+                  />
+                </div>
+              </div>
+            </div>
           </el-form-item>
           <el-form-item label="建议售价:" prop="suggestedPrice">
             <el-input-number v-model="addProductForm.suggestedPrice" :min="0" :step="0.01" :precision="2" style="width: 100%" />
@@ -144,7 +191,50 @@
       <el-dialog v-model="editDialogVisible" title="编辑产品" width="500px">
         <el-form :model="editProductForm" label-width="120px">
           <el-form-item label="产品名称:" prop="productName">
-            <el-input v-model="editProductForm.productName" placeholder="请输入产品名称" />
+            <div class="product-search-container">
+              <el-input
+                v-model="editProductForm.productName"
+                placeholder="请输入产品名称"
+                style="width: 300px"
+                @input="handleEditProductInput"
+                @focus="handleEditProductFocus"
+                @blur="handleEditProductBlur"
+              >
+                <template #prefix>
+                  <el-icon><Search /></el-icon>
+                </template>
+              </el-input>
+              <!-- 编辑产品联想结果下拉框 -->
+              <div
+                v-if="showEditProductDropdown && editProductSuggestions.length > 0"
+                class="product-suggestions-dropdown"
+              >
+                <div class="product-dropdown-body">
+                  <div
+                    v-for="(item, index) in editProductSuggestions"
+                    :key="index"
+                    class="product-dropdown-item"
+                    @mousedown="selectEditProductSuggestion(item)"
+                  >
+                    {{ item }}
+                  </div>
+                </div>
+                <div
+                  v-if="editProductTotal > editProductPageSize"
+                  class="product-dropdown-footer"
+                >
+                  <el-pagination
+                    small
+                    layout="prev, pager, next"
+                    :total="editProductTotal"
+                    :page-size="editProductPageSize"
+                    :current-page="editProductCurrentPage"
+                    @current-change="handleEditProductPageChange"
+                    style="margin: 0; white-space: nowrap;"
+                  />
+                </div>
+              </div>
+            </div>
           </el-form-item>
           <el-form-item label="建议售价:" prop="suggestedPrice">
             <el-input-number v-model="editProductForm.suggestedPrice" :min="0" :step="0.01" :precision="2" style="width: 100%" />
@@ -202,21 +292,21 @@
                         @focus="handleMaterialFocus"
                         @blur="handleMaterialBlur"
                       />
-                      <div v-if="showMaterialDropdown" class="dropdown-container material-dropdown">
-                        <div class="dropdown-header">
+                      <div v-if="showMaterialDropdown" class="product-dropdown-container product-material-dropdown">
+                        <div class="product-dropdown-header">
                           <span>共 {{ materialSuggestions.length }} 条</span>
                         </div>
-                        <div class="dropdown-body">
+                        <div class="product-dropdown-body">
                           <div
                             v-for="(item, index) in materialSuggestions"
                             :key="index"
-                            class="dropdown-item"
+                            class="product-dropdown-item"
                             @mousedown="selectMaterialSuggestion(item)"
                           >
                             {{ item }}
                           </div>
                         </div>
-                        <div class="dropdown-footer" v-if="materialTotal > materialPageSize">
+                        <div class="product-dropdown-footer" v-if="materialTotal > materialPageSize">
                           <span>第 {{ materialCurrentPage }} / {{ materialTotalPages }} 页</span>
                           <div>
                             <el-button
@@ -260,8 +350,8 @@
           </span>
         </template>
       </el-dialog>
-    </el-col>
-  </el-row>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -269,6 +359,9 @@ import { Search } from "@element-plus/icons-vue";
 
 export default {
   name: "Product",
+  props: {
+    msg: String
+  },
   components: {
     Search,
   },
@@ -298,7 +391,7 @@ export default {
       dropdownItems: [],
       currentPage: 1,
       pageSize: 10,
-      total: 0,
+      dropdownTotal: 0,
       // 维护原材料相关数据
       materialDialogVisible: false,
       currentProductName: '',
@@ -314,9 +407,35 @@ export default {
       materialCurrentPage: 1,
       materialPageSize: 10,
       materialTotal: 0,
+      // 添加产品联想相关数据
+      addProductSuggestions: [],
+      showAddProductDropdown: false,
+      addProductCurrentPage: 1,
+      addProductPageSize: 10,
+      addProductTotal: 0,
+      // 编辑产品联想相关数据
+      editProductSuggestions: [],
+      showEditProductDropdown: false,
+      editProductCurrentPage: 1,
+      editProductPageSize: 10,
+      editProductTotal: 0,
       // 选中的产品数据
       selectedProducts: [],
     };
+  },
+  computed: {
+    totalPages() {
+      if (this.dropdownTotal === 0) {
+        return 1;
+      }
+      return Math.ceil(this.dropdownTotal / this.pageSize);
+    },
+    materialTotalPages() {
+      if (this.materialTotal === 0) {
+        return 1;
+      }
+      return Math.ceil(this.materialTotal / this.materialPageSize);
+    },
   },
   mounted() {
     this.getAllProduct();
@@ -693,7 +812,7 @@ export default {
         .then(function (response) {
           if (response.data.code === 1) {
             that.dropdownItems = response.data.data;
-            that.total = response.data.total;
+            that.dropdownTotal = response.data.total;
             that.showDropdown = true;
           }
         });
@@ -703,20 +822,11 @@ export default {
       this.showDropdown = false;
       this.searchProduct();
     },
-    prevPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
+    handleDropdownPageChange(pageNum) {
+      if (this.currentPage !== pageNum) {
+        this.currentPage = pageNum;
         this.fetchProductNames();
       }
-    },
-    nextPage() {
-      if (this.currentPage < Math.ceil(this.total / this.pageSize)) {
-        this.currentPage++;
-        this.fetchProductNames();
-      }
-    },
-    get totalPages() {
-      return Math.ceil(this.total / this.pageSize);
     },
     // 原材料联想相关方法
     handleMaterialInput() {
@@ -773,14 +883,173 @@ export default {
         this.fetchMaterialSuggestions();
       }
     },
-    get materialTotalPages() {
-      return Math.ceil(this.materialTotal / this.materialPageSize);
+    // 添加产品联想相关方法
+    handleAddProductInput() {
+      this.addProductCurrentPage = 1;
+      this.fetchAddProductSuggestions();
+    },
+    handleAddProductFocus() {
+      if (this.addProductForm.productName) {
+        this.fetchAddProductSuggestions();
+      }
+    },
+    handleAddProductBlur() {
+      setTimeout(() => {
+        this.showAddProductDropdown = false;
+      }, 200);
+    },
+    fetchAddProductSuggestions() {
+      const that = this;
+      if (that.addProductForm.productName.length < 1) {
+        that.addProductSuggestions = [];
+        that.showAddProductDropdown = false;
+        return;
+      }
+      this.$axios
+        .post(
+          `${process.env.VUE_APP_API_BASE_URL}/product/findProductNamesByPrefix`,
+          {
+            prefix: that.addProductForm.productName,
+            pageNum: that.addProductCurrentPage,
+            pageSize: that.addProductPageSize,
+          }
+        )
+        .then(function (response) {
+          if (response.data.code === 1) {
+            that.addProductSuggestions = response.data.data;
+            that.addProductTotal = response.data.total;
+            that.showAddProductDropdown = true;
+          }
+        });
+    },
+    selectAddProductSuggestion(item) {
+      this.addProductForm.productName = item;
+      this.showAddProductDropdown = false;
+    },
+    handleAddProductPageChange(pageNum) {
+      if (this.addProductCurrentPage !== pageNum) {
+        this.addProductCurrentPage = pageNum;
+        this.fetchAddProductSuggestions();
+      }
+    },
+    // 编辑产品联想相关方法
+    handleEditProductInput() {
+      this.editProductCurrentPage = 1;
+      this.fetchEditProductSuggestions();
+    },
+    handleEditProductFocus() {
+      if (this.editProductForm.productName) {
+        this.fetchEditProductSuggestions();
+      }
+    },
+    handleEditProductBlur() {
+      setTimeout(() => {
+        this.showEditProductDropdown = false;
+      }, 200);
+    },
+    fetchEditProductSuggestions() {
+      const that = this;
+      if (that.editProductForm.productName.length < 1) {
+        that.editProductSuggestions = [];
+        that.showEditProductDropdown = false;
+        return;
+      }
+      this.$axios
+        .post(
+          `${process.env.VUE_APP_API_BASE_URL}/product/findProductNamesByPrefix`,
+          {
+            prefix: that.editProductForm.productName,
+            pageNum: that.editProductCurrentPage,
+            pageSize: that.editProductPageSize,
+          }
+        )
+        .then(function (response) {
+          if (response.data.code === 1) {
+            that.editProductSuggestions = response.data.data;
+            that.editProductTotal = response.data.total;
+            that.showEditProductDropdown = true;
+          }
+        });
+    },
+    selectEditProductSuggestion(item) {
+      this.editProductForm.productName = item;
+      this.showEditProductDropdown = false;
+    },
+    handleEditProductPageChange(pageNum) {
+      if (this.editProductCurrentPage !== pageNum) {
+        this.editProductCurrentPage = pageNum;
+        this.fetchEditProductSuggestions();
+      }
     },
   },
 };
 </script>
 
 <style scoped>
+/* 动画效果 */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 页面容器 */
+#product {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+#product h1 {
+  text-align: center;
+  color: #303133;
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: 600;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #667eea;
+  display: inline-block;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: fadeInDown 0.5s ease-out;
+}
+
+/* 内容容器 */
+#app {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  margin: 0 auto;
+  max-width: 1400px;
+  animation: fadeInUp 0.5s ease-out;
+}
+
 .pagination-container {
   display: flex;
   justify-content: flex-end;
@@ -789,28 +1058,35 @@ export default {
 
 .search-card {
   margin-bottom: 20px;
+  position: relative;
+  z-index: 10;
 }
 
 .data-card {
   margin-bottom: 20px;
 }
 
-.dropdown-container {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 300px;
-  max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  margin-top: 4px;
+.product-search-container {
+  position: relative;
+  display: inline-block;
+  z-index: 2000;
+  width: 400px;
 }
 
-.dropdown-header {
+.product-suggestions-dropdown {
+  position: fixed;
+  width: 400px;
+  max-height: 350px;
+  overflow-y: auto;
+  border: 1px solid #dcdfe6;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 999999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.product-dropdown-header {
   padding: 8px 12px;
   border-bottom: 1px solid #f0f0f0;
   font-size: 12px;
@@ -820,21 +1096,21 @@ export default {
   align-items: center;
 }
 
-.dropdown-body {
+.product-dropdown-body {
   padding: 4px 0;
 }
 
-.dropdown-item {
+.product-dropdown-item {
   padding: 8px 12px;
   cursor: pointer;
   font-size: 14px;
 }
 
-.dropdown-item:hover {
+.product-dropdown-item:hover {
   background-color: #f5f5f5;
 }
 
-.dropdown-footer {
+.product-dropdown-footer {
   padding: 8px 12px;
   border-top: 1px solid #f0f0f0;
   font-size: 12px;
@@ -842,36 +1118,16 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: nowrap;
 }
 
-.product-dropdown {
-  z-index: 9999 !important;
-  position: absolute !important;
-  top: 100% !important;
-  left: 0 !important;
-  margin-top: 4px !important;
-  width: 300px !important;
-  max-height: 300px !important;
-  overflow-y: auto !important;
-  border: 1px solid #d9d9d9 !important;
-  border-radius: 4px !important;
-  background: #fff !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-}
-
-.material-dropdown {
-  z-index: 9999 !important;
-  position: absolute !important;
-  top: 100% !important;
-  left: 0 !important;
-  margin-top: 4px !important;
-  width: 300px !important;
-  max-height: 300px !important;
-  overflow-y: auto !important;
-  border: 1px solid #d9d9d9 !important;
-  border-radius: 4px !important;
-  background: #fff !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+.product-dropdown-pagination-info {
+  display: flex;
+  gap: 15px;
+  margin-right: 10px;
+  color: #999;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 /* 是否维护原材料样式 */

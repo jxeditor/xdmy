@@ -4,6 +4,7 @@ import com.xdmy.dao.inter.IProductDao;
 import com.xdmy.domain.Product;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.lang.NonNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,9 +26,9 @@ public class ProductDao extends BaseDao implements IProductDao {
                 "WHERE 1=1";
         sql = genFilterSql(sql, productName);
         sql += " ORDER BY product_name ASC LIMIT ? ,?";
-        return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new RowMapper<Product>() {
+        return jdbcTemplate.query(sql, new RowMapper<Product>() {
             @Override
-            public Product mapRow(ResultSet rs, int rowNum) throws SQLException {
+            public Product mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
                 Product product = new Product();
                 product.setId(rs.getInt("id"));
                 product.setProductName(rs.getString("product_name"));
@@ -38,7 +39,7 @@ public class ProductDao extends BaseDao implements IProductDao {
                 product.setUpdateTime(rs.getString("update_time"));
                 return product;
             }
-        });
+        }, currOffset, pageSize);
     }
 
     @Override
@@ -47,7 +48,8 @@ public class ProductDao extends BaseDao implements IProductDao {
                 "FROM product " +
                 "WHERE 1=1";
         sql = genFilterSql(sql, productName);
-        return jdbcTemplate.queryForObject(sql, Integer.class);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        return count != null ? count : 0;
     }
 
     @Override
@@ -81,9 +83,9 @@ public class ProductDao extends BaseDao implements IProductDao {
         String sql = "SELECT id, product_name, suggested_price, cost_price, maintain_material, create_time, update_time " +
                 "FROM product " +
                 "WHERE id = ?";
-        return jdbcTemplate.queryForObject(sql, new Object[]{id}, new RowMapper<Product>() {
+        return jdbcTemplate.queryForObject(sql, new RowMapper<Product>() {
             @Override
-            public Product mapRow(ResultSet rs, int rowNum) throws SQLException {
+            public Product mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
                 Product product = new Product();
                 product.setId(rs.getInt("id"));
                 product.setProductName(rs.getString("product_name"));
@@ -94,7 +96,7 @@ public class ProductDao extends BaseDao implements IProductDao {
                 product.setUpdateTime(rs.getString("update_time"));
                 return product;
             }
-        });
+        }, id);
     }
 
     @Override
@@ -111,13 +113,13 @@ public class ProductDao extends BaseDao implements IProductDao {
                      "product_name " +
                      "LIMIT ? OFFSET ?";
         
-        return jdbcTemplate.queryForList(sql, new Object[]{
+        return jdbcTemplate.queryForList(sql, String.class, 
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%",  // 包含前缀中每个字符
             "%" + prefix + "%",  // 用于排序
             pageSize, 
             offset
-        }, String.class);
+        );
     }
 
     @Override
@@ -126,10 +128,17 @@ public class ProductDao extends BaseDao implements IProductDao {
         String sql = "SELECT COUNT(DISTINCT product_name) FROM product " +
                      "WHERE product_name LIKE ? OR product_name LIKE ?";
         
-        return jdbcTemplate.queryForObject(sql, new Object[]{
+        return jdbcTemplate.queryForObject(sql, Integer.class, 
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%"  // 包含前缀中每个字符
-        }, Integer.class);
+        );
+    }
+
+    @Override
+    public boolean checkProductExist(String productName) {
+        String sql = "SELECT COUNT(*) FROM product WHERE product_name = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, productName);
+        return count != null && count > 0;
     }
 
     private String genFilterSql(String sql, String productName) {

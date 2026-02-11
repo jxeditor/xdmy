@@ -1,6 +1,5 @@
 package com.xdmy.dao.inter;
 
-import com.xdmy.domain.Stock;
 import com.xdmy.domain.User;
 
 import java.util.List;

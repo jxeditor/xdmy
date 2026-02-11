@@ -95,7 +95,50 @@
       <el-dialog title="初始化库存" v-model="addStockVisible" width="80%">
         <el-form ref="addStockForm" :rules="addStockFormRules" :model="addStockForm" label-width="120px">
           <el-form-item label="产品:" prop="product">
-            <el-input v-model="addStockForm.product"></el-input>
+            <div class="stock-search-container">
+              <el-input
+                v-model="addStockForm.product"
+                placeholder="请输入产品名称"
+                style="width: 300px"
+                @input="handleAddStockInput"
+                @focus="handleAddStockFocus"
+                @blur="handleAddStockBlur"
+              >
+                <template #prefix>
+                  <el-icon><Search /></el-icon>
+                </template>
+              </el-input>
+              <!-- 添加库存产品联想结果下拉框 -->
+              <div
+                v-if="showAddStockDropdown && addStockSuggestions.length > 0"
+                class="stock-suggestions-dropdown"
+              >
+                <div class="stock-dropdown-body">
+                  <div
+                    v-for="(item, index) in addStockSuggestions"
+                    :key="index"
+                    class="stock-dropdown-item"
+                    @mousedown="selectAddStockSuggestion(item)"
+                  >
+                    {{ item }}
+                  </div>
+                </div>
+                <div
+                  v-if="addStockTotal > addStockPageSize"
+                  class="stock-dropdown-footer"
+                >
+                  <el-pagination
+                    small
+                    layout="prev, pager, next"
+                    :total="addStockTotal"
+                    :page-size="addStockPageSize"
+                    :current-page="addStockCurrentPage"
+                    @current-change="handleAddStockPageChange"
+                    style="margin: 0; white-space: nowrap;"
+                  />
+                </div>
+              </div>
+            </div>
           </el-form-item>
           <el-form-item label="初始库存数量:" prop="unitstock">
             <el-input v-model="addStockForm.unitstock"></el-input>
@@ -113,7 +156,50 @@
         <el-form ref="updateStockForm" :rules="updateStockFormRules" :model="updateStockForm"
                  label-width="120px">
           <el-form-item label="产品:" prop="product">
-            <el-input v-model="updateStockForm.product"></el-input>
+            <div class="stock-search-container">
+              <el-input
+                v-model="updateStockForm.product"
+                placeholder="请输入产品名称"
+                style="width: 300px"
+                @input="handleUpdateStockInput"
+                @focus="handleUpdateStockFocus"
+                @blur="handleUpdateStockBlur"
+              >
+                <template #prefix>
+                  <el-icon><Search /></el-icon>
+                </template>
+              </el-input>
+              <!-- 修改库存产品联想结果下拉框 -->
+              <div
+                v-if="showUpdateStockDropdown && updateStockSuggestions.length > 0"
+                class="stock-suggestions-dropdown"
+              >
+                <div class="stock-dropdown-body">
+                  <div
+                    v-for="(item, index) in updateStockSuggestions"
+                    :key="index"
+                    class="stock-dropdown-item"
+                    @mousedown="selectUpdateStockSuggestion(item)"
+                  >
+                    {{ item }}
+                  </div>
+                </div>
+                <div
+                  v-if="updateStockTotal > updateStockPageSize"
+                  class="stock-dropdown-footer"
+                >
+                  <el-pagination
+                    small
+                    layout="prev, pager, next"
+                    :total="updateStockTotal"
+                    :page-size="updateStockPageSize"
+                    :current-page="updateStockCurrentPage"
+                    @current-change="handleUpdateStockPageChange"
+                    style="margin: 0; white-space: nowrap;"
+                  />
+                </div>
+              </div>
+            </div>
           </el-form-item>
           <el-form-item label="初始库存数量:" prop="unitstock">
             <el-input v-model="updateStockForm.unitstock"></el-input>
@@ -311,6 +397,104 @@ export default {
       this.suggestCurrentPage = pageNum
       this.getSuggestions()
     },
+    // 添加库存联想相关方法（从product表获取数据）
+    handleAddStockInput() {
+      this.addStockCurrentPage = 1;
+      this.fetchAddStockSuggestions();
+    },
+    handleAddStockFocus() {
+      if (this.addStockForm.product) {
+        this.fetchAddStockSuggestions();
+      }
+    },
+    handleAddStockBlur() {
+      setTimeout(() => {
+        this.showAddStockDropdown = false;
+      }, 200);
+    },
+    fetchAddStockSuggestions() {
+      const that = this;
+      if (that.addStockForm.product.length < 1) {
+        that.addStockSuggestions = [];
+        that.showAddStockDropdown = false;
+        return;
+      }
+      this.$axios
+        .post(
+          `${process.env.VUE_APP_API_BASE_URL}/product/findProductNamesByPrefix`,
+          {
+            prefix: that.addStockForm.product,
+            pageNum: that.addStockCurrentPage,
+            pageSize: that.addStockPageSize,
+          }
+        )
+        .then(function (response) {
+          if (response.data.code === 1) {
+            that.addStockSuggestions = response.data.data;
+            that.addStockTotal = response.data.total;
+            that.showAddStockDropdown = true;
+          }
+        });
+    },
+    selectAddStockSuggestion(item) {
+      this.addStockForm.product = item;
+      this.showAddStockDropdown = false;
+    },
+    handleAddStockPageChange(pageNum) {
+      if (this.addStockCurrentPage !== pageNum) {
+        this.addStockCurrentPage = pageNum;
+        this.fetchAddStockSuggestions();
+      }
+    },
+    // 修改库存联想相关方法（从stock表获取数据）
+    handleUpdateStockInput() {
+      this.updateStockCurrentPage = 1;
+      this.fetchUpdateStockSuggestions();
+    },
+    handleUpdateStockFocus() {
+      if (this.updateStockForm.product) {
+        this.fetchUpdateStockSuggestions();
+      }
+    },
+    handleUpdateStockBlur() {
+      setTimeout(() => {
+        this.showUpdateStockDropdown = false;
+      }, 200);
+    },
+    fetchUpdateStockSuggestions() {
+      const that = this;
+      if (that.updateStockForm.product.length < 1) {
+        that.updateStockSuggestions = [];
+        that.showUpdateStockDropdown = false;
+        return;
+      }
+      this.$axios
+        .post(
+          `${process.env.VUE_APP_API_BASE_URL}/stock/findProductNamesByPrefix`,
+          {
+            prefix: that.updateStockForm.product,
+            pageNum: that.updateStockCurrentPage,
+            pageSize: that.updateStockPageSize,
+          }
+        )
+        .then(function (response) {
+          if (response.data.code === 1) {
+            that.updateStockSuggestions = response.data.data;
+            that.updateStockTotal = response.data.total;
+            that.showUpdateStockDropdown = true;
+          }
+        });
+    },
+    selectUpdateStockSuggestion(item) {
+      this.updateStockForm.product = item;
+      this.showUpdateStockDropdown = false;
+    },
+    handleUpdateStockPageChange(pageNum) {
+      if (this.updateStockCurrentPage !== pageNum) {
+        this.updateStockCurrentPage = pageNum;
+        this.fetchUpdateStockSuggestions();
+      }
+    },
     // 切换隐藏零库存状态
     toggleHideZeroStock() {
       this.hideZeroStock = !this.hideZeroStock
@@ -445,6 +629,14 @@ export default {
     onClearSelection() {
       this.$refs.multipleTable.clearSelection();
       this.selectedStock = [];
+    },
+    // 点击外部区域关闭下拉框
+    handleClickOutside(event) {
+      // 检查点击是否发生在搜索框或下拉框外部
+      const searchContainer = document.querySelector('.stock-search-container')
+      if (searchContainer && !searchContainer.contains(event.target)) {
+        this.showSuggestions = false
+      }
     }
   },
   watch: {
@@ -456,6 +648,16 @@ export default {
       },
       debounce: 300
     }
+  },
+  mounted() {
+    // 添加点击事件监听器，点击页面其他地方时隐藏下拉框
+    document.addEventListener('click', this.handleClickOutside)
+    // 组件挂载后自动获取库存数据
+    this.getAllStock()
+  },
+  beforeDestroy() {
+    // 移除点击事件监听器
+    document.removeEventListener('click', this.handleClickOutside)
   },
   data() {
     return {
@@ -512,6 +714,18 @@ export default {
       suggestCurrentPage: 1,
       suggestPageSize: 10,
       showSuggestions: false,
+      // 添加库存联想相关数据（从product表获取）
+      addStockSuggestions: [],
+      showAddStockDropdown: false,
+      addStockCurrentPage: 1,
+      addStockPageSize: 10,
+      addStockTotal: 0,
+      // 修改库存联想相关数据（从stock表获取）
+      updateStockSuggestions: [],
+      showUpdateStockDropdown: false,
+      updateStockCurrentPage: 1,
+      updateStockPageSize: 10,
+      updateStockTotal: 0,
       // 隐藏零库存状态
       hideZeroStock: false,
       // 选中的库存数据

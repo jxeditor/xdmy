@@ -5,10 +5,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.xdmy.datasource.DBContextHolder;
-import com.xdmy.domain.Stock;
 import com.xdmy.domain.User;
 import com.xdmy.service.inter.IAdminService;
-import com.xdmy.service.inter.IStockService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

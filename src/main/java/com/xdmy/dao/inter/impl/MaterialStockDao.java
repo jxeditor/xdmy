@@ -5,6 +5,7 @@ import com.xdmy.dao.inter.IMaterialStockDao;
 import com.xdmy.domain.MaterialStock;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.lang.NonNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,16 +25,16 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
             sql += " AND unitstock != 0";
         }
         sql += " ORDER BY unitstock DESC LIMIT ? ,?";
-        return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new RowMapper<MaterialStock>() {
+        return jdbcTemplate.query(sql, new RowMapper<MaterialStock>() {
             @Override
-            public MaterialStock mapRow(ResultSet rs, int rowNum) throws SQLException {
+            public MaterialStock mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
                 MaterialStock materialStock = new MaterialStock();
                 materialStock.setId(rs.getInt("id"));
                 materialStock.setMaterialName(rs.getString("material_name"));
                 materialStock.setUnitstock(rs.getInt("unitstock"));
                 return materialStock;
             }
-        });
+        }, currOffset, pageSize);
     }
 
     @Override
@@ -45,7 +46,8 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
         if (hideZeroStock) {
             sql += " AND unitstock != 0";
         }
-        return jdbcTemplate.queryForObject(sql, Integer.class);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        return count != null ? count : 0;
     }
 
     @Override
@@ -88,13 +90,13 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
                      "material_name " +
                      "LIMIT ? OFFSET ?";
         
-        return jdbcTemplate.queryForList(sql, new Object[]{
+        return jdbcTemplate.queryForList(sql, String.class, 
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%",  // 包含前缀中每个字符
             "%" + prefix + "%",  // 用于排序
             pageSize, 
             offset
-        }, String.class);
+        );
     }
 
     @Override
@@ -103,10 +105,10 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
         String sql = "SELECT COUNT(DISTINCT material_name) FROM material_stock " +
                      "WHERE material_name LIKE ? OR material_name LIKE ?";
         
-        return jdbcTemplate.queryForObject(sql, new Object[]{
+        return jdbcTemplate.queryForObject(sql, Integer.class, 
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%"  // 包含前缀中每个字符
-        }, Integer.class);
+        );
     }
 
     @Override
@@ -116,7 +118,7 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
         try {
             // 检查材料是否存在
             String checkSql = "SELECT COUNT(*) FROM material_stock WHERE material_name = ?";
-            Integer count = jdbcTemplate.queryForObject(checkSql, new Object[]{materialName}, Integer.class);
+            Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, materialName);
             
             if (count == 0) {
                 // 材料不存在，创建新记录
@@ -251,7 +253,8 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
         if (endDate != null && !endDate.isEmpty()) {
             sql += " AND operation_date <= '" + endDate + "'";
         }
-        return jdbcTemplate.queryForObject(sql, Integer.class);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        return count != null ? count : 0;
     }
 
 }

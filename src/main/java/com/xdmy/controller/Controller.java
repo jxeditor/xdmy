@@ -7,7 +7,7 @@ import java.util.HashMap;
 public class Controller {
     // 将param转换成map格式
     public HashMap<String, String> getRequestParam(HttpServletRequest request) {
-        Enumeration eObj = request.getParameterNames();
+        Enumeration<String> eObj = request.getParameterNames();
         HashMap<String, String> returnMap = null;
         if (eObj != null) {
             returnMap = new HashMap<>();

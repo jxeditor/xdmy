@@ -6,7 +6,6 @@ import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.xdmy.datasource.DBContextHolder;
 import com.xdmy.domain.Incoming;
-import com.xdmy.domain.Shipment;
 import com.xdmy.service.inter.IIncomingService;
 import org.springframework.stereotype.Service;
 

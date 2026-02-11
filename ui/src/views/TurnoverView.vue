@@ -1,6 +1,6 @@
 <template>
   <div class="turnover">
-    <Turnover msg="雄达木业"/>
+    <Turnover msg="流水"/>
   </div>
 </template>
 

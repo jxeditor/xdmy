@@ -27,4 +27,6 @@ public interface IProductDao {
     int getProductNamesCount(String prefix);
     
     int batchDeleteProduct(String ids);
+    
+    boolean checkProductExist(String productName);
 }

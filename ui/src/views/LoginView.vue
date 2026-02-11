@@ -27,7 +27,7 @@ export default {
   },
   data() {
     return {
-      msg: '雄达木业'
+      msg: '欢迎登录'
     }
   }
 }

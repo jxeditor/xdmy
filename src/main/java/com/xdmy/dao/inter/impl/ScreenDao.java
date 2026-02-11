@@ -4,6 +4,7 @@ package com.xdmy.dao.inter.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.xdmy.dao.inter.IScreenDao;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -41,7 +42,7 @@ public class ScreenDao extends BaseDao implements IScreenDao {
 
     static class Shipment1ChartDataRowMapper implements RowMapper<JSONObject> {
         @Override
-        public JSONObject mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public JSONObject mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             JSONObject result = new JSONObject();
             result.put("billdate", rs.getString("billdate"));
             result.put("money", rs.getDouble("money"));
@@ -55,7 +56,7 @@ public class ScreenDao extends BaseDao implements IScreenDao {
 
     static class Shipment2ChartDataRowMapper implements RowMapper<JSONObject> {
         @Override
-        public JSONObject mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public JSONObject mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             JSONObject result = new JSONObject();
             result.put("billdate", rs.getString("billdate"));
             result.put("money", rs.getDouble("money"));

@@ -4,6 +4,7 @@ import com.xdmy.dao.inter.IProductMaterialRelationDao;
 import com.xdmy.domain.ProductMaterialRelation;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.lang.NonNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,9 +26,9 @@ public class ProductMaterialRelationDao extends BaseDao implements IProductMater
             sql += " AND product_name LIKE '%" + productName + "%'";
         }
         sql += " ORDER BY id DESC LIMIT ? ,?";
-        return jdbcTemplate.query(sql, new Object[]{currOffset, pageSize}, new RowMapper<ProductMaterialRelation>() {
+        return jdbcTemplate.query(sql, new RowMapper<ProductMaterialRelation>() {
             @Override
-            public ProductMaterialRelation mapRow(ResultSet rs, int rowNum) throws SQLException {
+            public ProductMaterialRelation mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
                 ProductMaterialRelation relation = new ProductMaterialRelation();
                 relation.setId(rs.getInt("id"));
                 relation.setProductName(rs.getString("product_name"));
@@ -36,7 +37,7 @@ public class ProductMaterialRelationDao extends BaseDao implements IProductMater
                 relation.setIsDefault(rs.getInt("is_default"));
                 return relation;
             }
-        });
+        }, currOffset, pageSize);
     }
 
     @Override
@@ -45,7 +46,8 @@ public class ProductMaterialRelationDao extends BaseDao implements IProductMater
         if (productName != null && !productName.equals("")) {
             sql += " AND product_name LIKE '%" + productName + "%'";
         }
-        return jdbcTemplate.queryForObject(sql, Integer.class);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        return count != null ? count : 0;
     }
 
     @Override
@@ -75,9 +77,9 @@ public class ProductMaterialRelationDao extends BaseDao implements IProductMater
     @Override
     public List<ProductMaterialRelation> findRelationsByProductName(String productName) {
         String sql = "SELECT * FROM product_material_relation WHERE product_name = ?";
-        return jdbcTemplate.query(sql, new Object[]{productName}, new RowMapper<ProductMaterialRelation>() {
+        return jdbcTemplate.query(sql, new RowMapper<ProductMaterialRelation>() {
             @Override
-            public ProductMaterialRelation mapRow(ResultSet rs, int rowNum) throws SQLException {
+            public ProductMaterialRelation mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
                 ProductMaterialRelation relation = new ProductMaterialRelation();
                 relation.setId(rs.getInt("id"));
                 relation.setProductName(rs.getString("product_name"));
@@ -86,7 +88,7 @@ public class ProductMaterialRelationDao extends BaseDao implements IProductMater
                 relation.setIsDefault(rs.getInt("is_default"));
                 return relation;
             }
-        });
+        }, productName);
     }
 
     @Override
@@ -95,13 +97,49 @@ public class ProductMaterialRelationDao extends BaseDao implements IProductMater
         if (id != null) {
             // 更新操作，排除当前记录
             sql = "SELECT count(1) FROM product_material_relation WHERE product_name = ? AND material_name = ? AND id != ?";
-            Integer count = jdbcTemplate.queryForObject(sql, new Object[]{productName, materialName, id}, Integer.class);
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, productName, materialName, id);
             return count == 0;
         } else {
             // 添加操作，检查是否存在
             sql = "SELECT count(1) FROM product_material_relation WHERE product_name = ? AND material_name = ?";
-            Integer count = jdbcTemplate.queryForObject(sql, new Object[]{productName, materialName}, Integer.class);
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, productName, materialName);
             return count == 0;
         }
+    }
+
+    @Override
+    public List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize) {
+        int currOffset = (pageNum - 1) * pageSize;
+        // 优先匹配包含完整前缀的产品，然后匹配包含前缀中每个字符的产品
+        String sql = "SELECT DISTINCT product_name FROM product_material_relation " +
+                     "WHERE product_name LIKE ? OR product_name LIKE ? " +
+                     "ORDER BY " +
+                     "CASE " +
+                     "    WHEN product_name LIKE ? THEN 0 " +
+                     "    ELSE 1 " +
+                     "END, " +
+                     "product_name " +
+                     "LIMIT ? OFFSET ?";
+        
+        return jdbcTemplate.queryForList(sql, String.class, 
+            "%" + prefix + "%",  // 包含完整前缀
+            "%" + prefix.replaceAll("", "%") + "%",  // 包含前缀中每个字符
+            "%" + prefix + "%",  // 用于排序
+            pageSize, 
+            currOffset
+        );
+    }
+
+    @Override
+    public int getProductNamesCountByPrefix(String prefix) {
+        // 计算包含完整前缀或包含前缀中每个字符的产品数量
+        String sql = "SELECT COUNT(DISTINCT product_name) FROM product_material_relation " +
+                     "WHERE product_name LIKE ? OR product_name LIKE ?";
+        
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, 
+            "%" + prefix + "%",  // 包含完整前缀
+            "%" + prefix.replaceAll("", "%") + "%"  // 包含前缀中每个字符
+        );
+        return count != null ? count : 0;
     }
 }

@@ -12,7 +12,7 @@ public class JSONReturn {
     private String msg;
     private Integer code;
     private String rtnString;
-    private List objList;
+    private List<Object> objList;
 
 
     public String getRtnString() {
@@ -60,13 +60,13 @@ public class JSONReturn {
         this.msg = "操作成功！";
     }
 
-    public JSONReturn(Integer code, String msg, List objList) {
+    public JSONReturn(Integer code, String msg, List<Object> objList) {
         this.code = code;
         this.msg = msg;
         this.objList = objList;
     }
 
-    public JSONReturn(String type, String msg, Integer code, String rtnStirng, List objList) {
+    public JSONReturn(String type, String msg, Integer code, String rtnStirng, List<Object> objList) {
         this.type = type;
         this.msg = msg;
         this.code = code;
@@ -80,7 +80,7 @@ public class JSONReturn {
         this.rtnString = rtnString;
     }
 
-    public JSONReturn(String type, String msg, String rtnString, List objList) {
+    public JSONReturn(String type, String msg, String rtnString, List<Object> objList) {
         this.type = type;
         this.msg = msg;
         this.rtnString = rtnString;
@@ -103,14 +103,14 @@ public class JSONReturn {
         this.msg = msg;
     }
 
-    public JSONReturn(Integer code, String msg, String rtnString, List objList) {
+    public JSONReturn(Integer code, String msg, String rtnString, List<Object> objList) {
         this.msg = msg;
         this.code = code;
         this.rtnString = rtnString;
         this.objList = objList;
     }
 
-    public JSONReturn(String type, String msg, List objList) {
+    public JSONReturn(String type, String msg, List<Object> objList) {
         this.type = type;
         this.msg = msg;
         this.objList = objList;
@@ -148,11 +148,11 @@ public class JSONReturn {
         this.code = code;
     }
 
-    public List getObjList() {
+    public List<Object> getObjList() {
         return objList;
     }
 
-    public void setObjList(List objList) {
+    public void setObjList(List<Object> objList) {
         this.objList = objList;
     }
 

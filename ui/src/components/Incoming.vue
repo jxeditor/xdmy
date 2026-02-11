@@ -142,16 +142,64 @@
         <el-button @click="onBatchDeleteIncoming()">删除</el-button>
         <el-button @click="onClearSelection()">取消选择</el-button>
       </div>
-      <el-dialog title="入货" v-model="addIncomingVisible" width="80%">
+      <el-dialog title="入货" v-model="addIncomingVisible" width="80%" class="incoming-dialog">
         <el-form ref="addIncomingForm" :rules="addIncomingFormRules" :model="addIncomingForm" label-width="100px">
           <el-form-item label="单号:" prop="odd">
             <el-input v-model="addIncomingForm.odd"></el-input>
           </el-form-item>
           <el-form-item label="供应商:" prop="producer">
-            <el-input v-model="addIncomingForm.producer"></el-input>
+            <div class="incoming-search-container">
+              <el-input v-model="addIncomingForm.producer" placeholder="请输入供应商名称" @input="handleAddProducerInput"></el-input>
+              <!-- 供应商联想结果下拉框 -->
+              <div v-if="showAddProducerSuggestions && addProducerSuggestions.length > 0" class="incoming-suggestions-dropdown">
+                <div 
+                  v-for="(item, index) in addProducerSuggestions" 
+                  :key="index"
+                  class="incoming-suggestion-item"
+                  @click="selectAddProducerSuggestion(item)"
+                >
+                  {{ item }}
+                </div>
+                <!-- 供应商联想分页 -->
+                <div v-if="addProducerTotal > addProducerPageSize" class="incoming-suggestion-pagination">
+                  <el-pagination
+                    small
+                    layout="prev, pager, next, ->, total"
+                    :total="addProducerTotal"
+                    :page-size="addProducerPageSize"
+                    :current-page="addProducerCurrentPage"
+                    @current-change="handleAddProducerPageChange"
+                  />
+                </div>
+              </div>
+            </div>
           </el-form-item>
           <el-form-item label="产品:" prop="product">
-            <el-input v-model="addIncomingForm.product" @input="handleProductChange('add')"></el-input>
+            <div class="incoming-search-container">
+              <el-input v-model="addIncomingForm.product" placeholder="请输入产品名称" @input="handleAddProductInput"></el-input>
+              <!-- 产品联想结果下拉框 -->
+              <div v-if="showAddProductSuggestions && addProductSuggestions.length > 0" class="incoming-suggestions-dropdown">
+                <div 
+                  v-for="(item, index) in addProductSuggestions" 
+                  :key="index"
+                  class="incoming-suggestion-item"
+                  @click="selectAddProductSuggestion(item)"
+                >
+                  {{ item }}
+                </div>
+                <!-- 产品联想分页 -->
+                <div v-if="addProductTotal > addProductPageSize" class="incoming-suggestion-pagination">
+                  <el-pagination
+                    small
+                    layout="prev, pager, next, ->, total"
+                    :total="addProductTotal"
+                    :page-size="addProductPageSize"
+                    :current-page="addProductCurrentPage"
+                    @current-change="handleAddProductPageChange"
+                  />
+                </div>
+              </div>
+            </div>
           </el-form-item>
           <el-form-item label="日期:" prop="billdate">
             <el-date-picker
@@ -218,17 +266,65 @@
           </el-form-item>
         </el-form>
       </el-dialog>
-      <el-dialog title="修改单据信息" v-model="updateIncomingVisible" width="80%">
+      <el-dialog title="修改单据信息" v-model="updateIncomingVisible" width="80%" class="incoming-dialog">
         <el-form ref="updateIncomingForm" :rules="updateIncomingFormRules" :model="updateIncomingForm"
                  label-width="100px">
           <el-form-item label="单号:" prop="odd">
             <el-input v-model="updateIncomingForm.odd"></el-input>
           </el-form-item>
           <el-form-item label="供应商:" prop="producer">
-            <el-input v-model="updateIncomingForm.producer"></el-input>
+            <div class="incoming-search-container">
+              <el-input v-model="updateIncomingForm.producer" placeholder="请输入供应商名称" @input="handleUpdateProducerInput"></el-input>
+              <!-- 供应商联想结果下拉框 -->
+              <div v-if="showUpdateProducerSuggestions && updateProducerSuggestions.length > 0" class="incoming-suggestions-dropdown">
+                <div 
+                  v-for="(item, index) in updateProducerSuggestions" 
+                  :key="index"
+                  class="incoming-suggestion-item"
+                  @click="selectUpdateProducerSuggestion(item)"
+                >
+                  {{ item }}
+                </div>
+                <!-- 供应商联想分页 -->
+                <div v-if="updateProducerTotal > updateProducerPageSize" class="incoming-suggestion-pagination">
+                  <el-pagination
+                    small
+                    layout="prev, pager, next, ->, total"
+                    :total="updateProducerTotal"
+                    :page-size="updateProducerPageSize"
+                    :current-page="updateProducerCurrentPage"
+                    @current-change="handleUpdateProducerPageChange"
+                  />
+                </div>
+              </div>
+            </div>
           </el-form-item>
           <el-form-item label="产品:" prop="product">
-            <el-input v-model="updateIncomingForm.product" @input="handleProductChange('update')"></el-input>
+            <div class="incoming-search-container">
+              <el-input v-model="updateIncomingForm.product" placeholder="请输入产品名称" @input="handleUpdateProductInput"></el-input>
+              <!-- 产品联想结果下拉框 -->
+              <div v-if="showUpdateProductSuggestions && updateProductSuggestions.length > 0" class="incoming-suggestions-dropdown">
+                <div 
+                  v-for="(item, index) in updateProductSuggestions" 
+                  :key="index"
+                  class="incoming-suggestion-item"
+                  @click="selectUpdateProductSuggestion(item)"
+                >
+                  {{ item }}
+                </div>
+                <!-- 产品联想分页 -->
+                <div v-if="updateProductTotal > updateProductPageSize" class="incoming-suggestion-pagination">
+                  <el-pagination
+                    small
+                    layout="prev, pager, next, ->, total"
+                    :total="updateProductTotal"
+                    :page-size="updateProductPageSize"
+                    :current-page="updateProductCurrentPage"
+                    @current-change="handleUpdateProductPageChange"
+                  />
+                </div>
+              </div>
+            </div>
           </el-form-item>
           <el-form-item label="日期:" prop="billdate">
             <el-date-picker
@@ -306,9 +402,7 @@ export default {
   props: {
     msg: String
   },
-  mounted() {
-    this.getAllIncoming()
-  },
+
   methods: {
     sleep(ms) { //sleep延迟方法2
       const time_ms = new Date().getTime();
@@ -365,9 +459,31 @@ export default {
     },
     onAddIncomingCancel() {
       this.addIncomingVisible = false
+      // 重置操作原材料状态
+      this.addIncomingForm.operate_material = 0
+      // 重置原材料关系数据
+      this.addMaterialRelations = []
+      this.newAddMaterial = { materialName: '', quantity: 1 }
+      // 重置产品联想相关数据
+      this.addProductSuggestions = []
+      this.showAddProductSuggestions = false
+      // 重置供应商联想相关数据
+      this.addProducerSuggestions = []
+      this.showAddProducerSuggestions = false
     },
     onUpdateIncomingCancel() {
       this.updateIncomingVisible = false
+      // 重置操作原材料状态为关闭
+      this.updateIncomingForm.operate_material = 0
+      // 重置原材料关系数据
+      this.updateMaterialRelations = []
+      this.newUpdateMaterial = { materialName: '', quantity: 1 }
+      // 重置产品联想相关数据
+      this.updateProductSuggestions = []
+      this.showUpdateProductSuggestions = false
+      // 重置供应商联想相关数据
+      this.updateProducerSuggestions = []
+      this.showUpdateProducerSuggestions = false
     },
     onAddIncoming() {
       this.addIncomingVisible = true
@@ -377,13 +493,14 @@ export default {
     },
     onUpdateIncoming(incoming) {
       console.log('修改入货单数据:', incoming)
-      this.updateIncomingForm = incoming
+      // 深拷贝incoming对象，避免直接引用影响原始数据
+      this.updateIncomingForm = JSON.parse(JSON.stringify(incoming))
       // 存储初始的operate_material状态
       this.initialOperateMaterial = incoming.operate_material
       this.updateIncomingVisible = true
       // 重置原材料关系数据
       this.updateMaterialRelations = []
-      this.newUpdateMaterial = { material_name: '', quantity: 1 }
+      this.newUpdateMaterial = { materialName: '', quantity: 1 }
       // 如果操作原材料开关是打开的，获取历史操作记录
       console.log('operate_material值:', incoming.operate_material, '类型:', typeof incoming.operate_material)
       if (incoming.operate_material == 1) {
@@ -421,12 +538,18 @@ export default {
       console.log('产品名变化，类型:', type)
       if (type === 'add') {
         console.log('添加入货单产品名变化:', this.addIncomingForm.product)
+        // 获取产品联想建议
+        this.getAddProductSuggestions()
+        // 如果开启了操作原材料，重新获取原材料关系
         if (this.addIncomingForm.operate_material === 1) {
           console.log('添加入货单操作原材料开关开启，重新获取原材料关系')
           this.getMaterialRelations(this.addIncomingForm.product, 'add')
         }
       } else if (type === 'update') {
         console.log('修改入货单产品名变化:', this.updateIncomingForm.product)
+        // 获取产品联想建议
+        this.getUpdateProductSuggestions()
+        // 如果开启了操作原材料，重新获取原材料关系
         if (this.updateIncomingForm.operate_material === 1) {
           console.log('修改入货单操作原材料开关开启，重新获取原材料关系')
           this.getMaterialRelations(this.updateIncomingForm.product, 'update')
@@ -471,10 +594,9 @@ export default {
         return
       }
       const that = this
-      // 使用硬编码的API基础URL，与getAllIncoming方法保持一致
-      const apiBaseUrl = 'http://127.0.0.1:8088';
-      console.log('获取原材料关系API URL:', `${apiBaseUrl}/productMaterialRelation/findRelationsByProductName?productName=${productName}`)
-      this.$axios.get(`${apiBaseUrl}/productMaterialRelation/findRelationsByProductName?productName=${productName}`)
+      // 使用环境变量中的API基础URL
+      console.log('获取原材料关系API URL:', `${process.env.VUE_APP_API_BASE_URL}/productMaterialRelation/findRelationsByProductName?productName=${productName}`)
+      this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/productMaterialRelation/findRelationsByProductName?productName=${productName}`)
         .then(function (response) {
           console.log('获取原材料关系响应:', response)
           if (response.data.code === 1) {
@@ -609,6 +731,15 @@ export default {
         if (valid) {
           // 如果开启了操作原材料，校验库存
           if (that.addIncomingForm.operate_material === 1) {
+            // 检查是否添加了原材料关系
+            if (!that.addMaterialRelations || that.addMaterialRelations.length === 0) {
+              that.$message({
+                message: '开启操作原材料后，必须添加至少一条原材料关系',
+                type: 'error',
+                center: true
+              })
+              return false
+            }
             that.validateMaterialStock(that.addMaterialRelations, that.addIncomingForm.amount)
               .then(() => {
                 // 库存校验通过，继续入货
@@ -671,6 +802,15 @@ export default {
         if (valid) {
           // 如果开启了操作原材料，需要处理库存
           if (that.updateIncomingForm.operate_material === 1) {
+            // 检查是否添加了原材料关系
+            if (!that.updateMaterialRelations || that.updateMaterialRelations.length === 0) {
+              that.$message({
+                message: '开启操作原材料后，必须添加至少一条原材料关系',
+                type: 'error',
+                center: true
+              })
+              return false
+            }
             // 1. 获取原有入货单信息，用于恢复库存
             that.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/incoming/findIncomingById?id=${that.updateIncomingForm.id}`)
               .then(oldIncomingResponse => {
@@ -747,10 +887,7 @@ export default {
     },
     getAllIncoming() {
       const that = this;
-      // 硬编码API地址，测试是否能够连接
-      const apiBaseUrl = 'http://127.0.0.1:8088';
-      console.log('Hardcoded API Base URL:', apiBaseUrl);
-      const url = `${apiBaseUrl}/incoming/findAllIncoming` +
+      const url = `${process.env.VUE_APP_API_BASE_URL}/incoming/findAllIncoming` +
         `?pageNum=` + that.page.index + `&pageSize=` + that.page.size +
         `&producerName=` + that.producerInput +
         `&productName=` + that.productInput +
@@ -836,6 +973,186 @@ export default {
       this.productInput = item
       this.showProductSuggestions = false
     },
+    // 处理供应商名称变化
+    handleProducerChange(type) {
+      console.log('供应商名称变化，类型:', type)
+      if (type === 'add') {
+        console.log('添加入货单供应商名称变化:', this.addIncomingForm.producer)
+        // 获取供应商联想建议
+        this.getAddProducerSuggestions()
+      } else if (type === 'update') {
+        console.log('修改入货单供应商名称变化:', this.updateIncomingForm.producer)
+        // 获取供应商联想建议
+        this.getUpdateProducerSuggestions()
+      }
+    },
+    // 获取添加入货单供应商联想建议
+    getAddProducerSuggestions() {
+      const that = this
+      if (that.addIncomingForm.producer.length < 1) {
+        that.addProducerSuggestions = []
+        that.showAddProducerSuggestions = false
+        return
+      }
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/incoming/findProducerNamesByPrefix`, {
+        prefix: that.addIncomingForm.producer,
+        pageNum: that.addProducerCurrentPage,
+        pageSize: that.addProducerPageSize
+      })
+        .then(function (response) {
+          that.addProducerSuggestions = response.data.data
+          that.addProducerTotal = response.data.total
+          that.showAddProducerSuggestions = true
+        }).catch(function (error) {
+        console.error(error)
+        that.addProducerSuggestions = []
+        that.addProducerTotal = 0
+        that.showAddProducerSuggestions = false
+      })
+    },
+    // 获取修改入货单供应商联想建议
+    getUpdateProducerSuggestions() {
+      const that = this
+      if (that.updateIncomingForm.producer.length < 1) {
+        that.updateProducerSuggestions = []
+        that.showUpdateProducerSuggestions = false
+        return
+      }
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/incoming/findProducerNamesByPrefix`, {
+        prefix: that.updateIncomingForm.producer,
+        pageNum: that.updateProducerCurrentPage,
+        pageSize: that.updateProducerPageSize
+      })
+        .then(function (response) {
+          that.updateProducerSuggestions = response.data.data
+          that.updateProducerTotal = response.data.total
+          that.showUpdateProducerSuggestions = true
+        }).catch(function (error) {
+        console.error(error)
+        that.updateProducerSuggestions = []
+        that.updateProducerTotal = 0
+        that.showUpdateProducerSuggestions = false
+      })
+    },
+    // 选择添加入货单供应商联想建议
+    selectAddProducerSuggestion(item) {
+      this.addIncomingForm.producer = item
+      this.showAddProducerSuggestions = false
+    },
+    // 选择修改入货单供应商联想建议
+    selectUpdateProducerSuggestion(item) {
+      this.updateIncomingForm.producer = item
+      this.showUpdateProducerSuggestions = false
+    },
+    // 处理点击页面其他地方的事件
+    handleClickOutside(event) {
+      // 隐藏所有供应商联想下拉框
+      this.showProducerSuggestions = false
+      this.showAddProducerSuggestions = false
+      this.showUpdateProducerSuggestions = false
+      // 隐藏所有产品联想下拉框
+      this.showProductSuggestions = false
+      this.showAddProductSuggestions = false
+      this.showUpdateProductSuggestions = false
+    },
+    // 处理添加对话框供应商输入变化
+    handleAddProducerInput() {
+      this.addProducerCurrentPage = 1
+      this.getAddProducerSuggestions()
+    },
+    // 处理添加对话框供应商分页
+    handleAddProducerPageChange(pageNum) {
+      this.addProducerCurrentPage = pageNum
+      this.getAddProducerSuggestions()
+    },
+    // 处理添加对话框产品输入变化
+    handleAddProductInput() {
+      this.addProductCurrentPage = 1
+      this.getAddProductSuggestions()
+    },
+    // 处理添加对话框产品分页
+    handleAddProductPageChange(pageNum) {
+      this.addProductCurrentPage = pageNum
+      this.getAddProductSuggestions()
+    },
+    // 处理修改对话框供应商输入变化
+    handleUpdateProducerInput() {
+      this.updateProducerCurrentPage = 1
+      this.getUpdateProducerSuggestions()
+    },
+    // 处理修改对话框供应商分页
+    handleUpdateProducerPageChange(pageNum) {
+      this.updateProducerCurrentPage = pageNum
+      this.getUpdateProducerSuggestions()
+    },
+    // 处理修改对话框产品输入变化
+    handleUpdateProductInput() {
+      this.updateProductCurrentPage = 1
+      this.getUpdateProductSuggestions()
+    },
+    // 处理修改对话框产品分页
+    handleUpdateProductPageChange(pageNum) {
+      this.updateProductCurrentPage = pageNum
+      this.getUpdateProductSuggestions()
+    },
+    // 获取添加入货单产品联想建议
+    getAddProductSuggestions() {
+      const that = this
+      if (that.addIncomingForm.product.length < 1) {
+        that.addProductSuggestions = []
+        that.showAddProductSuggestions = false
+        return
+      }
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/findProductNamesByPrefix`, {
+        prefix: that.addIncomingForm.product,
+        pageNum: that.addProductCurrentPage,
+        pageSize: that.addProductPageSize
+      })
+        .then(function (response) {
+          that.addProductSuggestions = response.data.data
+          that.addProductTotal = response.data.total
+          that.showAddProductSuggestions = true
+        }).catch(function (error) {
+        console.error(error)
+        that.addProductSuggestions = []
+        that.addProductTotal = 0
+        that.showAddProductSuggestions = false
+      })
+    },
+    // 获取修改入货单产品联想建议
+    getUpdateProductSuggestions() {
+      const that = this
+      if (that.updateIncomingForm.product.length < 1) {
+        that.updateProductSuggestions = []
+        that.showUpdateProductSuggestions = false
+        return
+      }
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/findProductNamesByPrefix`, {
+        prefix: that.updateIncomingForm.product,
+        pageNum: that.updateProductCurrentPage,
+        pageSize: that.updateProductPageSize
+      })
+        .then(function (response) {
+          that.updateProductSuggestions = response.data.data
+          that.updateProductTotal = response.data.total
+          that.showUpdateProductSuggestions = true
+        }).catch(function (error) {
+        console.error(error)
+        that.updateProductSuggestions = []
+        that.updateProductTotal = 0
+        that.showUpdateProductSuggestions = false
+      })
+    },
+    // 选择添加入货单产品联想建议
+    selectAddProductSuggestion(item) {
+      this.addIncomingForm.product = item
+      this.showAddProductSuggestions = false
+    },
+    // 选择修改入货单产品联想建议
+    selectUpdateProductSuggestion(item) {
+      this.updateIncomingForm.product = item
+      this.showUpdateProductSuggestions = false
+    },
     // 处理供应商分页
     handleProducerPageChange(pageNum) {
       this.producerCurrentPage = pageNum
@@ -880,12 +1197,36 @@ export default {
       producerCurrentPage: 1,
       producerPageSize: 10,
       producerTotal: 0,
+      // 添加入货单供应商联想相关数据
+      addProducerSuggestions: [],
+      showAddProducerSuggestions: false,
+      addProducerCurrentPage: 1,
+      addProducerPageSize: 10,
+      addProducerTotal: 0,
+      // 修改入货单供应商联想相关数据
+      updateProducerSuggestions: [],
+      showUpdateProducerSuggestions: false,
+      updateProducerCurrentPage: 1,
+      updateProducerPageSize: 10,
+      updateProducerTotal: 0,
       // 产品联想相关数据
       productSuggestions: [],
       showProductSuggestions: false,
       productCurrentPage: 1,
       productPageSize: 10,
       productTotal: 0,
+      // 添加表单产品联想相关数据
+      addProductSuggestions: [],
+      showAddProductSuggestions: false,
+      addProductCurrentPage: 1,
+      addProductPageSize: 10,
+      addProductTotal: 0,
+      // 修改表单产品联想相关数据
+      updateProductSuggestions: [],
+      showUpdateProductSuggestions: false,
+      updateProductCurrentPage: 1,
+      updateProductPageSize: 10,
+      updateProductTotal: 0,
       addIncomingForm: {
         odd: ``,
         producer: ``,
@@ -971,6 +1312,17 @@ export default {
         ]
       }
     }
+  },
+  mounted() {
+    // 添加点击事件监听器，点击页面其他地方时隐藏下拉框
+    document.addEventListener('click', this.handleClickOutside)
+    // 页面首次加载时获取数据
+    console.log('Incoming页面mounted方法被调用');
+    this.getAllIncoming()
+  },
+  beforeDestroy() {
+    // 移除点击事件监听器
+    document.removeEventListener('click', this.handleClickOutside)
   }
 }
 </script>
@@ -1080,6 +1432,50 @@ body {
   margin-top: 0;
 }
 
+/* 搜索容器样式 */
+.incoming-search-container {
+  position: relative;
+  width: 100%;
+}
+
+/* 联想结果下拉框 */
+.incoming-suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid #dcdfe6;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 350px;
+  overflow-y: auto;
+  margin-top: 4px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 联想结果项 */
+.incoming-suggestion-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #f0f0f0;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+}
+
+.incoming-suggestion-item:hover {
+  background-color: #f5f7fa;
+  color: #667eea;
+  transform: translateX(5px);
+}
+
+.incoming-suggestion-item:last-child {
+  border-bottom: none;
+}
+
 /* 表格样式 */
 .el-table {
   border-radius: 10px;
@@ -1150,30 +1546,69 @@ body {
   border: none !important;
 }
 
-/* 对话框样式 */
-.el-dialog {
+/* 入货单对话框样式 */
+.incoming-dialog {
   border-radius: 12px !important;
   overflow: hidden !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+  border: none !important;
 }
 
-.el-dialog__header {
+.incoming-dialog .el-dialog__header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   border-bottom: none !important;
   padding: 20px 24px !important;
+  margin: -20px -24px 0 !important;
+  width: calc(100% + 48px) !important;
+  box-sizing: border-box !important;
 }
 
-.el-dialog__title {
+.incoming-dialog .el-dialog__title {
   font-size: 18px !important;
   font-weight: 600 !important;
   color: white !important;
+  margin: 0 !important;
 }
 
-.el-dialog__close {
+.incoming-dialog .el-dialog__headerbtn {
+  top: 20px !important;
+  right: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.incoming-dialog .el-dialog__headerbtn .el-icon {
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 24px !important;
+  font-size: 16px !important;
+}
+
+.incoming-dialog .el-dialog__headerbtn .el-icon .el-dialog__close {
   color: white !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
-.el-dialog__body {
+.incoming-dialog .el-dialog__headerbtn .el-icon .el-dialog__close svg {
+  width: 16px !important;
+  height: 16px !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+}
+
+.incoming-dialog .el-dialog__body {
   padding: 30px !important;
   background-color: #ffffff !important;
 }
