@@ -118,7 +118,7 @@
       </div>
 
       <!-- 添加产品对话框 -->
-      <el-dialog v-model="dialogVisible" title="添加产品" width="500px">
+      <el-dialog v-model="dialogVisible" title="添加产品" width="500px" class="product-dialog">
         <el-form :model="addProductForm" label-width="120px">
           <el-form-item label="产品名称:" prop="productName">
             <div class="product-search-container">
@@ -188,7 +188,7 @@
       </el-dialog>
 
       <!-- 编辑产品对话框 -->
-      <el-dialog v-model="editDialogVisible" title="编辑产品" width="500px">
+      <el-dialog v-model="editDialogVisible" title="编辑产品" width="500px" class="product-dialog">
         <el-form :model="editProductForm" label-width="120px">
           <el-form-item label="产品名称:" prop="productName">
             <div class="product-search-container">
@@ -1139,5 +1139,102 @@ export default {
 .maintain-no {
   color: red;
   font-weight: bold;
+}
+
+
+.product-dialog {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+  border: none !important;
+}
+
+.product-dialog .el-dialog__header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-bottom: none !important;
+  padding: 20px 24px !important;
+  margin: -20px -24px 0 !important;
+  width: calc(100% + 48px) !important;
+  box-sizing: border-box !important;
+}
+
+
+</style>
+
+<style>
+/* 对话框样式：不使用 scoped，因为 el-dialog 渲染在 body 下 */
+.product-dialog {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+  border: none !important;
+}
+
+.product-dialog .el-dialog__header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-bottom: none !important;
+  padding: 20px 24px !important;
+  margin: -20px -24px 0 !important;
+  width: calc(100% + 48px) !important;
+  height: 60px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.product-dialog .el-dialog__title {
+  color: white !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+  padding: 0 24px !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  flex: 1 !important;
+}
+
+.product-dialog .el-dialog__headerbtn {
+  position: relative !important;
+  top: 0 !important;
+  right: 0 !important;
+  margin-top: 0 !important;
+  padding: 0 !important;
+  width: 60px !important;
+  height: 60px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+}
+
+.product-dialog .el-dialog__headerbtn:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.product-dialog .el-dialog__headerbtn .el-icon {
+  color: white !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+}
+
+.product-dialog .el-dialog__headerbtn .el-icon svg {
+  fill: white !important;
+  width: 16px !important;
+  height: 16px !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+}
+
+.product-dialog .el-dialog__body {
+  padding: 30px !important;
+  min-height: 300px !important;
+  box-sizing: border-box !important;
+  background-color: #ffffff !important;
 }
 </style>
