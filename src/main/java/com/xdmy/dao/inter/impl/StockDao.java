@@ -17,14 +17,15 @@ public class StockDao extends BaseDao implements IStockDao {
     @Override
     public List<Stock> findAllStock(int pageNum, int pageSize, String productName, boolean hideZeroStock, String companyName) {
         int currOffset = (pageNum - 1) * pageSize;
-        String sql = "SELECT id, product, unitstock, unitprice, purchaseprice, inamount, outamount, lastindate, lastoutdate, stockstatus " +
+        String sql = "SELECT id, product, unitstock, unitprice, purchaseprice, inamount, outamount, lastindate, lastoutdate, stockstatus, " +
+                "(unitstock + inamount - outamount) as stock " +
                 "FROM stock " +
                 "WHERE 1=1 AND company_name = ?";
         sql = genFilterSql(sql, productName);
         if (hideZeroStock) {
-            sql += " AND unitstock != 0";
+            sql += " AND (unitstock + inamount - outamount) != 0";
         }
-        sql += " ORDER BY unitstock DESC LIMIT ? ,?";
+        sql += " ORDER BY stock DESC LIMIT ? ,?";
         return jdbcTemplate.query(sql, new RowMapper<Stock>() {
             @Override
             public Stock mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
@@ -36,7 +37,7 @@ public class StockDao extends BaseDao implements IStockDao {
                 stock.setPurchaseprice(rs.getDouble("purchaseprice"));
                 stock.setInamount(rs.getInt("inamount"));
                 stock.setOutamount(rs.getInt("outamount"));
-                stock.setStock(rs.getInt("unitstock") + rs.getInt("inamount") - rs.getInt("outamount"));
+                stock.setStock(rs.getInt("stock"));
                 stock.setMoney(rs.getInt("unitstock") * rs.getDouble("unitprice"));
                 stock.setLastindate(rs.getString("lastindate"));
                 stock.setLastoutdate(rs.getString("lastoutdate"));

@@ -334,6 +334,10 @@ export default {
           console.log('API response:', response.data)
           // 使用深拷贝确保Vue能够检测到数据变化
           that.StockData = JSON.parse(JSON.stringify(response.data.data))
+          // 按剩余库存降序排序
+          that.StockData.sort(function(a, b) {
+            return b.stock - a.stock;
+          });
           that.page.total = response.data.total
           console.log('Updated StockData:', that.StockData)
           console.log('Updated page.total:', that.page.total)
@@ -356,6 +360,10 @@ export default {
           console.log('Search API response:', response.data)
           // 使用深拷贝确保Vue能够检测到数据变化
           that.StockData = JSON.parse(JSON.stringify(response.data.data))
+          // 按剩余库存降序排序
+          that.StockData.sort(function(a, b) {
+            return b.stock - a.stock;
+          });
           that.page.total = response.data.total
           console.log('Updated StockData after search:', that.StockData)
           console.log('Updated page.total after search:', that.page.total)
@@ -501,7 +509,7 @@ export default {
       console.log('Toggle hideZeroStock:', this.hideZeroStock)
       // 先将StockData设置为空数组，强制表格组件重新渲染
       this.StockData = []
-      // 然后调用getAllStock方法获取新数据
+      // 然后调用getAllStock方法获取新数据（已包含排序逻辑）
       this.getAllStock()
     },
     // 抹平库存

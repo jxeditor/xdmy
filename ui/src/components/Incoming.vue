@@ -440,14 +440,28 @@ export default {
     onBatchDeleteIncoming() {
       if (this.multipleSelection.length !== 0) {
         const that = this;
-        this.multipleSelection.forEach((data) => {
-          this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/incoming/deleteIncomingById?id=` + data.id)
-            .catch(function (error) {
-              that.$message.error(error);
-            })
+        // 添加批量删除确认框
+        this.$confirm(`确定要删除选中的 ${this.multipleSelection.length} 条入货记录吗？此操作不可撤销。`, '批量删除确认', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
         })
-        this.sleep(500)
-        that.getAllIncoming()
+          .then(() => {
+            // 用户确认删除
+            this.multipleSelection.forEach((data) => {
+              this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/incoming/deleteIncomingById?id=` + data.id)
+                .catch(function (error) {
+                  that.$message.error(error);
+                })
+            })
+            this.sleep(500)
+            that.getAllIncoming()
+            that.$message.success('批量删除成功');
+          })
+          .catch(() => {
+            // 用户取消删除
+            this.$message.info('已取消批量删除');
+          });
       }
     },
     onClearSelection() {
@@ -874,16 +888,30 @@ export default {
     },
     onDeleteIncoming(id) {
       const that = this;
-      this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/incoming/deleteIncomingById?id=` + id)
-        .then(function (response) {
-          if (response.data.code === 1) {
-            that.getAllIncoming()
-          } else {
-            that.$message.error(response.data.msg);
-          }
-        }).catch(function (error) {
-        that.$message.error(error);
+      // 添加删除确认框
+      this.$confirm('确定要删除这条入货记录吗？此操作不可撤销。', '删除确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
       })
+        .then(() => {
+          // 用户确认删除
+          this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/incoming/deleteIncomingById?id=` + id)
+            .then(function (response) {
+              if (response.data.code === 1) {
+                that.getAllIncoming()
+                that.$message.success('删除成功');
+              } else {
+                that.$message.error(response.data.msg);
+              }
+            }).catch(function (error) {
+            that.$message.error(error);
+          })
+        })
+        .catch(() => {
+          // 用户取消删除
+          this.$message.info('已取消删除');
+        });
     },
     getAllIncoming() {
       const that = this;
@@ -948,7 +976,7 @@ export default {
         that.showProductSuggestions = false
         return
       }
-      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/findProductNamesByPrefix`, {
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/product/findProductNamesByPrefix`, {
         prefix: that.productInput,
         pageNum: that.productCurrentPage,
         pageSize: that.productPageSize
@@ -1103,7 +1131,7 @@ export default {
         that.showAddProductSuggestions = false
         return
       }
-      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/findProductNamesByPrefix`, {
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/product/findProductNamesByPrefix`, {
         prefix: that.addIncomingForm.product,
         pageNum: that.addProductCurrentPage,
         pageSize: that.addProductPageSize
@@ -1127,7 +1155,7 @@ export default {
         that.showUpdateProductSuggestions = false
         return
       }
-      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/findProductNamesByPrefix`, {
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/product/findProductNamesByPrefix`, {
         prefix: that.updateIncomingForm.product,
         pageNum: that.updateProductCurrentPage,
         pageSize: that.updateProductPageSize

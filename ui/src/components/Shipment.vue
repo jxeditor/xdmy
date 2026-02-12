@@ -459,14 +459,28 @@ export default {
     onBatchDeleteShipment() {
       if (this.multipleSelection.length !== 0) {
         const that = this;
-        this.multipleSelection.forEach((data) => {
-          this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/shipment/deleteShipmentById?id=` + data.id)
-            .catch(function (error) {
-              that.$message.error(error);
-            })
+        // 添加批量删除确认框
+        this.$confirm(`确定要删除选中的 ${this.multipleSelection.length} 条出货记录吗？此操作不可撤销。`, '批量删除确认', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
         })
-        this.sleep(500)
-        that.getAllShipment()
+          .then(() => {
+            // 用户确认删除
+            this.multipleSelection.forEach((data) => {
+              this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/shipment/deleteShipmentById?id=` + data.id)
+                .catch(function (error) {
+                  that.$message.error(error);
+                })
+            })
+            this.sleep(500)
+            that.getAllShipment()
+            that.$message.success('批量删除成功');
+          })
+          .catch(() => {
+            // 用户取消删除
+            this.$message.info('已取消批量删除');
+          });
       }
     },
     onClearSelection() {
@@ -489,15 +503,46 @@ export default {
       this.newUpdateMaterial = { materialName: '', quantity: 1 }
     },
     onAddShipment() {
+      // 设置初始化标志位为true
+      this.isInitializing = true
+      // 重置添加表单
+      this.addShipmentForm = {
+        odd: ``,
+        customer: ``,
+        product: ``,
+        billdate: ``,
+        amount: 0,
+        unitprice: 0,
+        paystatus: `0`,
+        boardcost: 0,
+        fireproofboardcost: 0,
+        remark: `无`,
+        operate_material: 0
+      }
+      // 重置下拉框显示状态
+      this.showAddCustomerSuggestions = false
+      this.showAddProductSuggestions = false
+      // 重置原材料关系数据
+      this.addMaterialRelations = []
+      this.newAddMaterial = { material_name: '', quantity: 1 }
+      // 显示添加对话框
       this.addShipmentVisible = true
+      // 延迟设置初始化标志位为false，确保所有watch监听器都执行完毕
+      setTimeout(() => {
+        this.isInitializing = false
+      }, 500)
     },
     onUpdateShipment(Shipment) {
       console.log('修改出货单数据:', Shipment)
+      // 设置初始化标志位为true
+      this.isInitializing = true
       // 深拷贝Shipment对象，避免直接引用影响原始数据
       this.updateShipmentForm = JSON.parse(JSON.stringify(Shipment))
       // 存储初始的operate_material状态
       this.initialOperateMaterial = Shipment.operate_material
-      this.updateShipmentVisible = true
+      // 重置下拉框显示状态
+      this.showUpdateCustomerSuggestions = false
+      this.showUpdateProductSuggestions = false
       // 如果操作原材料开关是打开的，获取历史操作记录
       console.log('operate_material值:', Shipment.operate_material, '类型:', typeof Shipment.operate_material)
       if (Shipment.operate_material == 1) {
@@ -507,6 +552,14 @@ export default {
         console.log('操作原材料开关是关闭的，清空原材料关系')
         this.updateMaterialRelations = []
       }
+      // 重置新添加的原材料信息
+      this.newUpdateMaterial = { material_name: '', quantity: 1 }
+      // 显示修改对话框
+      this.updateShipmentVisible = true
+      // 延迟设置初始化标志位为false，确保所有watch监听器都执行完毕
+      setTimeout(() => {
+        this.isInitializing = false
+      }, 500)
     },
     onAddShipmentCommit(addShipmentForm) {
       const that = this
@@ -661,16 +714,30 @@ export default {
     },
     onDeleteShipment(id) {
       const that = this;
-      this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/shipment/deleteShipmentById?id=` + id)
-        .then(function (response) {
-          if (response.data.code === 1) {
-            that.getAllShipment()
-          } else {
-            that.$message.error(response.data.msg);
-          }
-        }).catch(function (error) {
-        that.$message.error(error);
+      // 添加删除确认框
+      this.$confirm('确定要删除这条出货记录吗？此操作不可撤销。', '删除确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
       })
+        .then(() => {
+          // 用户确认删除
+          this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/shipment/deleteShipmentById?id=` + id)
+            .then(function (response) {
+              if (response.data.code === 1) {
+                that.getAllShipment()
+                that.$message.success('删除成功');
+              } else {
+                that.$message.error(response.data.msg);
+              }
+            }).catch(function (error) {
+            that.$message.error(error);
+          })
+        })
+        .catch(() => {
+          // 用户取消删除
+          this.$message.info('已取消删除');
+        });
     },
     getAllShipment() {
       try {
@@ -770,7 +837,7 @@ export default {
       
       console.log('Company name from localStorage:', localStorage.getItem('companyName'))
       
-      const url = `${process.env.VUE_APP_API_BASE_URL}/stock/findProductNamesByPrefix`
+      const url = `${process.env.VUE_APP_API_BASE_URL}/product/findProductNamesByPrefix`
       console.log('Request URL:', url)
       
       const params = {
@@ -862,6 +929,10 @@ export default {
     },
     // 获取添加客户联想建议
     getAddCustomerSuggestions() {
+      // 如果正在初始化，不触发下拉框
+      if (this.isInitializing) {
+        return
+      }
       const that = this
       if (that.addShipmentForm.customer.length < 1) {
         that.addCustomerSuggestions = []
@@ -886,13 +957,17 @@ export default {
     },
     // 获取添加产品联想建议
     getAddProductSuggestions() {
+      // 如果正在初始化，不触发下拉框
+      if (this.isInitializing) {
+        return
+      }
       const that = this
       if (that.addShipmentForm.product.length < 1) {
         that.addProductSuggestions = []
         that.showAddProductSuggestions = false
         return
       }
-      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/findProductNamesByPrefix`, {
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/product/findProductNamesByPrefix`, {
         prefix: that.addShipmentForm.product,
         pageNum: that.addProductCurrentPage,
         pageSize: that.addProductPageSize
@@ -920,6 +995,10 @@ export default {
     },
     // 获取修改客户联想建议
     getUpdateCustomerSuggestions() {
+      // 如果正在初始化，不触发下拉框
+      if (this.isInitializing) {
+        return
+      }
       const that = this
       if (that.updateShipmentForm.customer.length < 1) {
         that.updateCustomerSuggestions = []
@@ -944,13 +1023,17 @@ export default {
     },
     // 获取修改产品联想建议
     getUpdateProductSuggestions() {
+      // 如果正在初始化，不触发下拉框
+      if (this.isInitializing) {
+        return
+      }
       const that = this
       if (that.updateShipmentForm.product.length < 1) {
         that.updateProductSuggestions = []
         that.showUpdateProductSuggestions = false
         return
       }
-      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/findProductNamesByPrefix`, {
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/product/findProductNamesByPrefix`, {
         prefix: that.updateShipmentForm.product,
         pageNum: that.updateProductCurrentPage,
         pageSize: that.updateProductPageSize
@@ -1432,7 +1515,9 @@ export default {
       newUpdateMaterial: {
         material_name: '',
         quantity: 1
-      }
+      },
+      // 标志位，用于区分是用户手动输入还是初始化时的赋值
+      isInitializing: false
     }
   },
   mounted() {

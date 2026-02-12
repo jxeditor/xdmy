@@ -84,7 +84,6 @@ public class IncomingController extends BaseController {
     @RequestMapping(value = "/getIncomingMaterialOperations")
     public String getIncomingMaterialOperations(@RequestParam(value = "id", defaultValue = "-1") Integer id,
             HttpServletRequest request) {
-        String companyName = getCompanyName(request);
         JSONObject result = serviceFacade.getIncomingService().getIncomingMaterialOperations(id);
         return new JSONReturn(result).toString();
     }
@@ -92,7 +91,6 @@ public class IncomingController extends BaseController {
     @RequestMapping(value = "/findIncomingById")
     public String findIncomingById(@RequestParam(value = "id", defaultValue = "-1") Integer id,
             HttpServletRequest request) {
-        String companyName = getCompanyName(request);
         JSONObject result = serviceFacade.getIncomingService().findIncomingById(id);
         return new JSONReturn(result).toString();
     }
