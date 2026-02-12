@@ -115,6 +115,9 @@ export default {
               localStorage.setItem('role', response.data.data[0].role);
               localStorage.setItem('companyName', response.data.data[0].companyName || '');
               localStorage.setItem('loginTime', new Date().getTime());
+              // 存储Token
+              localStorage.setItem('token', response.data.data[0].token);
+              console.log('Token stored:', response.data.data[0].token);
               console.log('Redirecting to shipment page');
               router.push("shipment");
             } else {

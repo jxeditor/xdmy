@@ -20,6 +20,19 @@ public class AdminDao extends BaseDao implements IAdminDao {
         return jdbcTemplate.query(sql, new UserRowMapper(), user.getUsername(), user.getPassword());
     }
 
+    @Override
+    public void updateToken(int userId, String token) {
+        String sql = "UPDATE users SET token = ? WHERE id = ?";
+        jdbcTemplate.update(sql, token, userId);
+    }
+
+    @Override
+    public User getUserByToken(String token) {
+        String sql = "SELECT * FROM users WHERE token = ?";
+        List<User> users = jdbcTemplate.query(sql, new UserRowMapper(), token);
+        return users.isEmpty() ? null : users.get(0);
+    }
+
     static class UserRowMapper implements RowMapper<User> {
         @Override
         public User mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
@@ -29,6 +42,7 @@ public class AdminDao extends BaseDao implements IAdminDao {
             user.setPassword(rs.getString("password"));
             user.setRole(rs.getString("role"));
             user.setCompanyName(rs.getString("company_name"));
+            user.setToken(rs.getString("token"));
             return user;
         }
     }

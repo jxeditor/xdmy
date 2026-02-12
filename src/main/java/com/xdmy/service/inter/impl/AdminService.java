@@ -26,11 +26,19 @@ public class AdminService extends BaseService implements IAdminService {
         try {
             if (userList != null) {
                 for (User user : userList) {
+                    // 生成Token
+                    String token = generateToken(user.getId(), user.getUsername());
+                    // 更新Token到数据库
+                    daoFacade.getAdminDao().updateToken(user.getId(), token);
+                    // 设置用户的Token
+                    user.setToken(token);
+                    
                     JSONObject obj = new JSONObject();
                     obj.put("id", user.getId());
                     obj.put("username", user.getUsername());
                     obj.put("role", user.getRole());
                     obj.put("companyName", user.getCompanyName());
+                    obj.put("token", token);
                     data.add(obj);
                 }
             }
@@ -40,5 +48,22 @@ public class AdminService extends BaseService implements IAdminService {
         }
         return result;
     }
-
+    
+    /**
+     * 生成Token
+     * @param userId 用户ID
+     * @param username 用户名
+     * @return 生成的Token
+     */
+    private String generateToken(int userId, String username) {
+        // 使用UUID生成Token，实际项目中可以使用JWT等更安全的方式
+        String token = java.util.UUID.randomUUID().toString() + "-" + userId + "-" + username;
+        return token;
+    }
+    
+    @Override
+    public User getUserByToken(String token) {
+        DBContextHolder.setDbType("primary");
+        return daoFacade.getAdminDao().getUserByToken(token);
+    }
 }

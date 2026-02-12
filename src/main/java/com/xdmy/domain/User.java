@@ -11,6 +11,7 @@ public class User {
     String password;
     String role;
     String companyName;
+    String token;
 
     public User() {
     }
@@ -53,5 +54,13 @@ public class User {
 
     public void setCompanyName(String companyName) {
         this.companyName = companyName;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

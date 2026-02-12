@@ -81,6 +81,7 @@ export default {
       localStorage.removeItem('role');
       localStorage.removeItem('loginTime');
       localStorage.removeItem('companyName');
+      localStorage.removeItem('token');
       this.$router.push("/login");
     },
     updateScale() {
