@@ -15,26 +15,29 @@ import java.util.List;
 public class ScreenDao extends BaseDao implements IScreenDao {
 
     @Override
-    public List<JSONObject> getShipment1ChartData(String customerName, String bizStartDate, String bizEndDate) {
+    public List<JSONObject> getShipment1ChartData(String customerName, String bizStartDate, String bizEndDate, String companyName) {
         String sql = "SELECT billdate,sum(money) money,sum(costmoney) costmoney,sum(profit) profit" +
                 " ,sum(if(paystatus = 1,money,0)) paymoney" +
                 " ,sum(if(paystatus = 1,profit,0)) payprofit " +
                 "FROM shipment " +
                 "WHERE is_delete = 0";
-        sql = genFilterSql(sql, customerName, bizStartDate, bizEndDate);
+        sql = genFilterSql(sql, customerName, bizStartDate, bizEndDate, companyName);
         sql += " GROUP BY billdate ORDER BY billdate";
         return jdbcTemplate.query(sql, new Shipment1ChartDataRowMapper());
     }
 
     @Override
-    public List<JSONObject> getShipment2ChartData() {
+    public List<JSONObject> getShipment2ChartData(String companyName) {
         String sql = "SELECT * FROM (" +
                 " SELECT substring(billdate,1,7) billdate,sum(money) money,sum(costmoney) costmoney,sum(profit) profit" +
                 "  ,sum(if(paystatus = 1,money,0)) paymoney" +
                 "  ,sum(if(paystatus = 1,profit,0)) payprofit " +
                 " FROM shipment " +
-                " WHERE is_delete = 0"+
-                " GROUP BY substring(billdate,1,7) ORDER BY billdate DESC LIMIT 12" +
+                " WHERE is_delete = 0";
+        if (!companyName.equals("")) {
+            sql += " AND company_name = '" + companyName + "'";
+        }
+        sql += " GROUP BY substring(billdate,1,7) ORDER BY billdate DESC LIMIT 12" +
                 ") t1 " +
                 "ORDER BY billdate";
         return jdbcTemplate.query(sql, new Shipment2ChartDataRowMapper());
@@ -68,7 +71,7 @@ public class ScreenDao extends BaseDao implements IScreenDao {
         }
     }
 
-    public String genFilterSql(String sql, String customerName, String bizStartDate, String bizEndDate) {
+    public String genFilterSql(String sql, String customerName, String bizStartDate, String bizEndDate, String companyName) {
         if (!customerName.equals("")) {
             sql += " AND customer LIKE '%" + customerName + "%'";
         }
@@ -81,6 +84,9 @@ public class ScreenDao extends BaseDao implements IScreenDao {
             sql += " AND billdate <= '" + bizEndDate + "'";
         } else {
             sql += " AND billdate <= CURRENT_DATE";
+        }
+        if (!companyName.equals("")) {
+            sql += " AND company_name = '" + companyName + "'";
         }
         return sql;
     }

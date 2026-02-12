@@ -22,25 +22,26 @@ public class ProductService implements IProductService {
     private DaoFacade daoFacade;
 
     @Override
-    public JSONObject findAllProduct(int pageNum, int pageSize, String productName) {
+    public JSONObject findAllProduct(int pageNum, int pageSize, String productName, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<Product> productList = daoFacade.getProductDao().findAllProduct(pageNum, pageSize, productName);
-        int total = daoFacade.getProductDao().getAllTotalSize(productName);
+        List<Product> productList = daoFacade.getProductDao().findAllProduct(pageNum, pageSize, productName,
+                companyName);
+        int total = daoFacade.getProductDao().getAllTotalSize(productName, companyName);
         JSONObject result = toJSONObject(productList);
         result.put("total", total);
         return result;
     }
 
     @Override
-    public int addProduct(Product product) {
+    public int addProduct(Product product, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getProductDao().addProduct(product);
+        return daoFacade.getProductDao().addProduct(product, companyName);
     }
 
     @Override
-    public int updateProduct(Product product) {
+    public int updateProduct(Product product, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getProductDao().updateProduct(product);
+        return daoFacade.getProductDao().updateProduct(product, companyName);
     }
 
     @Override
@@ -62,16 +63,17 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public boolean checkProductExist(String productName) {
+    public boolean checkProductExist(String productName, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getProductDao().checkProductExist(productName);
+        return daoFacade.getProductDao().checkProductExist(productName, companyName);
     }
 
     @Override
-    public JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize) {
+    public JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<String> productNames = daoFacade.getProductDao().findProductNamesByPrefix(prefix, pageNum, pageSize);
-        int total = daoFacade.getProductDao().getProductNamesCount(prefix);
+        List<String> productNames = daoFacade.getProductDao().findProductNamesByPrefix(prefix, pageNum, pageSize,
+                companyName);
+        int total = daoFacade.getProductDao().getProductNamesCount(prefix, companyName);
         JSONObject result = new JSONObject();
         result.put("data", productNames);
         result.put("total", total);

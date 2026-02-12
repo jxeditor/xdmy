@@ -19,12 +19,12 @@ import java.util.List;
 public class ProductDao extends BaseDao implements IProductDao {
 
     @Override
-    public List<Product> findAllProduct(int pageNum, int pageSize, String productName) {
+    public List<Product> findAllProduct(int pageNum, int pageSize, String productName, String companyName) {
         int currOffset = (pageNum - 1) * pageSize;
         String sql = "SELECT id, product_name, suggested_price, cost_price, maintain_material, create_time, update_time " +
                 "FROM product " +
                 "WHERE 1=1";
-        sql = genFilterSql(sql, productName);
+        sql = genFilterSql(sql, productName,companyName);
         sql += " ORDER BY product_name ASC LIMIT ? ,?";
         return jdbcTemplate.query(sql, new RowMapper<Product>() {
             @Override
@@ -43,27 +43,27 @@ public class ProductDao extends BaseDao implements IProductDao {
     }
 
     @Override
-    public int getAllTotalSize(String productName) {
+    public int getAllTotalSize(String productName, String companyName) {
         String sql = "SELECT count(1) " +
                 "FROM product " +
                 "WHERE 1=1";
-        sql = genFilterSql(sql, productName);
+        sql = genFilterSql(sql, productName,companyName);
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return count != null ? count : 0;
     }
 
     @Override
-    public int addProduct(Product product) {
-        String sql = "INSERT INTO product(product_name, suggested_price, cost_price, maintain_material) " +
-                "VALUES(?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, product.getProductName(), product.getSuggestedPrice(), product.getCostPrice(), product.getMaintainMaterial());
+    public int addProduct(Product product, String companyName) {
+        String sql = "INSERT INTO product(product_name, suggested_price, cost_price, maintain_material, company_name) " +
+                "VALUES(?, ?, ?, ?, ?)";
+        return jdbcTemplate.update(sql, product.getProductName(), product.getSuggestedPrice(), product.getCostPrice(), product.getMaintainMaterial(), companyName);
     }
 
     @Override
-    public int updateProduct(Product product) {
+    public int updateProduct(Product product, String companyName) {
         String sql = "UPDATE product SET product_name = ?, suggested_price = ?, cost_price = ?, maintain_material = ? " +
-                "WHERE id = ?";
-        return jdbcTemplate.update(sql, product.getProductName(), product.getSuggestedPrice(), product.getCostPrice(), product.getMaintainMaterial(), product.getId());
+                "WHERE id = ? AND company_name = ?";
+        return jdbcTemplate.update(sql, product.getProductName(), product.getSuggestedPrice(), product.getCostPrice(), product.getMaintainMaterial(), product.getId(), companyName);
     }
 
     @Override
@@ -100,11 +100,11 @@ public class ProductDao extends BaseDao implements IProductDao {
     }
 
     @Override
-    public List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize) {
+    public List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName) {
         int offset = (pageNum - 1) * pageSize;
         // 优先匹配包含完整前缀的产品，然后匹配包含前缀中每个字符的产品
         String sql = "SELECT DISTINCT product_name FROM product " +
-                     "WHERE product_name LIKE ? OR product_name LIKE ? " +
+                     "WHERE (product_name LIKE ? OR product_name LIKE ?) AND company_name = ? " +
                      "ORDER BY " +
                      "CASE " +
                      "    WHEN product_name LIKE ? THEN 0 " +
@@ -123,27 +123,31 @@ public class ProductDao extends BaseDao implements IProductDao {
     }
 
     @Override
-    public int getProductNamesCount(String prefix) {
+    public int getProductNamesCount(String prefix, String companyName) {
         // 计算包含完整前缀或包含前缀中每个字符的产品数量
         String sql = "SELECT COUNT(DISTINCT product_name) FROM product " +
-                     "WHERE product_name LIKE ? OR product_name LIKE ?";
+                     "WHERE (product_name LIKE ? OR product_name LIKE ?) AND company_name = ?";
         
         return jdbcTemplate.queryForObject(sql, Integer.class, 
             "%" + prefix + "%",  // 包含完整前缀
-            "%" + prefix.replaceAll("", "%") + "%"  // 包含前缀中每个字符
+            "%" + prefix.replaceAll("", "%") + "%",  // 包含前缀中每个字符
+            companyName
         );
     }
 
     @Override
-    public boolean checkProductExist(String productName) {
-        String sql = "SELECT COUNT(*) FROM product WHERE product_name = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, productName);
-        return count != null && count > 0;
+    public boolean checkProductExist(String productName, String companyName) {
+        String sql = "SELECT COUNT(*) FROM product WHERE product_name = ? AND company_name = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, productName, companyName);
+         return count != null && count > 0;
     }
 
-    private String genFilterSql(String sql, String productName) {
+    private String genFilterSql(String sql, String productName, String companyName) {
         if (!productName.equals("")) {
             sql += " AND product_name like '%" + productName + "%'";
+        }
+        if (!companyName.equals("")) {
+            sql += " AND company_name = '" + companyName + "'";
         }
         return sql;
     }

@@ -14,19 +14,19 @@ import java.util.List;
 @Service
 public class MaterialStockService extends BaseService implements IMaterialStockService {
     @Override
-    public JSONObject findAllMaterialStock(int pageNum, int pageSize, String materialName, boolean hideZeroStock) {
+    public JSONObject findAllMaterialStock(int pageNum, int pageSize, String materialName, boolean hideZeroStock, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<MaterialStock> materialStockList = daoFacade.getMaterialStockDao().findAllMaterialStock(pageNum, pageSize, materialName, hideZeroStock);
-        int total = daoFacade.getMaterialStockDao().getAllTotalSize(materialName, hideZeroStock);
+        List<MaterialStock> materialStockList = daoFacade.getMaterialStockDao().findAllMaterialStock(pageNum, pageSize, materialName, hideZeroStock, companyName);
+        int total = daoFacade.getMaterialStockDao().getAllTotalSize(materialName, hideZeroStock, companyName);
         JSONObject result = toJSONObject(materialStockList);
         result.put("total", total);
         return result;
     }
 
     @Override
-    public int addMaterialStock(MaterialStock materialStock) {
+    public int addMaterialStock(MaterialStock materialStock, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getMaterialStockDao().addMaterialStock(materialStock);
+        return daoFacade.getMaterialStockDao().addMaterialStock(materialStock, companyName);
     }
 
     @Override
@@ -42,16 +42,16 @@ public class MaterialStockService extends BaseService implements IMaterialStockS
     }
 
     @Override
-    public int updateMaterialStock(MaterialStock materialStock) {
+    public int updateMaterialStock(MaterialStock materialStock, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getMaterialStockDao().updateMaterialStock(materialStock);
+        return daoFacade.getMaterialStockDao().updateMaterialStock(materialStock, companyName);
     }
 
     @Override
-    public JSONObject findMaterialNamesByPrefix(String prefix, int pageNum, int pageSize) {
+    public JSONObject findMaterialNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<String> materialNames = daoFacade.getMaterialStockDao().findMaterialNamesByPrefix(prefix, pageNum, pageSize);
-        int total = daoFacade.getMaterialStockDao().getMaterialNamesCount(prefix);
+        List<String> materialNames = daoFacade.getMaterialStockDao().findMaterialNamesByPrefix(prefix, pageNum, pageSize, companyName);
+        int total = daoFacade.getMaterialStockDao().getMaterialNamesCount(prefix, companyName);
         JSONObject result = new JSONObject();
         result.put("data", materialNames);
         result.put("total", total);
@@ -59,15 +59,15 @@ public class MaterialStockService extends BaseService implements IMaterialStockS
     }
 
     @Override
-    public int operateMaterialStock(String materialName, int quantity, boolean isIncrease) {
+    public int operateMaterialStock(String materialName, int quantity, boolean isIncrease, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getMaterialStockDao().operateMaterialStock(materialName, quantity, isIncrease);
+        return daoFacade.getMaterialStockDao().operateMaterialStock(materialName, quantity, isIncrease, companyName);
     }
 
     @Override
-    public boolean checkMaterialExist(String materialName) {
+    public boolean checkMaterialExist(String materialName, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getMaterialStockDao().checkMaterialExist(materialName);
+        return daoFacade.getMaterialStockDao().checkMaterialExist(materialName, companyName);
     }
 
     public JSONObject toJSONObject(List<MaterialStock> materialStockList) {
@@ -91,10 +91,10 @@ public class MaterialStockService extends BaseService implements IMaterialStockS
     }
 
     @Override
-    public JSONObject findMaterialOperations(int pageNum, int pageSize, String materialName, String operationType, String startDate, String endDate) {
+    public JSONObject findMaterialOperations(int pageNum, int pageSize, String materialName, String operationType, String startDate, String endDate, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<java.util.Map<String, Object>> operations = daoFacade.getMaterialStockDao().findMaterialOperations(pageNum, pageSize, materialName, operationType, startDate, endDate);
-        int total = daoFacade.getMaterialStockDao().getMaterialOperationsTotalSize(materialName, operationType, startDate, endDate);
+        List<java.util.Map<String, Object>> operations = daoFacade.getMaterialStockDao().findMaterialOperations(pageNum, pageSize, materialName, operationType, startDate, endDate, companyName);
+        int total = daoFacade.getMaterialStockDao().getMaterialOperationsTotalSize(materialName, operationType, startDate, endDate, companyName);
         JSONObject result = new JSONObject();
         JSONArray data = new JSONArray();
         // 日期格式化器

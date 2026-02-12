@@ -22,25 +22,25 @@ public class ProductMaterialRelationService implements IProductMaterialRelationS
     private DaoFacade daoFacade;
 
     @Override
-    public JSONObject findAllRelation(int pageNum, int pageSize, String productName) {
+    public JSONObject findAllRelation(int pageNum, int pageSize, String productName, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<ProductMaterialRelation> relationList = daoFacade.getProductMaterialRelationDao().findAllRelation(pageNum, pageSize, productName);
-        int total = daoFacade.getProductMaterialRelationDao().getAllTotalSize(productName);
+        List<ProductMaterialRelation> relationList = daoFacade.getProductMaterialRelationDao().findAllRelation(pageNum, pageSize, productName, companyName);
+        int total = daoFacade.getProductMaterialRelationDao().getAllTotalSize(productName, companyName);
         JSONObject result = toJSONObject(relationList);
         result.put("total", total);
         return result;
     }
 
     @Override
-    public int addRelation(ProductMaterialRelation relation) {
+    public int addRelation(ProductMaterialRelation relation, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getProductMaterialRelationDao().addRelation(relation);
+        return daoFacade.getProductMaterialRelationDao().addRelation(relation, companyName);
     }
 
     @Override
-    public int updateRelation(ProductMaterialRelation relation) {
+    public int updateRelation(ProductMaterialRelation relation, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getProductMaterialRelationDao().updateRelation(relation);
+        return daoFacade.getProductMaterialRelationDao().updateRelation(relation, companyName);
     }
 
     @Override
@@ -56,23 +56,23 @@ public class ProductMaterialRelationService implements IProductMaterialRelationS
     }
 
     @Override
-    public boolean checkRelationUnique(String productName, String materialName, Integer id) {
+    public boolean checkRelationUnique(String productName, String materialName, Integer id, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getProductMaterialRelationDao().checkRelationUnique(productName, materialName, id);
+        return daoFacade.getProductMaterialRelationDao().checkRelationUnique(productName, materialName, id, companyName);
     }
 
     @Override
-    public JSONObject findRelationsByProductName(String productName) {
+    public JSONObject findRelationsByProductName(String productName, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<ProductMaterialRelation> relationList = daoFacade.getProductMaterialRelationDao().findRelationsByProductName(productName);
+        List<ProductMaterialRelation> relationList = daoFacade.getProductMaterialRelationDao().findRelationsByProductName(productName, companyName);
         return toJSONObject(relationList);
     }
 
     @Override
-    public JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize) {
+    public JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<String> productNames = daoFacade.getProductMaterialRelationDao().findProductNamesByPrefix(prefix, pageNum, pageSize);
-        int total = daoFacade.getProductMaterialRelationDao().getProductNamesCountByPrefix(prefix);
+        List<String> productNames = daoFacade.getProductMaterialRelationDao().findProductNamesByPrefix(prefix, pageNum, pageSize, companyName);
+        int total = daoFacade.getProductMaterialRelationDao().getProductNamesCountByPrefix(prefix, companyName);
         JSONObject result = new JSONObject();
         result.put("data", productNames);
         result.put("total", total);

@@ -15,46 +15,68 @@ import java.util.List;
 public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
 
     @Override
-    public List<MaterialStock> findAllMaterialStock(int pageNum, int pageSize, String materialName, boolean hideZeroStock) {
+    public List<MaterialStock> findAllMaterialStock(int pageNum, int pageSize, String materialName, boolean hideZeroStock, String companyName) {
         int currOffset = (pageNum - 1) * pageSize;
         String sql = "SELECT id, material_name, unitstock " +
                 "FROM material_stock " +
                 "WHERE 1=1";
-        sql = genFilterSql(sql, materialName);
+        sql = genFilterSql(sql, materialName, companyName);
         if (hideZeroStock) {
             sql += " AND unitstock != 0";
         }
         sql += " ORDER BY unitstock DESC LIMIT ? ,?";
-        return jdbcTemplate.query(sql, new RowMapper<MaterialStock>() {
-            @Override
-            public MaterialStock mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
-                MaterialStock materialStock = new MaterialStock();
-                materialStock.setId(rs.getInt("id"));
-                materialStock.setMaterialName(rs.getString("material_name"));
-                materialStock.setUnitstock(rs.getInt("unitstock"));
-                return materialStock;
-            }
-        }, currOffset, pageSize);
+        
+        // 根据companyName是否为空，传递不同的参数
+        if (!companyName.isEmpty()) {
+            return jdbcTemplate.query(sql, new RowMapper<MaterialStock>() {
+                @Override
+                public MaterialStock mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
+                    MaterialStock materialStock = new MaterialStock();
+                    materialStock.setId(rs.getInt("id"));
+                    materialStock.setMaterialName(rs.getString("material_name"));
+                    materialStock.setUnitstock(rs.getInt("unitstock"));
+                    return materialStock;
+                }
+            }, companyName, currOffset, pageSize);
+        } else {
+            return jdbcTemplate.query(sql, new RowMapper<MaterialStock>() {
+                @Override
+                public MaterialStock mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
+                    MaterialStock materialStock = new MaterialStock();
+                    materialStock.setId(rs.getInt("id"));
+                    materialStock.setMaterialName(rs.getString("material_name"));
+                    materialStock.setUnitstock(rs.getInt("unitstock"));
+                    return materialStock;
+                }
+            }, currOffset, pageSize);
+        }
     }
 
     @Override
-    public int getAllTotalSize(String materialName, boolean hideZeroStock) {
+    public int getAllTotalSize(String materialName, boolean hideZeroStock, String companyName) {
         String sql = "SELECT count(1) " +
                 "FROM material_stock " +
                 "WHERE 1=1";
-        sql = genFilterSql(sql, materialName);
+        sql = genFilterSql(sql, materialName, companyName);
         if (hideZeroStock) {
             sql += " AND unitstock != 0";
         }
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
-        return count != null ? count : 0;
+        
+        // 根据companyName是否为空，传递不同的参数
+        if (!companyName.isEmpty()) {
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, companyName);
+            return count != null ? count : 0;
+        } else {
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+            return count != null ? count : 0;
+        }
     }
 
     @Override
-    public int addMaterialStock(MaterialStock materialStock) {
-        String sql = "INSERT INTO material_stock(material_name, unitstock) " +
-                "VALUES(?,?)";
-        return jdbcTemplate.update(sql, materialStock.getMaterialName(), materialStock.getUnitstock());
+    public int addMaterialStock(MaterialStock materialStock, String companyName) {
+        String sql = "INSERT INTO material_stock(material_name, unitstock, company_name) " +
+                "VALUES(?,?,?)";
+        return jdbcTemplate.update(sql, materialStock.getMaterialName(), materialStock.getUnitstock(), companyName);
     }
 
     @Override
@@ -70,18 +92,19 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
     }
 
     @Override
-    public int updateMaterialStock(MaterialStock materialStock) {
+    public int updateMaterialStock(MaterialStock materialStock, String companyName) {
         String sql = "UPDATE material_stock set material_name = ?, unitstock = ?" +
-                " WHERE id = ? ";
-        return jdbcTemplate.update(sql, materialStock.getMaterialName(), materialStock.getUnitstock(), materialStock.getId());
+                " WHERE id = ? AND company_name = ?";
+        return jdbcTemplate.update(sql, materialStock.getMaterialName(), materialStock.getUnitstock(), materialStock.getId(), companyName);
     }
 
     @Override
-    public List<String> findMaterialNamesByPrefix(String prefix, int pageNum, int pageSize) {
+    public List<String> findMaterialNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName) {
         int offset = (pageNum - 1) * pageSize;
         // 优先匹配包含完整前缀的材料，然后匹配包含前缀中每个字符的材料
         String sql = "SELECT DISTINCT material_name FROM material_stock " +
-                     "WHERE material_name LIKE ? OR material_name LIKE ? " +
+                     "WHERE (material_name LIKE ? OR material_name LIKE ?) " +
+                     "AND company_name = ? " +
                      "ORDER BY " +
                      "CASE " +
                      "    WHEN material_name LIKE ? THEN 0 " +
@@ -100,19 +123,21 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
     }
 
     @Override
-    public int getMaterialNamesCount(String prefix) {
+    public int getMaterialNamesCount(String prefix, String companyName) {
         // 计算包含完整前缀或包含前缀中每个字符的材料数量
         String sql = "SELECT COUNT(DISTINCT material_name) FROM material_stock " +
-                     "WHERE material_name LIKE ? OR material_name LIKE ?";
+                     "WHERE (material_name LIKE ? OR material_name LIKE ?)" +
+                     "AND company_name = ?";
         
         return jdbcTemplate.queryForObject(sql, Integer.class, 
             "%" + prefix + "%",  // 包含完整前缀
-            "%" + prefix.replaceAll("", "%") + "%"  // 包含前缀中每个字符
+            "%" + prefix.replaceAll("", "%") + "%",  // 包含前缀中每个字符
+            companyName
         );
     }
 
     @Override
-    public int operateMaterialStock(String materialName, int quantity, boolean isIncrease) {
+    public int operateMaterialStock(String materialName, int quantity, boolean isIncrease, String companyName) {
         // 开始事务
         jdbcTemplate.execute("START TRANSACTION");
         try {
@@ -122,15 +147,15 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
             
             if (count == 0) {
                 // 材料不存在，创建新记录
-                String insertSql = "INSERT INTO material_stock(material_name, unitstock) " +
-                        "VALUES(?, ?)";
-                jdbcTemplate.update(insertSql, materialName, isIncrease ? quantity : -quantity);
+                String insertSql = "INSERT INTO material_stock(material_name, unitstock, company_name) " +
+                        "VALUES(?, ?, ?)";
+                jdbcTemplate.update(insertSql, materialName, isIncrease ? quantity : -quantity, companyName);
             } else {
                 // 材料存在，更新库存
                 String updateSql = "UPDATE material_stock SET " +
                         "unitstock = unitstock " + (isIncrease ? "+" : "-") + " ? " +
-                        "WHERE material_name = ?";
-                jdbcTemplate.update(updateSql, quantity, materialName);
+                        "WHERE material_name = ? AND company_name = ?";
+                jdbcTemplate.update(updateSql, quantity, materialName, companyName);
             }
             
             // 提交事务
@@ -144,18 +169,21 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
         }
     }
 
-    public String genFilterSql(String sql, String materialName) {
+    public String genFilterSql(String sql, String materialName, String companyName) {
         if (!materialName.equals("")) {
             sql += " AND material_name like '%" + materialName + "%'";
+        }
+        if (!companyName.equals("")) {
+            sql += " AND company_name = ?";
         }
         return sql;
     }
 
     @Override
-    public boolean checkMaterialExist(String materialName) {
-        String sql = "SELECT COUNT(*) FROM material_stock WHERE material_name = ?";
+    public boolean checkMaterialExist(String materialName, String companyName) {
+        String sql = "SELECT COUNT(*) FROM material_stock WHERE material_name = ? AND company_name = ?";
         try {
-            int count = jdbcTemplate.queryForObject(sql, Integer.class, materialName);
+            int count = jdbcTemplate.queryForObject(sql, Integer.class, materialName, companyName);
             return count > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -164,7 +192,7 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
     }
 
     @Override
-    public List<java.util.Map<String, Object>> findMaterialOperations(int pageNum, int pageSize, String materialName, String operationType, String startDate, String endDate) {
+    public List<java.util.Map<String, Object>> findMaterialOperations(int pageNum, int pageSize, String materialName, String operationType, String startDate, String endDate, String companyName) {
         int currOffset = (pageNum - 1) * pageSize;
         // 构建查询SQL，联合查询出货和入货的原材料操作记录
         String sql = "" +
@@ -174,6 +202,7 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
             "        '出货' as operationType," +
             "        s.odd as billNo," +
             "        s.product as productName," +
+            "        s.company_name as companyName," +
             "        s.amount as productQuantity," +
             "        so.material_name as materialName," +
             "        so.quantity as materialQuantity," +
@@ -187,6 +216,7 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
             "        '入货' as operationType," +
             "        i.odd as billNo," +
             "        i.product as productName," +
+            "        i.company_name as companyName," +
             "        i.amount as productQuantity," +
             "        io.material_name as materialName," +
             "        io.quantity as materialQuantity," +
@@ -209,13 +239,16 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
         if (endDate != null && !endDate.isEmpty()) {
             sql += " AND operationDate <= '" + endDate + "'";
         }
+        if (!companyName.equals("")) {
+            sql += " AND companyName = '" + companyName + "'";
+        }
         // 添加排序和分页
         sql += " ORDER BY operationDate DESC LIMIT ? ,?";
         return jdbcTemplate.queryForList(sql, currOffset, pageSize);
     }
 
     @Override
-    public int getMaterialOperationsTotalSize(String materialName, String operationType, String startDate, String endDate) {
+    public int getMaterialOperationsTotalSize(String materialName, String operationType, String startDate, String endDate, String companyName) {
         // 构建查询SQL，联合查询出货和入货的原材料操作记录总数
         String sql = "" +
             "SELECT COUNT(*) " +
@@ -224,7 +257,8 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
             "        so.id," +
             "        '出货' as operationType," +
             "        so.material_name," +
-            "        so.operation_date " +
+            "        so.operation_date," +
+            "        s.company_name " +
             "    FROM shipment_material_operation so " +
             "    JOIN shipment s ON so.shipment_id = s.id " +
             "    WHERE s.is_delete = 0 " +
@@ -233,7 +267,8 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
             "        io.id," +
             "        '入货' as operationType," +
             "        io.material_name," +
-            "        io.operation_date " +
+            "        io.operation_date," +
+            "        i.company_name " +
             "    FROM incoming_material_operation io " +
             "    JOIN incoming i ON io.incoming_id = i.id " +
             "    WHERE i.is_delete = 0 " +
@@ -252,6 +287,9 @@ public class MaterialStockDao extends BaseDao implements IMaterialStockDao {
         }
         if (endDate != null && !endDate.isEmpty()) {
             sql += " AND operation_date <= '" + endDate + "'";
+        }
+        if (!companyName.equals("")) {
+            sql += " AND company_name = '" + companyName + "'";
         }
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return count != null ? count : 0;

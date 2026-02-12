@@ -14,31 +14,30 @@ import java.util.List;
 @Service
 public class StockService extends BaseService implements IStockService {
     @Override
-    public JSONObject findAllStock(int pageNum, int pageSize, String productName, boolean hideZeroStock) {
+    public JSONObject findAllStock(int pageNum, int pageSize, String productName, boolean hideZeroStock, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<Stock> stockList = daoFacade.getStockDao().findAllStock(pageNum, pageSize, productName, hideZeroStock);
-        int total = daoFacade.getStockDao().getAllTotalSize(productName, hideZeroStock);
+        List<Stock> stockList = daoFacade.getStockDao().findAllStock(pageNum, pageSize, productName, hideZeroStock, companyName);
+        int total = daoFacade.getStockDao().getAllTotalSize(productName, hideZeroStock, companyName);
         JSONObject result = toJSONObject(stockList);
         result.put("total", total);
         return result;
     }
 
     @Override
-    public int flattenStock() {
+    public int flattenStock(String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getStockDao().flattenStock();
+        return daoFacade.getStockDao().flattenStock(companyName);
     }
 
     @Override
-    public int getFlattenStockCount() {
+    public int getFlattenStockCount(String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getStockDao().getFlattenStockCount();
+        return daoFacade.getStockDao().getFlattenStockCount(companyName);
     }
 
-    @Override
-    public JSONObject findSurplusStock() {
+    public JSONObject findSurplusStock(String companyName) {
         DBContextHolder.setDbType("primary");
-        List<Stock> stockList = daoFacade.getStockDao().findSurplusStock();
+        List<Stock> stockList = daoFacade.getStockDao().findSurplusStock(companyName);
         return toJSONObject(stockList);
     }
 
@@ -67,10 +66,10 @@ public class StockService extends BaseService implements IStockService {
     }
 
     @Override
-    public JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize) {
+    public JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<String> productNames = daoFacade.getStockDao().findProductNamesByPrefix(prefix, pageNum, pageSize);
-        int total = daoFacade.getStockDao().getProductNamesCount(prefix);
+        List<String> productNames = daoFacade.getStockDao().findProductNamesByPrefix(prefix, pageNum, pageSize, companyName);
+        int total = daoFacade.getStockDao().getProductNamesCount(prefix, companyName);
         JSONObject result = new JSONObject();
         result.put("data", productNames);
         result.put("total", total);
@@ -105,7 +104,4 @@ public class StockService extends BaseService implements IStockService {
         }
         return result;
     }
-
-
-
 }

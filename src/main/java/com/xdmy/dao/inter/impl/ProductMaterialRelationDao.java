@@ -19,9 +19,9 @@ import java.util.List;
 public class ProductMaterialRelationDao extends BaseDao implements IProductMaterialRelationDao {
 
     @Override
-    public List<ProductMaterialRelation> findAllRelation(int pageNum, int pageSize, String productName) {
+    public List<ProductMaterialRelation> findAllRelation(int pageNum, int pageSize, String productName, String companyName) {
         int currOffset = (pageNum - 1) * pageSize;
-        String sql = "SELECT * FROM product_material_relation WHERE 1=1";
+        String sql = "SELECT * FROM product_material_relation WHERE 1=1 AND company_name = ?";
         if (productName != null && !productName.equals("")) {
             sql += " AND product_name LIKE '%" + productName + "%'";
         }
@@ -37,29 +37,29 @@ public class ProductMaterialRelationDao extends BaseDao implements IProductMater
                 relation.setIsDefault(rs.getInt("is_default"));
                 return relation;
             }
-        }, currOffset, pageSize);
+        }, companyName, currOffset, pageSize);
     }
 
     @Override
-    public int getAllTotalSize(String productName) {
-        String sql = "SELECT count(1) FROM product_material_relation WHERE 1=1";
+    public int getAllTotalSize(String productName, String companyName) {
+        String sql = "SELECT count(1) FROM product_material_relation WHERE 1=1 AND company_name = ?";
         if (productName != null && !productName.equals("")) {
             sql += " AND product_name LIKE '%" + productName + "%'";
         }
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, companyName);
         return count != null ? count : 0;
     }
 
     @Override
-    public int addRelation(ProductMaterialRelation relation) {
-        String sql = "INSERT INTO product_material_relation(product_name, material_name, quantity, is_default) VALUES(?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, relation.getProductName(), relation.getMaterialName(), relation.getQuantity(), relation.getIsDefault());
+    public int addRelation(ProductMaterialRelation relation, String companyName) {
+        String sql = "INSERT INTO product_material_relation(product_name, material_name, quantity, is_default, company_name) VALUES(?, ?, ?, ?, ?)";
+        return jdbcTemplate.update(sql, relation.getProductName(), relation.getMaterialName(), relation.getQuantity(), relation.getIsDefault(), companyName);
     }
 
     @Override
-    public int updateRelation(ProductMaterialRelation relation) {
-        String sql = "UPDATE product_material_relation SET product_name = ?, material_name = ?, quantity = ?, is_default = ? WHERE id = ?";
-        return jdbcTemplate.update(sql, relation.getProductName(), relation.getMaterialName(), relation.getQuantity(), relation.getIsDefault(), relation.getId());
+    public int updateRelation(ProductMaterialRelation relation, String companyName) {
+        String sql = "UPDATE product_material_relation SET product_name = ?, material_name = ?, quantity = ?, is_default = ? WHERE id = ? AND company_name = ?";
+        return jdbcTemplate.update(sql, relation.getProductName(), relation.getMaterialName(), relation.getQuantity(), relation.getIsDefault(), relation.getId(), companyName); 
     }
 
     @Override
@@ -75,8 +75,8 @@ public class ProductMaterialRelationDao extends BaseDao implements IProductMater
     }
 
     @Override
-    public List<ProductMaterialRelation> findRelationsByProductName(String productName) {
-        String sql = "SELECT * FROM product_material_relation WHERE product_name = ?";
+    public List<ProductMaterialRelation> findRelationsByProductName(String productName, String companyName) {
+        String sql = "SELECT * FROM product_material_relation WHERE product_name = ? AND company_name = ?";
         return jdbcTemplate.query(sql, new RowMapper<ProductMaterialRelation>() {
             @Override
             public ProductMaterialRelation mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
@@ -88,31 +88,31 @@ public class ProductMaterialRelationDao extends BaseDao implements IProductMater
                 relation.setIsDefault(rs.getInt("is_default"));
                 return relation;
             }
-        }, productName);
+        }, productName, companyName);
     }
 
     @Override
-    public boolean checkRelationUnique(String productName, String materialName, Integer id) {
+    public boolean checkRelationUnique(String productName, String materialName, Integer id, String companyName) {
         String sql;
         if (id != null) {
             // 更新操作，排除当前记录
-            sql = "SELECT count(1) FROM product_material_relation WHERE product_name = ? AND material_name = ? AND id != ?";
-            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, productName, materialName, id);
+            sql = "SELECT count(1) FROM product_material_relation WHERE product_name = ? AND material_name = ? AND id != ? AND company_name = ?";
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, productName, materialName, id, companyName);
             return count == 0;
         } else {
             // 添加操作，检查是否存在
-            sql = "SELECT count(1) FROM product_material_relation WHERE product_name = ? AND material_name = ?";
-            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, productName, materialName);
+            sql = "SELECT count(1) FROM product_material_relation WHERE product_name = ? AND material_name = ? AND company_name = ?";
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, productName, materialName, companyName);
             return count == 0;
         }
     }
 
     @Override
-    public List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize) {
+    public List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName) {
         int currOffset = (pageNum - 1) * pageSize;
         // 优先匹配包含完整前缀的产品，然后匹配包含前缀中每个字符的产品
         String sql = "SELECT DISTINCT product_name FROM product_material_relation " +
-                     "WHERE product_name LIKE ? OR product_name LIKE ? " +
+                     "WHERE company_name = ? AND (product_name LIKE ? OR product_name LIKE ?) " +
                      "ORDER BY " +
                      "CASE " +
                      "    WHEN product_name LIKE ? THEN 0 " +
@@ -122,6 +122,7 @@ public class ProductMaterialRelationDao extends BaseDao implements IProductMater
                      "LIMIT ? OFFSET ?";
         
         return jdbcTemplate.queryForList(sql, String.class, 
+            companyName,
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%",  // 包含前缀中每个字符
             "%" + prefix + "%",  // 用于排序
@@ -131,12 +132,13 @@ public class ProductMaterialRelationDao extends BaseDao implements IProductMater
     }
 
     @Override
-    public int getProductNamesCountByPrefix(String prefix) {
+    public int getProductNamesCountByPrefix(String prefix, String companyName) {
         // 计算包含完整前缀或包含前缀中每个字符的产品数量
         String sql = "SELECT COUNT(DISTINCT product_name) FROM product_material_relation " +
-                     "WHERE product_name LIKE ? OR product_name LIKE ?";
+                     "WHERE company_name = ? AND (product_name LIKE ? OR product_name LIKE ?)";
         
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, 
+            companyName,
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%"  // 包含前缀中每个字符
         );

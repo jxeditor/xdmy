@@ -9,19 +9,19 @@ import com.xdmy.domain.Product;
  * @Description 产品Service接口
  */
 public interface IProductService {
-    JSONObject findAllProduct(int pageNum, int pageSize, String productName);
+    JSONObject findAllProduct(int pageNum, int pageSize, String productName, String companyName);
     
-    int addProduct(Product product);
+    int addProduct(Product product, String companyName);
     
-    int updateProduct(Product product);
+    int updateProduct(Product product, String companyName);
     
     int deleteProductById(int id);
     
     Product findProductById(int id);
     
-    JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize);
+    JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName);
     
     int batchDeleteProduct(String ids);
     
-    boolean checkProductExist(String productName);
+    boolean checkProductExist(String productName, String companyName);
 }

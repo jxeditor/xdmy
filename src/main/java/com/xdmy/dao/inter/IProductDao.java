@@ -10,23 +10,25 @@ import java.util.List;
  * @Description 产品DAO接口
  */
 public interface IProductDao {
-    List<Product> findAllProduct(int pageNum, int pageSize, String productName);
+    List<Product> findAllProduct(int pageNum, int pageSize, String productName, String companyName);
     
-    int getAllTotalSize(String productName);
+    int getAllTotalSize(String productName, String companyName);
     
-    int addProduct(Product product);
+    int addProduct(Product product, String companyName);
     
-    int updateProduct(Product product);
+    int updateProduct(Product product, String companyName);
     
     int deleteProductById(int id);
     
     Product findProductById(int id);
     
-    List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize);
+    List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName);
     
-    int getProductNamesCount(String prefix);
+    int getProductNamesCount(String prefix, String companyName);
     
     int batchDeleteProduct(String ids);
     
-    boolean checkProductExist(String productName);
+    boolean checkProductExist(String productName, String companyName);
+
+    
 }

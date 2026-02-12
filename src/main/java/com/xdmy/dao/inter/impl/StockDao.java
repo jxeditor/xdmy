@@ -15,11 +15,11 @@ import java.util.List;
 public class StockDao extends BaseDao implements IStockDao {
 
     @Override
-    public List<Stock> findAllStock(int pageNum, int pageSize, String productName, boolean hideZeroStock) {
+    public List<Stock> findAllStock(int pageNum, int pageSize, String productName, boolean hideZeroStock, String companyName) {
         int currOffset = (pageNum - 1) * pageSize;
         String sql = "SELECT id, product, unitstock, unitprice, purchaseprice, inamount, outamount, lastindate, lastoutdate, stockstatus " +
                 "FROM stock " +
-                "WHERE 1=1";
+                "WHERE 1=1 AND company_name = ?";
         sql = genFilterSql(sql, productName);
         if (hideZeroStock) {
             sql += " AND unitstock != 0";
@@ -43,11 +43,11 @@ public class StockDao extends BaseDao implements IStockDao {
                 stock.setStockstatus(rs.getString("stockstatus"));
                 return stock;
             }
-        }, currOffset, pageSize);
+        }, companyName, currOffset, pageSize);
     }
 
     @Override
-    public List<Stock> findSurplusStock() {
+    public List<Stock> findSurplusStock(String companyName) {
         String sql = "SELECT * " +
                 "FROM ( " +
                 " SELECT t1.id " +
@@ -64,7 +64,7 @@ public class StockDao extends BaseDao implements IStockDao {
                 " FROM ( " +
                 "  SELECT *  " +
                 "  FROM stock " +
-                "  WHERE stockstatus != '2' " +
+                "  WHERE stockstatus != '2' AND company_name = ? " +
                 " ) t1 " +
                 " LEFT JOIN ( " +
                 "  SELECT product " +
@@ -76,12 +76,12 @@ public class StockDao extends BaseDao implements IStockDao {
                 "  FROM ( " +
                 "   SELECT product,sum( amount ) amount,max(billdate) billdate,'出货' source " +
                 "   FROM shipment  " +
-                "   WHERE is_delete = 0 " +
+                "   WHERE is_delete = 0 AND company_name = ? " +
                 "   GROUP BY product  " +
                 "   UNION ALL " +
                 "   SELECT product,sum( amount ) amount,max(billdate) billdate,'入货' source " +
                 "   FROM incoming  " +
-                "   WHERE is_delete = 0 " +
+                "   WHERE is_delete = 0 AND company_name = ? " +
                 "   GROUP BY product  " +
                 "  ) t1 " +
                 "  GROUP BY product " +
@@ -102,7 +102,7 @@ public class StockDao extends BaseDao implements IStockDao {
                 " FROM ( " +
                 "  SELECT * " +
                 "  FROM stock " +
-                "  WHERE stockstatus != '2' " +
+                "  WHERE stockstatus != '2' AND company_name = ? " +
                 " ) t1 " +
                 " RIGHT JOIN ( " +
                 "  SELECT product " +
@@ -114,12 +114,12 @@ public class StockDao extends BaseDao implements IStockDao {
                 "  FROM ( " +
                 "   SELECT product,sum( amount ) amount,max(billdate) billdate,'出货' source " +
                 "   FROM shipment  " +
-                "   WHERE is_delete = 0 " +
+                "   WHERE is_delete = 0 AND company_name = ? " +
                 "   GROUP BY product  " +
                 "   UNION ALL " +
                 "   SELECT product,sum( amount ) amount,max(billdate) billdate,'入货' source " +
                 "   FROM incoming  " +
-                "   WHERE is_delete = 0 " +
+                "   WHERE is_delete = 0 AND company_name = ? " +
                 "   GROUP BY product  " +
                 "  ) t1 " +
                 "  GROUP BY product " +
@@ -129,57 +129,56 @@ public class StockDao extends BaseDao implements IStockDao {
                 ") t1 WHERE 1=1 " +
                 "AND t1.stock <= 100 " +
                 "ORDER BY product";
-        return jdbcTemplate.query(sql, new StockRowMapper());
+        return jdbcTemplate.query(sql, new StockRowMapper(), companyName, companyName, companyName, companyName, companyName, companyName);
     }
 
-
     @Override
-    public int getAllTotalSize(String productName, boolean hideZeroStock) {
+    public int getAllTotalSize(String productName, boolean hideZeroStock, String companyName) {
         String sql = "SELECT count(1) " +
                 "FROM stock " +
-                "WHERE 1=1";
+                "WHERE 1=1 AND company_name = ?";
         sql = genFilterSql(sql, productName);
         if (hideZeroStock) {
             sql += " AND unitstock != 0";
         }
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, companyName);
         return count != null ? count : 0;
     }
 
     @Override
-    public int flattenStock() {
+    public int flattenStock(String companyName) {
         // 开始事务
         jdbcTemplate.execute("START TRANSACTION");
         try {
             // 第一步：初始化UID为0的数据
-            String initSql = "INSERT INTO stock(product, unitstock, unitprice, purchaseprice, inamount, outamount, lastindate, lastoutdate, stockstatus) " +
+            String initSql = "INSERT INTO stock(product, unitstock, unitprice, purchaseprice, inamount, outamount, lastindate, lastoutdate, stockstatus, company_name) " +
                     "SELECT DISTINCT product, 0, " +
-                    "(SELECT unitprice FROM incoming WHERE product = t1.product ORDER BY billdate DESC LIMIT 1), " +
-                    "(SELECT unitprice FROM incoming WHERE product = t1.product ORDER BY billdate DESC LIMIT 1), " +
-                    "(SELECT COALESCE(SUM(amount), 0) FROM incoming WHERE product = t1.product AND is_delete = 0), " +
-                    "(SELECT COALESCE(SUM(amount), 0) FROM shipment WHERE product = t1.product AND is_delete = 0), " +
-                    "(SELECT MAX(billdate) FROM incoming WHERE product = t1.product AND is_delete = 0), " +
-                    "(SELECT MAX(billdate) FROM shipment WHERE product = t1.product AND is_delete = 0), " +
-                    "'1' " +
+                    "(SELECT unitprice FROM incoming WHERE product = t1.product AND company_name = ? ORDER BY billdate DESC LIMIT 1), " +
+                    "(SELECT unitprice FROM incoming WHERE product = t1.product AND company_name = ? ORDER BY billdate DESC LIMIT 1), " +
+                    "(SELECT COALESCE(SUM(amount), 0) FROM incoming WHERE product = t1.product AND is_delete = 0 AND company_name = ?), " +
+                    "(SELECT COALESCE(SUM(amount), 0) FROM shipment WHERE product = t1.product AND is_delete = 0 AND company_name = ?), " +
+                    "(SELECT MAX(billdate) FROM incoming WHERE product = t1.product AND is_delete = 0 AND company_name = ?), " +
+                    "(SELECT MAX(billdate) FROM shipment WHERE product = t1.product AND is_delete = 0 AND company_name = ?), " +
+                    "'1', ? " +
                     "FROM ( " +
-                    "SELECT product FROM shipment WHERE product NOT IN (SELECT product FROM stock) " +
+                    "SELECT product FROM shipment WHERE product NOT IN (SELECT product FROM stock WHERE company_name = ?) AND company_name = ? " +
                     "UNION " +
-                    "SELECT product FROM incoming WHERE product NOT IN (SELECT product FROM stock) " +
+                    "SELECT product FROM incoming WHERE product NOT IN (SELECT product FROM stock WHERE company_name = ?) AND company_name = ? " +
                     ") t1 " +
                     "WHERE EXISTS ( " +
                     "  SELECT 1 FROM ( " +
-                    "    SELECT product FROM shipment WHERE product = t1.product " +
+                    "    SELECT product FROM shipment WHERE product = t1.product AND company_name = ? " +
                     "    UNION " +
-                    "    SELECT product FROM incoming WHERE product = t1.product " +
+                    "    SELECT product FROM incoming WHERE product = t1.product AND company_name = ? " +
                     "  ) t2 " +
                     ")";
-            int initCount = jdbcTemplate.update(initSql);
+            int initCount = jdbcTemplate.update(initSql, companyName, companyName, companyName, companyName, companyName, companyName, companyName, companyName, companyName, companyName, companyName, companyName);
 
             // 第二步：调整负库存为0
             String adjustSql = "UPDATE stock " +
                     "SET unitstock = ABS((inamount - outamount)), stockstatus = '1' " +
-                    "WHERE (unitstock + (inamount - outamount)) < 0";
-            int adjustCount = jdbcTemplate.update(adjustSql);
+                    "WHERE (unitstock + (inamount - outamount)) < 0 AND company_name = ?";
+            int adjustCount = jdbcTemplate.update(adjustSql, companyName);
 
             // 提交事务
             jdbcTemplate.execute("COMMIT");
@@ -193,28 +192,28 @@ public class StockDao extends BaseDao implements IStockDao {
     }
 
     @Override
-    public int getFlattenStockCount() {
+    public int getFlattenStockCount(String companyName) {
         // 计算需要初始化的UID为0的数据数量
         String initCountSql = "SELECT COUNT(DISTINCT product) " +
                 "FROM ( " +
-                "  SELECT product FROM shipment WHERE product NOT IN (SELECT product FROM stock) " +
+                "  SELECT product FROM shipment WHERE product NOT IN (SELECT product FROM stock WHERE company_name = ?) AND company_name = ? " +
                 "  UNION " +
-                "  SELECT product FROM incoming WHERE product NOT IN (SELECT product FROM stock) " +
+                "  SELECT product FROM incoming WHERE product NOT IN (SELECT product FROM stock WHERE company_name = ?) AND company_name = ? " +
                 ") t1 " +
                 "WHERE EXISTS ( " +
                 "  SELECT 1 FROM ( " +
-                "    SELECT product FROM shipment WHERE product = t1.product " +
+                "    SELECT product FROM shipment WHERE product = t1.product AND company_name = ? " +
                 "    UNION " +
-                "    SELECT product FROM incoming WHERE product = t1.product " +
+                "    SELECT product FROM incoming WHERE product = t1.product AND company_name = ? " +
                 "  ) t2 " +
                 ")";
-        Integer initCount = jdbcTemplate.queryForObject(initCountSql, Integer.class);
+        Integer initCount = jdbcTemplate.queryForObject(initCountSql, Integer.class, companyName, companyName, companyName, companyName, companyName, companyName);
 
         // 计算需要调整的负库存数据数量
         String adjustCountSql = "SELECT COUNT(*) " +
                 "FROM stock " +
-                "WHERE unitstock < 0";
-        Integer adjustCount = jdbcTemplate.queryForObject(adjustCountSql, Integer.class);
+                "WHERE unitstock < 0 AND company_name = ?";
+        Integer adjustCount = jdbcTemplate.queryForObject(adjustCountSql, Integer.class, companyName);
 
         // 返回总数量
         int init = initCount != null ? initCount : 0;
@@ -237,9 +236,9 @@ public class StockDao extends BaseDao implements IStockDao {
         }
         
         // 添加库存
-        String sql = "INSERT INTO stock(product,unitstock,unitprice,purchaseprice,inamount,outamount,lastindate,lastoutdate,stockstatus) " +
-                "VALUES(?,?,?,?,?,?,?,?,?)";
-        return jdbcTemplate.update(sql, stock.getProduct(), stock.getUnitstock(), stock.getUnitprice(), stock.getPurchaseprice(), stock.getInamount(), stock.getOutamount(), stock.getLastindate(), stock.getLastoutdate(), "1");
+        String sql = "INSERT INTO stock(product,unitstock,unitprice,purchaseprice,inamount,outamount,lastindate,lastoutdate,stockstatus,company_name) " +
+                "VALUES(?,?,?,?,?,?,?,?,?,?)";
+        return jdbcTemplate.update(sql, stock.getProduct(), stock.getUnitstock(), stock.getUnitprice(), stock.getPurchaseprice(), stock.getInamount(), stock.getOutamount(), stock.getLastindate(), stock.getLastoutdate(), "1", stock.getCompany_name() != null ? stock.getCompany_name() : "");
     }
 
     @Override
@@ -256,17 +255,17 @@ public class StockDao extends BaseDao implements IStockDao {
 
     @Override
     public int updateStock(Stock stock) {
-        String sql = "UPDATE stock set product = ?,unitstock = ?,unitprice = ?,purchaseprice = ?,inamount = ?,outamount = ?,lastindate = ?,lastoutdate = ?,stockstatus = ?" +
-                " WHERE id = ? ";
+        String sql = "UPDATE stock set product = ?,unitstock = ?,unitprice = ?,purchaseprice = ?,inamount = ?,outamount = ?,lastindate = ?,lastoutdate = ?,stockstatus = ? " +
+                "WHERE id = ? ";
         return jdbcTemplate.update(sql, stock.getProduct(), stock.getUnitstock(), stock.getUnitprice(), stock.getPurchaseprice(), stock.getInamount(), stock.getOutamount(), stock.getLastindate(), stock.getLastoutdate(), stock.getStockstatus(), stock.getId());
     }
 
     @Override
-    public List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize) {
+    public List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName) {
         int offset = (pageNum - 1) * pageSize;
         // 优先匹配包含完整前缀的产品，然后匹配包含前缀中每个字符的产品
         String sql = "SELECT DISTINCT product FROM stock " +
-                     "WHERE product LIKE ? OR product LIKE ? " +
+                     "WHERE company_name = ? AND (product LIKE ? OR product LIKE ?) " +
                      "ORDER BY " +
                      "CASE " +
                      "    WHEN product LIKE ? THEN 0 " +
@@ -276,6 +275,7 @@ public class StockDao extends BaseDao implements IStockDao {
                      "LIMIT ? OFFSET ?";
         
         return jdbcTemplate.queryForList(sql, String.class, 
+            companyName,
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%",  // 包含前缀中每个字符
             "%" + prefix + "%",  // 用于排序
@@ -285,15 +285,17 @@ public class StockDao extends BaseDao implements IStockDao {
     }
 
     @Override
-    public int getProductNamesCount(String prefix) {
+    public int getProductNamesCount(String prefix, String companyName) {
         // 计算包含完整前缀或包含前缀中每个字符的产品数量
         String sql = "SELECT COUNT(DISTINCT product) FROM stock " +
-                     "WHERE product LIKE ? OR product LIKE ?";
+                     "WHERE company_name = ? AND (product LIKE ? OR product LIKE ?)";
         
-        return jdbcTemplate.queryForObject(sql, Integer.class, 
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, 
+            companyName,
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%"  // 包含前缀中每个字符
         );
+        return count != null ? count : 0;
     }
 
     static class StockRowMapper implements RowMapper<Stock> {
@@ -322,7 +324,4 @@ public class StockDao extends BaseDao implements IStockDao {
         }
         return sql;
     }
-
-
-
 }

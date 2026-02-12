@@ -29,8 +29,8 @@ public class AdminService extends BaseService implements IAdminService {
                     JSONObject obj = new JSONObject();
                     obj.put("id", user.getId());
                     obj.put("username", user.getUsername());
-                    obj.put("password", user.getPassword());
                     obj.put("role", user.getRole());
+                    obj.put("companyName", user.getCompanyName());
                     data.add(obj);
                 }
             }

@@ -710,49 +710,95 @@ export default {
     },
     // 获取客户联想建议
     getCustomerSuggestions() {
+      console.log('获取客户联想建议开始')
+      console.log('Customer input:', this.customerInput)
+      console.log('Customer input length:', this.customerInput.length)
+      
       const that = this
       if (that.customerInput.length < 1) {
+        console.log('Customer input too short, returning')
         that.customerSuggestions = []
         that.showCustomerSuggestions = false
         return
       }
-      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/shipment/findCustomerNamesByPrefix`, {
+      
+      console.log('Company name from localStorage:', localStorage.getItem('companyName'))
+      
+      const url = `${process.env.VUE_APP_API_BASE_URL}/shipment/findCustomerNamesByPrefix`
+      console.log('Request URL:', url)
+      
+      const params = {
         prefix: that.customerInput,
         pageNum: that.customerCurrentPage,
         pageSize: that.customerPageSize
-      })
-        .then(function (response) {
-          that.customerSuggestions = response.data.data
-          that.customerTotal = response.data.total
-          that.showCustomerSuggestions = true
-        }).catch(function (error) {
-        console.error(error)
-        that.customerSuggestions = []
-        that.showCustomerSuggestions = false
-      })
+      }
+      console.log('Request params:', params)
+      
+      try {
+        console.log('Sending POST request for customer suggestions')
+        this.$axios.post(url, params)
+          .then(function (response) {
+            console.log('Customer suggestions response:', response)
+            console.log('Customer suggestions data:', response.data)
+            that.customerSuggestions = response.data.data
+            that.customerTotal = response.data.total
+            that.showCustomerSuggestions = true
+            console.log('Customer suggestions updated:', that.customerSuggestions)
+          })
+          .catch(function (error) {
+            console.error('Customer suggestions error:', error)
+            that.customerSuggestions = []
+            that.showCustomerSuggestions = false
+          })
+      } catch (error) {
+        console.error('Error in getCustomerSuggestions:', error)
+      }
     },
     // 获取产品联想建议
     getProductSuggestions() {
+      console.log('获取产品联想建议开始')
+      console.log('Product input:', this.productInput)
+      console.log('Product input length:', this.productInput.length)
+      
       const that = this
       if (that.productInput.length < 1) {
+        console.log('Product input too short, returning')
         that.productSuggestions = []
         that.showProductSuggestions = false
         return
       }
-      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/stock/findProductNamesByPrefix`, {
+      
+      console.log('Company name from localStorage:', localStorage.getItem('companyName'))
+      
+      const url = `${process.env.VUE_APP_API_BASE_URL}/stock/findProductNamesByPrefix`
+      console.log('Request URL:', url)
+      
+      const params = {
         prefix: that.productInput,
         pageNum: that.productCurrentPage,
         pageSize: that.productPageSize
-      })
-        .then(function (response) {
-          that.productSuggestions = response.data.data
-          that.productTotal = response.data.total
-          that.showProductSuggestions = true
-        }).catch(function (error) {
-        console.error(error)
-        that.productSuggestions = []
-        that.showProductSuggestions = false
-      })
+      }
+      console.log('Request params:', params)
+      
+      try {
+        console.log('Sending POST request for product suggestions')
+        this.$axios.post(url, params)
+          .then(function (response) {
+            console.log('Product suggestions response:', response)
+            console.log('Product suggestions data:', response.data)
+            that.productSuggestions = response.data.data
+            that.productTotal = response.data.total
+            that.showProductSuggestions = true
+            console.log('Product suggestions updated:', that.productSuggestions)
+          })
+          .catch(function (error) {
+            console.error('Product suggestions error:', error)
+            that.productSuggestions = []
+            that.showProductSuggestions = false
+          })
+      } catch (error) {
+        console.error('Error in getProductSuggestions:', error)
+      }
     },
     // 选择客户联想建议
     selectCustomerSuggestion(item) {

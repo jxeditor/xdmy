@@ -22,15 +22,18 @@ public class ShipmentController extends BaseController {
                                   @RequestParam(value = "customerName", defaultValue = "") String customerName,
                                   @RequestParam(value = "productName", defaultValue = "") String productName,
                                   @RequestParam(value = "bizStartDate", defaultValue = "undefined") String bizStartDate,
-                                  @RequestParam(value = "bizEndDate", defaultValue = "undefined") String bizEndDate
+                                  @RequestParam(value = "bizEndDate", defaultValue = "undefined") String bizEndDate,
+                                  HttpServletRequest request
     ) {
-        JSONObject result = serviceFacade.getShipmentService().findAllShipment(pageNum, pageSize, customerName, productName, bizStartDate, bizEndDate);
+        String companyName = getCompanyName(request);
+        JSONObject result = serviceFacade.getShipmentService().findAllShipment(pageNum, pageSize, customerName, productName, bizStartDate, bizEndDate, companyName);
         return new JSONReturn(result).toString();
     }
 
     @RequestMapping(value = "/addShipment")
     public String addShipment(HttpServletRequest request) {
         HashMap<String, String> params = getRequestParam(request);
+        String companyName = getCompanyName(request);
         Shipment shipment = new Shipment();
         shipment.setOdd(params.get("odd"));
         shipment.setCustomer(params.get("customer"));
@@ -46,7 +49,8 @@ public class ShipmentController extends BaseController {
         shipment.setProfit(Integer.parseInt(params.get("amount")) * Double.parseDouble(params.get("unitprice")) - (Double.parseDouble(params.get("boardcost")) + Double.parseDouble(params.get("fireproofboardcost"))) * Integer.parseInt(params.get("amount")));
         shipment.setRemark(params.get("remark"));
         shipment.setOperate_material(Integer.parseInt(params.get("operate_material")));
-        int result = serviceFacade.getShipmentService().addShipment(shipment);
+        shipment.setCompany_name(companyName);
+        int result = serviceFacade.getShipmentService().addShipment(shipment, companyName);
         if (result > 0) {
             return new JSONReturn("success", "插入成功", 1).toString();
         } else {
@@ -57,6 +61,7 @@ public class ShipmentController extends BaseController {
     @RequestMapping(value = "/updateShipment")
     public String updateShipment(HttpServletRequest request) {
         HashMap<String, String> params = getRequestParam(request);
+        String companyName = getCompanyName(request);
         Shipment shipment = new Shipment();
         shipment.setId(Integer.parseInt(params.get("id")));
         shipment.setOdd(params.get("odd"));
@@ -73,9 +78,10 @@ public class ShipmentController extends BaseController {
         shipment.setProfit(Integer.parseInt(params.get("amount")) * Double.parseDouble(params.get("unitprice")) - (Double.parseDouble(params.get("boardcost")) + Double.parseDouble(params.get("fireproofboardcost"))) * Integer.parseInt(params.get("amount")));
         shipment.setRemark(params.get("remark"));
         shipment.setOperate_material(Integer.parseInt(params.get("operate_material")));
+        shipment.setCompany_name(companyName);
         // 获取原材料关系数据
         String materialRelationsStr = params.get("materialRelations");
-        int result = serviceFacade.getShipmentService().updateShipment(shipment, materialRelationsStr);
+        int result = serviceFacade.getShipmentService().updateShipment(shipment, materialRelationsStr, companyName);
         if (result > 0) {
             return new JSONReturn("success", "更新成功", 1).toString();
         } else {
@@ -84,8 +90,10 @@ public class ShipmentController extends BaseController {
     }
 
     @RequestMapping("/deleteShipmentById")
-    public String deleteShipmentById(@RequestParam(value = "id", defaultValue = "-1") Integer id) {
-        int result = serviceFacade.getShipmentService().deleteShipmentById(id);
+    public String deleteShipmentById(@RequestParam(value = "id", defaultValue = "-1") Integer id,
+                                    HttpServletRequest request) {
+        String companyName = getCompanyName(request);
+        int result = serviceFacade.getShipmentService().deleteShipmentById(id, companyName);
         if (result > 0) {
             return new JSONReturn("success", "删除成功", 1).toString();
         } else {
@@ -94,7 +102,8 @@ public class ShipmentController extends BaseController {
     }
 
     @RequestMapping("/updatePaystatusShipmentById")
-    public String updatePaystatusShipmentById(@RequestParam(value = "id", defaultValue = "-1") Integer id) {
+    public String updatePaystatusShipmentById(@RequestParam(value = "id", defaultValue = "-1") Integer id,
+                                             HttpServletRequest request) {
         int result = serviceFacade.getShipmentService().updatePaystatusShipmentById(id);
         if (result > 0) {
             return new JSONReturn("success", "更新成功", 1).toString();
@@ -104,22 +113,25 @@ public class ShipmentController extends BaseController {
     }
 
     @RequestMapping("/findCustomerNamesByPrefix")
-    public String findCustomerNamesByPrefix(@RequestBody java.util.Map<String, Object> request) {
+    public String findCustomerNamesByPrefix(@RequestBody java.util.Map<String, Object> request, HttpServletRequest httpRequest) {
         String prefix = (String) request.getOrDefault("prefix", "");
+        String companyName = getCompanyName(httpRequest);
         int pageNum = request.containsKey("pageNum") ? Integer.parseInt(request.get("pageNum").toString()) : 1;
         int pageSize = request.containsKey("pageSize") ? Integer.parseInt(request.get("pageSize").toString()) : 10;
-        JSONObject result = serviceFacade.getShipmentService().findCustomerNamesByPrefix(prefix, pageNum, pageSize);
+        JSONObject result = serviceFacade.getShipmentService().findCustomerNamesByPrefix(prefix, pageNum, pageSize, companyName);
         return new JSONReturn(result).toString();
     }
 
     @RequestMapping("/findMaterialOperationsByShipmentId")
-    public String findMaterialOperationsByShipmentId(@RequestParam(value = "shipmentId") Integer shipmentId) {
+    public String findMaterialOperationsByShipmentId(@RequestParam(value = "shipmentId") Integer shipmentId,
+                                                   HttpServletRequest request) {
         JSONObject result = serviceFacade.getShipmentService().findMaterialOperationsByShipmentId(shipmentId);
         return new JSONReturn(result).toString();
     }
 
     @RequestMapping("/findShipmentById")
-    public String findShipmentById(@RequestParam(value = "id") Integer id) {
+    public String findShipmentById(@RequestParam(value = "id") Integer id,
+                                  HttpServletRequest request) {
         Shipment shipment = serviceFacade.getShipmentService().findShipmentById(id);
         if (shipment != null) {
             JSONObject result = new JSONObject();

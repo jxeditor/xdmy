@@ -9,6 +9,7 @@ public class MaterialStock {
     int id;
     String materialName;
     int unitstock;
+    String company_name;
 
     public MaterialStock() {
     }
@@ -35,5 +36,13 @@ public class MaterialStock {
 
     public void setUnitstock(int unitstock) {
         this.unitstock = unitstock;
+    }
+
+    public String getCompany_name() {
+        return company_name;
+    }
+
+    public void setCompany_name(String company_name) {
+        this.company_name = company_name;
     }
 }

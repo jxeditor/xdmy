@@ -4,21 +4,21 @@ import com.alibaba.fastjson.JSONObject;
 import com.xdmy.domain.MaterialStock;
 
 public interface IMaterialStockService {
-    JSONObject findAllMaterialStock(int pageNum, int pageSize, String materialName, boolean hideZeroStock);
+    JSONObject findAllMaterialStock(int pageNum, int pageSize, String materialName, boolean hideZeroStock, String companyName);
 
-    int addMaterialStock(MaterialStock materialStock);
+    int addMaterialStock(MaterialStock materialStock, String companyName);
 
     int deleteMaterialStockById(int id);
 
-    int updateMaterialStock(MaterialStock materialStock);
+    int updateMaterialStock(MaterialStock materialStock, String companyName);
 
-    JSONObject findMaterialNamesByPrefix(String prefix, int pageNum, int pageSize);
+    JSONObject findMaterialNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName);
 
-    int operateMaterialStock(String materialName, int quantity, boolean isIncrease);
+    int operateMaterialStock(String materialName, int quantity, boolean isIncrease, String companyName);
 
-    boolean checkMaterialExist(String materialName);
+    boolean checkMaterialExist(String materialName, String companyName);
 
-    JSONObject findMaterialOperations(int pageNum, int pageSize, String materialName, String operationType, String startDate, String endDate);
+    JSONObject findMaterialOperations(int pageNum, int pageSize, String materialName, String operationType, String startDate, String endDate, String companyName);
 
     int batchDeleteMaterialStock(String ids);
 

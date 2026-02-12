@@ -10,6 +10,7 @@ public class User {
     String username;
     String password;
     String role;
+    String companyName;
 
     public User() {
     }
@@ -44,5 +45,13 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 }

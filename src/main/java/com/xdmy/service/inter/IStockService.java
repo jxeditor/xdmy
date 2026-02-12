@@ -4,9 +4,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.xdmy.domain.Stock;
 
 public interface IStockService {
-    JSONObject findAllStock(int pageNum, int pageSize, String productName, boolean hideZeroStock);
+    
+    JSONObject findAllStock(int pageNum, int pageSize, String productName, boolean hideZeroStock, String companyName);
 
-    JSONObject findSurplusStock();
+    JSONObject findSurplusStock(String companyName);
 
     int addStock(Stock Stock);
 
@@ -14,11 +15,11 @@ public interface IStockService {
 
     int updateStock(Stock Stock);
 
-    JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize);
+    JSONObject findProductNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName);
 
-    int flattenStock();
+    int flattenStock(String companyName);
     
-    int getFlattenStockCount();
+    int getFlattenStockCount(String companyName);
     
     int batchDeleteStock(String ids);
 }

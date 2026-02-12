@@ -17,6 +17,7 @@ public class Incoming {
     String paystatus;
     String remark;
     int operate_material;
+    String company_name;
 
     public Incoming() {
     }
@@ -107,5 +108,13 @@ public class Incoming {
 
     public void setOperate_material(int operate_material) {
         this.operate_material = operate_material;
+    }
+
+    public String getCompany_name() {
+        return company_name;
+    }
+
+    public void setCompany_name(String company_name) {
+        this.company_name = company_name;
     }
 }

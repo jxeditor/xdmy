@@ -22,14 +22,19 @@ public class ProductController extends BaseController {
     @RequestMapping("/findAllProduct")
     public String findAllProduct(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                                  @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-                                 @RequestParam(value = "productName", defaultValue = "") String productName) {
-        JSONObject result = serviceFacade.getProductService().findAllProduct(pageNum, pageSize, productName);
+                                 @RequestParam(value = "productName", defaultValue = "") String productName,
+                                 javax.servlet.http.HttpServletRequest request) {
+        String companyName = getCompanyName(request);
+        JSONObject result = serviceFacade.getProductService().findAllProduct(pageNum, pageSize, productName, companyName);
         return new JSONReturn(result).toString();
     }
 
     @RequestMapping("/addProduct")
-    public String addProduct(@RequestBody Product product) {
-        int result = serviceFacade.getProductService().addProduct(product);
+    public String addProduct(@RequestBody Product product,
+                           javax.servlet.http.HttpServletRequest request) {
+        String companyName = getCompanyName(request);
+        product.setCompany_name(companyName);
+        int result = serviceFacade.getProductService().addProduct(product, companyName);
         if (result > 0) {
             return new JSONReturn("success", "添加成功", 1).toString();
         } else {
@@ -38,8 +43,11 @@ public class ProductController extends BaseController {
     }
 
     @RequestMapping("/updateProduct")
-    public String updateProduct(@RequestBody Product product) {
-        int result = serviceFacade.getProductService().updateProduct(product);
+    public String updateProduct(@RequestBody Product product,
+                              javax.servlet.http.HttpServletRequest request) {
+        String companyName = getCompanyName(request);
+        product.setCompany_name(companyName);
+        int result = serviceFacade.getProductService().updateProduct(product, companyName);
         if (result > 0) {
             return new JSONReturn("success", "修改成功", 1).toString();
         } else {
@@ -48,7 +56,8 @@ public class ProductController extends BaseController {
     }
 
     @RequestMapping("/deleteProductById")
-    public String deleteProductById(@RequestParam(value = "id") Integer id) {
+    public String deleteProductById(@RequestParam(value = "id") Integer id,
+                                   javax.servlet.http.HttpServletRequest request) {
         int result = serviceFacade.getProductService().deleteProductById(id);
         if (result > 0) {
             return new JSONReturn("success", "删除成功", 1).toString();
@@ -58,7 +67,8 @@ public class ProductController extends BaseController {
     }
 
     @RequestMapping("/batchDeleteProduct")
-    public String batchDeleteProduct(@RequestParam(value = "ids") String ids) {
+    public String batchDeleteProduct(@RequestParam(value = "ids") String ids,
+                                   javax.servlet.http.HttpServletRequest request) {
         int result = serviceFacade.getProductService().batchDeleteProduct(ids);
         if (result > 0) {
             return new JSONReturn("success", "批量删除成功", 1).toString();
@@ -68,7 +78,8 @@ public class ProductController extends BaseController {
     }
 
     @RequestMapping("/findProductById")
-    public String findProductById(@RequestParam(value = "id") Integer id) {
+    public String findProductById(@RequestParam(value = "id") Integer id,
+                                 javax.servlet.http.HttpServletRequest request) {
         Product product = serviceFacade.getProductService().findProductById(id);
         JSONObject result = new JSONObject();
         result.put("data", product);
@@ -78,9 +89,10 @@ public class ProductController extends BaseController {
     @RequestMapping("/findProductNamesByPrefix")
     public String findProductNamesByPrefix(@RequestBody HashMap<String, Object> request) {
         String prefix = (String) request.getOrDefault("prefix", "");
+        String companyName = (String) request.getOrDefault("companyName", "");
         int pageNum = request.containsKey("pageNum") ? Integer.parseInt(request.get("pageNum").toString()) : 1;
         int pageSize = request.containsKey("pageSize") ? Integer.parseInt(request.get("pageSize").toString()) : 10;
-        JSONObject result = serviceFacade.getProductService().findProductNamesByPrefix(prefix, pageNum, pageSize);
+        JSONObject result = serviceFacade.getProductService().findProductNamesByPrefix(prefix, pageNum, pageSize, companyName);
         return new JSONReturn(result).toString();
     }
 }

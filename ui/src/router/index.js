@@ -108,7 +108,7 @@ const router = createRouter({
 })
 
 router.afterEach((to, from) => {
-  document.title = '雄达木业'
+  document.title = localStorage.getItem('companyName') || ''
 })
 
 router.beforeEach((to, from, next) => {

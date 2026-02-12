@@ -54,51 +54,108 @@
 
 <script>
 import router from "@/router"
+import axios from "axios"
 
 export default {
   name: "Login",
   methods: {
     handleLogin() {
-      this.loading = true
-      const that = this
-      let param = new URLSearchParams()
-      param.append(`username`, this.loginForm.username)
-      param.append(`password`, this.loginForm.password)
-      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/admin/verifyLogin`, param).then(function (response) {
-        that.loading = false
-        if (response.data.code === 1) {
-          localStorage.setItem(`role`, response.data.data[0].role);
-          localStorage.setItem(`loginTime`, new Date().getTime());
-          router.push("shipment")
-        } else {
-          that.$message.error(response.data.msg);
-        }
-      }).catch(function (error) {
-        that.loading = false
-        that.$message.error('登录失败，请检查网络连接');
-      })
+      console.log('Login button clicked');
+      console.log('Login form:', this.loginForm);
+      
+      // 直接验证表单，不使用Element Plus的validate方法
+      if (!this.loginForm.username || !this.loginForm.password) {
+        console.log('Form validation failed: username or password is empty');
+        this.$message.error('用户名和密码不能为空');
+        return;
+      }
+      
+      console.log('Form validation passed');
+      this.loading = true;
+      console.log('Loading set to true');
+      
+      const that = this;
+      
+      try {
+        // 对密码进行Base64编码，增加传输安全性
+        console.log('Encoding password:', this.loginForm.password);
+        let encodedPassword = btoa(this.loginForm.password);
+        console.log('Encoded password:', encodedPassword);
+        
+        let param = {
+          username: this.loginForm.username,
+          password: encodedPassword
+        };
+        console.log('Login params:', param);
+        
+        // 使用环境变量中的API Base URL
+        console.log('API Base URL:', process.env.VUE_APP_API_BASE_URL);
+        const loginUrl = `${process.env.VUE_APP_API_BASE_URL}/admin/verifyLogin`;
+        console.log('Login URL:', loginUrl);
+        
+        // 创建新的axios实例，避免拦截器的影响
+        console.log('Creating axios instance');
+        const instance = axios.create({
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log('Axios instance created:', instance);
+        
+        // 发送登录请求
+        console.log('Sending login request');
+        instance.post(loginUrl, param)
+          .then(function (response) {
+            console.log('Login response received:', response);
+            that.loading = false;
+            console.log('Loading set to false');
+            
+            if (response.data.code === 1) {
+              console.log('Login successful:', response.data.data[0]);
+              localStorage.setItem('role', response.data.data[0].role);
+              localStorage.setItem('companyName', response.data.data[0].companyName || '');
+              localStorage.setItem('loginTime', new Date().getTime());
+              console.log('Redirecting to shipment page');
+              router.push("shipment");
+            } else {
+              console.log('Login failed:', response.data.msg);
+              that.$message.error(response.data.msg);
+            }
+          })
+          .catch(function (error) {
+            console.log('Login error:', error);
+            that.loading = false;
+            console.log('Loading set to false');
+            that.$message.error('登录失败，请检查网络连接');
+          });
+      } catch (error) {
+        console.log('Error in handleLogin:', error);
+        this.loading = false;
+        console.log('Loading set to false');
+        this.$message.error('登录失败，请检查网络连接');
+      }
     }
   },
   data() {
     return {
       loading: false,
       loginForm: {
-        username: ``,
-        password: ``
+        username: '',
+        password: ''
       },
       loginFormRules: {
         username: [
           {
             required: true,
-            trigger: `blur`,
-            message: `用户名不能为空`
+            trigger: 'blur',
+            message: '用户名不能为空'
           }
         ],
         password: [
           {
             required: true,
-            trigger: `blur`,
-            message: `密码不能为空`
+            trigger: 'blur',
+            message: '密码不能为空'
           }
         ],
       },

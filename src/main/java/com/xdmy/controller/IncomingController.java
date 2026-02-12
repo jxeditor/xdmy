@@ -18,19 +18,22 @@ public class IncomingController extends BaseController {
 
     @RequestMapping("/findAllIncoming")
     public String findAllIncoming(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                                  @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-                                  @RequestParam(value = "producerName", defaultValue = "") String producerName,
-                                  @RequestParam(value = "productName", defaultValue = "") String productName,
-                                  @RequestParam(value = "bizStartDate", defaultValue = "undefined") String bizStartDate,
-                                  @RequestParam(value = "bizEndDate", defaultValue = "undefined") String bizEndDate
-    ) {
-        JSONObject result = serviceFacade.getIncomingService().findAllIncoming(pageNum, pageSize, producerName, productName, bizStartDate, bizEndDate);
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+            @RequestParam(value = "producerName", defaultValue = "") String producerName,
+            @RequestParam(value = "productName", defaultValue = "") String productName,
+            @RequestParam(value = "bizStartDate", defaultValue = "undefined") String bizStartDate,
+            @RequestParam(value = "bizEndDate", defaultValue = "undefined") String bizEndDate,
+            HttpServletRequest request) {
+        String companyName = getCompanyName(request);
+        JSONObject result = serviceFacade.getIncomingService().findAllIncoming(pageNum, pageSize, producerName,
+                productName, bizStartDate, bizEndDate, companyName);
         return new JSONReturn(result).toString();
     }
 
     @RequestMapping(value = "/addIncoming")
     public String addIncoming(HttpServletRequest request) {
         HashMap<String, String> params = getRequestParam(request);
+        String companyName = getCompanyName(request);
         Incoming incoming = new Incoming();
         incoming.setOdd(params.get("odd"));
         incoming.setProducer(params.get("producer"));
@@ -42,8 +45,9 @@ public class IncomingController extends BaseController {
         incoming.setPaystatus(params.get("paystatus"));
         incoming.setRemark(params.get("remark"));
         incoming.setOperate_material(Integer.parseInt(params.get("operate_material")));
+        incoming.setCompany_name(companyName);
         String materialRelationsStr = params.get("materialRelations");
-        int result = serviceFacade.getIncomingService().addIncoming(incoming, materialRelationsStr);
+        int result = serviceFacade.getIncomingService().addIncoming(incoming, materialRelationsStr, companyName);
         if (result > 0) {
             return new JSONReturn("success", "插入成功", 1).toString();
         } else {
@@ -54,6 +58,7 @@ public class IncomingController extends BaseController {
     @RequestMapping(value = "/updateIncoming")
     public String updateIncoming(HttpServletRequest request) {
         HashMap<String, String> params = getRequestParam(request);
+        String companyName = getCompanyName(request);
         Incoming incoming = new Incoming();
         incoming.setId(Integer.parseInt(params.get("id")));
         incoming.setOdd(params.get("odd"));
@@ -66,8 +71,9 @@ public class IncomingController extends BaseController {
         incoming.setPaystatus(params.get("paystatus"));
         incoming.setRemark(params.get("remark"));
         incoming.setOperate_material(Integer.parseInt(params.get("operate_material")));
+        incoming.setCompany_name(companyName);
         String materialRelationsStr = params.get("materialRelations");
-        int result = serviceFacade.getIncomingService().updateIncoming(incoming, materialRelationsStr);
+        int result = serviceFacade.getIncomingService().updateIncoming(incoming, materialRelationsStr, companyName);
         if (result > 0) {
             return new JSONReturn("success", "更新成功", 1).toString();
         } else {
@@ -76,20 +82,26 @@ public class IncomingController extends BaseController {
     }
 
     @RequestMapping(value = "/getIncomingMaterialOperations")
-    public String getIncomingMaterialOperations(@RequestParam(value = "id", defaultValue = "-1") Integer id) {
+    public String getIncomingMaterialOperations(@RequestParam(value = "id", defaultValue = "-1") Integer id,
+            HttpServletRequest request) {
+        String companyName = getCompanyName(request);
         JSONObject result = serviceFacade.getIncomingService().getIncomingMaterialOperations(id);
         return new JSONReturn(result).toString();
     }
 
     @RequestMapping(value = "/findIncomingById")
-    public String findIncomingById(@RequestParam(value = "id", defaultValue = "-1") Integer id) {
+    public String findIncomingById(@RequestParam(value = "id", defaultValue = "-1") Integer id,
+            HttpServletRequest request) {
+        String companyName = getCompanyName(request);
         JSONObject result = serviceFacade.getIncomingService().findIncomingById(id);
         return new JSONReturn(result).toString();
     }
 
     @RequestMapping("/deleteIncomingById")
-    public String deleteIncomingById(@RequestParam(value = "id", defaultValue = "-1") Integer id) {
-        int result = serviceFacade.getIncomingService().deleteIncomingById(id);
+    public String deleteIncomingById(@RequestParam(value = "id", defaultValue = "-1") Integer id,
+            HttpServletRequest request) {
+        String companyName = getCompanyName(request);
+        int result = serviceFacade.getIncomingService().deleteIncomingById(id, companyName);
         if (result > 0) {
             return new JSONReturn("success", "删除成功", 1).toString();
         } else {
@@ -98,7 +110,8 @@ public class IncomingController extends BaseController {
     }
 
     @RequestMapping("/updatePaystatusIncomingById")
-    public String updatePaystatusIncomingById(@RequestParam(value = "id", defaultValue = "-1") Integer id) {
+    public String updatePaystatusIncomingById(@RequestParam(value = "id", defaultValue = "-1") Integer id,
+            HttpServletRequest request) {
         int result = serviceFacade.getIncomingService().updatePaystatusIncomingById(id);
         if (result > 0) {
             return new JSONReturn("success", "更新成功", 1).toString();
@@ -109,12 +122,14 @@ public class IncomingController extends BaseController {
 
     @RequestMapping("/findProducerNamesByPrefix")
     public String findProducerNamesByPrefix(@RequestBody java.util.Map<String, Object> request) {
+
         String prefix = (String) request.getOrDefault("prefix", "");
+        String companyName = (String) request.get("companyName");
         int pageNum = request.containsKey("pageNum") ? Integer.parseInt(request.get("pageNum").toString()) : 1;
         int pageSize = request.containsKey("pageSize") ? Integer.parseInt(request.get("pageSize").toString()) : 10;
-        JSONObject result = serviceFacade.getIncomingService().findProducerNamesByPrefix(prefix, pageNum, pageSize);
+        JSONObject result = serviceFacade.getIncomingService().findProducerNamesByPrefix(prefix, pageNum, pageSize,
+                companyName);
         return new JSONReturn(result).toString();
     }
-
 
 }

@@ -3,36 +3,36 @@ package com.xdmy.dao.inter;
 import com.xdmy.domain.Incoming;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IIncomingDao {
-    List<Incoming> findAllIncoming(int pageNum, int pageSize, String producerName, String productName, String bizStartDate, String bizEndDate);
+    List<Incoming> findAllIncoming(int pageNum, int pageSize, String producerName, String productName, String bizStartDate, String bizEndDate, String companyName);
 
-    int getAllTotalSize(String producerName, String productName, String bizStartDate, String bizEndDate);
+    int getAllTotalSize(String producerName, String productName, String bizStartDate, String bizEndDate, String companyName);
 
-    int addIncoming(Incoming Incoming, String materialRelationsStr);
+    int addIncoming(Incoming Incoming, String materialRelationsStr, String companyName);
 
-    int addIncoming(Incoming Incoming);
+    int addIncoming(Incoming Incoming, String companyName);
 
-    int deleteIncomingById(int id);
+    int deleteIncomingById(int id, String companyName);
 
-    int updateIncoming(Incoming Incoming, String materialRelationsStr);
+    int updateIncoming(Incoming Incoming, String materialRelationsStr, String companyName);
 
     int updateIncoming(Incoming Incoming);
 
     int updatePaystatusIncomingById(int id);
 
-    List<Incoming> getIncomingStatement(String producerName, String bizStartDate, String bizEndDate);
+    List<Incoming> getIncomingStatement(String producerName, String bizStartDate, String bizEndDate, String companyName);
 
-    int getDistinctSize(String producerName, String bizStartDate, String bizEndDate);
+    int getDistinctSize(String producerName, String bizStartDate, String bizEndDate, String companyName);
 
-    double getSumPay(String producerName, String bizStartDate, String bizEndDate);
+    double getSumPay(String producerName, String bizStartDate, String bizEndDate, String companyName);
 
-    List<String> findProducerNamesByPrefix(String prefix, int pageNum, int pageSize);
+    List<String> findProducerNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName);
 
-    int getProducerNamesCount(String prefix);
+    int getProducerNamesCount(String prefix, String companyName);
 
-    java.util.List<java.util.Map<String, Object>> getIncomingMaterialOperations(int id);
+    List<Map<String, Object>> getIncomingMaterialOperations(int id);
 
     Incoming findIncomingById(int id);
-
 }

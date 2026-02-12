@@ -9,14 +9,14 @@ import java.util.List;
  * @Description 产品与原材料关系DAO接口
  */
 public interface IProductMaterialRelationDao {
-    List<ProductMaterialRelation> findAllRelation(int pageNum, int pageSize, String productName);
-    int getAllTotalSize(String productName);
-    int addRelation(ProductMaterialRelation relation);
-    int updateRelation(ProductMaterialRelation relation);
+    List<ProductMaterialRelation> findAllRelation(int pageNum, int pageSize, String productName, String companyName);
+    int getAllTotalSize(String productName, String companyName);
+    int addRelation(ProductMaterialRelation relation, String companyName);
+    int updateRelation(ProductMaterialRelation relation, String companyName);
     int deleteRelationById(int id);
-    List<ProductMaterialRelation> findRelationsByProductName(String productName);
-    boolean checkRelationUnique(String productName, String materialName, Integer id);
+    List<ProductMaterialRelation> findRelationsByProductName(String productName, String companyName);
+    boolean checkRelationUnique(String productName, String materialName, Integer id, String companyName);
     int batchDeleteRelation(String ids);
-    List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize);
-    int getProductNamesCountByPrefix(String prefix);
+    List<String> findProductNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName);
+    int getProductNamesCountByPrefix(String prefix, String companyName);
 }

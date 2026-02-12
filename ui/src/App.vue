@@ -4,13 +4,13 @@
       <!-- 登录页面不显示头部导航 -->
       <header v-if="$route.path !== '/login'" class="app-header">
         <div class="header-left">
-          <h1 class="app-title">雄达木业</h1>
+          <h1 class="app-title">{{ companyName }}</h1>
         </div>
         <nav class="main-nav">
           <router-link to="/shipment" class="nav-link">出货</router-link>
           <router-link to="/incoming" class="nav-link">入货</router-link>
           <div class="dropdown">
-            <button class="dropdown-toggle">产品管理</button>
+            <button class="dropdown-toggle" :class="{ 'active': isProductManagementActive }">产品管理</button>
             <div class="dropdown-menu">
               <router-link to="/product" class="dropdown-item">产品</router-link>
               <router-link to="/stock" class="dropdown-item">产品库存</router-link>
@@ -40,48 +40,69 @@
 <script>
 export default {
   name: 'AppView',
+  data() {
+    return {
+      companyName: '',
+      isProductManagementActive: false
+    }
+  },
   mounted() {
     // 初始化缩放
     this.updateScale();
     // 监听窗口大小变化
     window.addEventListener('resize', this.updateScale);
+    // 从localStorage获取公司名称
+    this.updateCompanyName();
+    // 初始化产品管理激活状态
+    this.checkProductManagementActive();
   },
-  beforeUnmount() {
-    // 移除事件监听
-    window.removeEventListener('resize', this.updateScale);
+  watch: {
+    // 监听路由变化，每次路由变化时更新公司名称和产品管理激活状态
+    '$route': {
+      handler() {
+        this.updateCompanyName();
+        this.checkProductManagementActive();
+      },
+      immediate: true
+    }
   },
   methods: {
+    // 更新公司名称
+    updateCompanyName() {
+      this.companyName = localStorage.getItem('companyName') || '';
+      console.log('Updated companyName:', this.companyName);
+    },
+    // 检查产品管理是否激活
+    checkProductManagementActive() {
+      const productRoutes = ['/product', '/stock', '/materialStock', '/productMaterialRelation', '/materialOperation'];
+      this.isProductManagementActive = productRoutes.includes(this.$route.path);
+    },
     handleLogout() {
       localStorage.removeItem('role');
       localStorage.removeItem('loginTime');
+      localStorage.removeItem('companyName');
       this.$router.push("/login");
     },
     updateScale() {
       const scaleContainer = document.querySelector('.scale-container');
       if (!scaleContainer) return;
       
-      // 设计稿宽度（根据实际情况调整）
-      const designWidth = 1440;
-      // 设计稿高度（根据实际情况调整）
-      const designHeight = 1000; // 包含头部高度
-      
       // 获取窗口尺寸
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
       
-      // 计算缩放比例
-      const scaleX = windowWidth / designWidth;
-      const scaleY = windowHeight / designHeight;
-      const scale = Math.min(scaleX, scaleY);
+      // 调整容器大小以适应窗口
+      scaleContainer.style.width = `${windowWidth}px`;
+      scaleContainer.style.height = `${windowHeight}px`;
       
-      // 应用缩放
-      scaleContainer.style.transform = `scale(${scale})`;
-      scaleContainer.style.transformOrigin = 'top left';
-      
-      // 调整容器大小以适应缩放
-      scaleContainer.style.width = `${designWidth}px`;
-      scaleContainer.style.height = `${designHeight}px`;
+      // 移除缩放，让内容自然铺满
+      scaleContainer.style.transform = 'none';
+      scaleContainer.style.transformOrigin = 'unset';
     }
+  },
+  beforeUnmount() {
+    // 移除事件监听
+    window.removeEventListener('resize', this.updateScale);
   }
 }
 </script>
@@ -121,15 +142,12 @@ export default {
   z-index: 100;
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-}
-
-.app-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin: 0;
+.app-content {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  background: #f5f7fa;
+  box-sizing: border-box;
 }
 
 .main-nav {
@@ -147,6 +165,7 @@ export default {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  font-size: 16px;
 }
 
 .nav-link:hover {
@@ -171,7 +190,7 @@ export default {
 }
 
 .logout-button {
-  background: rgba(255, 255, 255, 0.2);
+  background: transparent;
   color: white;
   border: none;
   padding: 10px 16px;
@@ -180,6 +199,7 @@ export default {
   cursor: pointer;
   transition: all 0.3s ease;
   margin-left: 20px;
+  font-size: 16px;
 }
 
 .logout-button:hover {
@@ -194,7 +214,7 @@ export default {
 }
 
 .dropdown-toggle {
-  background: rgba(255, 255, 255, 0.2);
+  background: transparent;
   color: white;
   border: none;
   padding: 10px 16px;
@@ -204,11 +224,28 @@ export default {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  font-size: 16px;
 }
 
 .dropdown-toggle:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: translateY(-2px);
+}
+
+.dropdown-toggle.active {
+  background: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+}
+
+.dropdown-toggle.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: white;
+  border-radius: 3px;
 }
 
 .dropdown-menu {
@@ -264,6 +301,21 @@ export default {
   height: 100%;
   padding: 20px;
   background: #f5f7fa;
+  box-sizing: border-box;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* 缩放容器 */
+.scale-container {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
 }
 
 /* 登录页面内容容器 */
@@ -303,8 +355,15 @@ export default {
     font-size: 14px;
   }
   
+  .dropdown-toggle {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
   .logout-button {
     margin-left: 0;
+    padding: 8px 12px;
+    font-size: 14px;
   }
   
   .app-content {

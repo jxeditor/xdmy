@@ -13,22 +13,23 @@ import java.util.List;
 
 @Service
 public class IncomingService extends BaseService implements IIncomingService {
+
     @Override
-    public JSONObject findAllIncoming(int pageNum, int pageSize, String producerName, String productName, String bizStartDate, String bizEndDate) {
+    public JSONObject findAllIncoming(int pageNum, int pageSize, String producerName, String productName, String bizStartDate, String bizEndDate, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<Incoming> incomingList = daoFacade.getIncomingDao().findAllIncoming(pageNum, pageSize, producerName, productName, bizStartDate, bizEndDate);
-        int total = daoFacade.getIncomingDao().getAllTotalSize(producerName, productName, bizStartDate, bizEndDate);
+        List<Incoming> incomingList = daoFacade.getIncomingDao().findAllIncoming(pageNum, pageSize, producerName, productName, bizStartDate, bizEndDate, companyName);
+        int total = daoFacade.getIncomingDao().getAllTotalSize(producerName, productName, bizStartDate, bizEndDate, companyName);
         JSONObject result = toJSONObject(incomingList);
         result.put("total", total);
         return result;
     }
 
     @Override
-    public JSONObject getIncomingStatement(String producerName, String bizStartDate, String bizEndDate) {
+    public JSONObject getIncomingStatement(String producerName, String bizStartDate, String bizEndDate, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<Incoming> incomingList = daoFacade.getIncomingDao().getIncomingStatement(producerName, bizStartDate, bizEndDate);
-        int total = daoFacade.getIncomingDao().getDistinctSize(producerName, bizStartDate, bizEndDate);
-        double sumpay = daoFacade.getIncomingDao().getSumPay(producerName, bizStartDate, bizEndDate);
+        List<Incoming> incomingList = daoFacade.getIncomingDao().getIncomingStatement(producerName, bizStartDate, bizEndDate, companyName);
+        int total = daoFacade.getIncomingDao().getDistinctSize(producerName, bizStartDate, bizEndDate, companyName);
+        double sumpay = daoFacade.getIncomingDao().getSumPay(producerName, bizStartDate, bizEndDate, companyName);
         JSONObject result = toJSONObject(incomingList);
         result.put("total", total);
         result.put("sumpay", sumpay);
@@ -36,33 +37,21 @@ public class IncomingService extends BaseService implements IIncomingService {
     }
 
     @Override
-    public int addIncoming(Incoming incoming, String materialRelationsStr) {
+    public int addIncoming(Incoming incoming, String materialRelationsStr, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getIncomingDao().addIncoming(incoming, materialRelationsStr);
+        return daoFacade.getIncomingDao().addIncoming(incoming, materialRelationsStr, companyName);
     }
 
     @Override
-    public int addIncoming(Incoming incoming) {
+    public int deleteIncomingById(int id, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getIncomingDao().addIncoming(incoming, null);
+        return daoFacade.getIncomingDao().deleteIncomingById(id, companyName);
     }
 
     @Override
-    public int deleteIncomingById(int id) {
+    public int updateIncoming(Incoming incoming, String materialRelationsStr, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getIncomingDao().deleteIncomingById(id);
-    }
-
-    @Override
-    public int updateIncoming(Incoming incoming, String materialRelationsStr) {
-        DBContextHolder.setDbType("primary");
-        return daoFacade.getIncomingDao().updateIncoming(incoming, materialRelationsStr);
-    }
-
-    @Override
-    public int updateIncoming(Incoming incoming) {
-        DBContextHolder.setDbType("primary");
-        return daoFacade.getIncomingDao().updateIncoming(incoming, null);
+        return daoFacade.getIncomingDao().updateIncoming(incoming, materialRelationsStr, companyName);
     }
 
     @Override
@@ -104,6 +93,7 @@ public class IncomingService extends BaseService implements IIncomingService {
         return result;
     }
 
+
     @Override
     public int updatePaystatusIncomingById(int id) {
         DBContextHolder.setDbType("primary");
@@ -111,10 +101,10 @@ public class IncomingService extends BaseService implements IIncomingService {
     }
 
     @Override
-    public JSONObject findProducerNamesByPrefix(String prefix, int pageNum, int pageSize) {
+    public JSONObject findProducerNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<String> producerNames = daoFacade.getIncomingDao().findProducerNamesByPrefix(prefix, pageNum, pageSize);
-        int total = daoFacade.getIncomingDao().getProducerNamesCount(prefix);
+        List<String> producerNames = daoFacade.getIncomingDao().findProducerNamesByPrefix(prefix, pageNum, pageSize, companyName);
+        int total = daoFacade.getIncomingDao().getProducerNamesCount(prefix, companyName);
         JSONObject result = new JSONObject();
         JSONArray data = new JSONArray();
         try {

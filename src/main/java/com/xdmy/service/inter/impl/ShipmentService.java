@@ -13,22 +13,23 @@ import java.util.List;
 
 @Service
 public class ShipmentService extends BaseService implements IShipmentService {
+
     @Override
-    public JSONObject findAllShipment(int pageNum, int pageSize, String customerName, String productName, String bizStartDate, String bizEndDate) {
+    public JSONObject findAllShipment(int pageNum, int pageSize, String customerName, String productName, String bizStartDate, String bizEndDate, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<Shipment> shipmentList = daoFacade.getShipmentDao().findAllShipment(pageNum, pageSize, customerName, productName, bizStartDate, bizEndDate);
-        int total = daoFacade.getShipmentDao().getAllTotalSize(customerName, productName, bizStartDate, bizEndDate);
+        List<Shipment> shipmentList = daoFacade.getShipmentDao().findAllShipment(pageNum, pageSize, customerName, productName, bizStartDate, bizEndDate, companyName);
+        int total = daoFacade.getShipmentDao().getAllTotalSize(customerName, productName, bizStartDate, bizEndDate, companyName);
         JSONObject result = toJSONObject(shipmentList);
         result.put("total", total);
         return result;
     }
 
     @Override
-    public JSONObject getShipmentStatement(String customerName, String bizStartDate, String bizEndDate) {
+    public JSONObject getShipmentStatement(String customerName, String bizStartDate, String bizEndDate, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<Shipment> shipmentList = daoFacade.getShipmentDao().getShipmentStatement(customerName, bizStartDate, bizEndDate);
-        int total = daoFacade.getShipmentDao().getDistinctSize(customerName, bizStartDate, bizEndDate);
-        double sumpay = daoFacade.getShipmentDao().getSumPay(customerName, bizStartDate, bizEndDate);
+        List<Shipment> shipmentList = daoFacade.getShipmentDao().getShipmentStatement(customerName, bizStartDate, bizEndDate, companyName);
+        int total = daoFacade.getShipmentDao().getDistinctSize(customerName, bizStartDate, bizEndDate, companyName);
+        double sumpay = daoFacade.getShipmentDao().getSumPay(customerName, bizStartDate, bizEndDate, companyName);
         JSONObject result = toJSONObject(shipmentList);
         result.put("total", total);
         result.put("sumpay", sumpay);
@@ -36,26 +37,21 @@ public class ShipmentService extends BaseService implements IShipmentService {
     }
 
     @Override
-    public int addShipment(Shipment shipment) {
+    public int addShipment(Shipment shipment, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getShipmentDao().addShipment(shipment);
+        return daoFacade.getShipmentDao().addShipment(shipment, companyName);
     }
 
     @Override
-    public int deleteShipmentById(int id) {
+    public int deleteShipmentById(int id, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getShipmentDao().deleteShipmentById(id);
+        return daoFacade.getShipmentDao().deleteShipmentById(id, companyName);
     }
 
     @Override
-    public int updateShipment(Shipment shipment) {
+    public int updateShipment(Shipment shipment, String materialRelationsStr, String companyName) {
         DBContextHolder.setDbType("primary");
-        return daoFacade.getShipmentDao().updateShipment(shipment, null);
-    }
-    
-    public int updateShipment(Shipment shipment, String materialRelationsStr) {
-        DBContextHolder.setDbType("primary");
-        return daoFacade.getShipmentDao().updateShipment(shipment, materialRelationsStr);
+        return daoFacade.getShipmentDao().updateShipment(shipment, materialRelationsStr, companyName);
     }
 
     @Override
@@ -65,10 +61,10 @@ public class ShipmentService extends BaseService implements IShipmentService {
     }
 
     @Override
-    public JSONObject findCustomerNamesByPrefix(String prefix, int pageNum, int pageSize) {
+    public JSONObject findCustomerNamesByPrefix(String prefix, int pageNum, int pageSize, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<String> customerNames = daoFacade.getShipmentDao().findCustomerNamesByPrefix(prefix, pageNum, pageSize);
-        int total = daoFacade.getShipmentDao().getCustomerNamesCount(prefix);
+        List<String> customerNames = daoFacade.getShipmentDao().findCustomerNamesByPrefix(prefix, pageNum, pageSize, companyName);
+        int total = daoFacade.getShipmentDao().getCustomerNamesCount(prefix, companyName);
         JSONObject result = new JSONObject();
         JSONArray data = new JSONArray();
         try {

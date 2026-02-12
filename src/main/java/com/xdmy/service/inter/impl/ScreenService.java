@@ -13,16 +13,16 @@ import java.util.List;
 @Service
 public class ScreenService extends BaseService implements IScreenService {
     @Override
-    public JSONObject getShipment1ChartData(String customerName, String bizStartDate, String bizEndDate) {
+    public JSONObject getShipment1ChartData(String customerName, String bizStartDate, String bizEndDate, String companyName) {
         DBContextHolder.setDbType("primary");
-        List<JSONObject> resultList = daoFacade.getScreenDao().getShipment1ChartData(customerName, bizStartDate, bizEndDate);
+        List<JSONObject> resultList = daoFacade.getScreenDao().getShipment1ChartData(customerName, bizStartDate, bizEndDate, companyName);
         return toShipment1ChartJSONObject(resultList);
     }
 
     @Override
-    public JSONObject getShipment2ChartData() {
+    public JSONObject getShipment2ChartData(String companyName) {
         DBContextHolder.setDbType("primary");
-        List<JSONObject> resultList = daoFacade.getScreenDao().getShipment2ChartData();
+        List<JSONObject> resultList = daoFacade.getScreenDao().getShipment2ChartData(companyName);
         return toShipment2ChartJSONObject(resultList);
     }
 

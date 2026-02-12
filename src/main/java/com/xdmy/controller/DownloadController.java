@@ -36,7 +36,7 @@ public class DownloadController extends BaseController {
         String bizStartDate = params.getOrDefault("bizStartDate", "");
         String bizEndDate = params.getOrDefault("bizEndDate", "");
 
-        JSONObject result = serviceFacade.getShipmentService().getShipmentStatement(customerName, bizStartDate, bizEndDate);
+        JSONObject result = serviceFacade.getShipmentService().getShipmentStatement(customerName, bizStartDate, bizEndDate, getCompanyName(request));
 
         InputStream templateFileName = this.getClass().getClassLoader().getResourceAsStream("出货对账单模板.xlsx");
         // String templateFileName = FileUtil.getPath() + "出货对账单模板.xlsx";
@@ -69,7 +69,7 @@ public class DownloadController extends BaseController {
         String bizStartDate = params.getOrDefault("bizStartDate", "");
         String bizEndDate = params.getOrDefault("bizEndDate", "");
 
-        JSONObject result = serviceFacade.getIncomingService().getIncomingStatement(producerName, bizStartDate, bizEndDate);
+        JSONObject result = serviceFacade.getIncomingService().getIncomingStatement(producerName, bizStartDate, bizEndDate, getCompanyName(request));
 
         InputStream templateFileName = this.getClass().getClassLoader().getResourceAsStream("入货对账单模板.xlsx");
         // String templateFileName = FileUtil.getPath() + "出货对账单模板.xlsx";

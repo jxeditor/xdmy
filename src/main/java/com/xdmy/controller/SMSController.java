@@ -2,11 +2,11 @@ package com.xdmy.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.xdmy.utils.JSONReturn;
+
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
@@ -18,8 +18,9 @@ import java.io.IOException;
 @RequestMapping("/sms")
 public class SMSController extends BaseController {
     @RequestMapping("/sendSurplusStock")
-    public String sendSurplusStock(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        JSONObject result = serviceFacade.getStockService().findSurplusStock();
+    public String sendSurplusStock(@RequestBody java.util.Map<String, Object> request) throws IOException {
+        String companyName = (String) request.get("companyName");
+        JSONObject result = serviceFacade.getStockService().findSurplusStock(companyName);
         return new JSONReturn(result).toString();
     }
 }

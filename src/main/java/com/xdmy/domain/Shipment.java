@@ -21,6 +21,7 @@ public class Shipment {
     double profit;
     String remark;
     int operate_material;
+    String company_name;
 
     public Shipment() {
     }
@@ -143,6 +144,14 @@ public class Shipment {
 
     public void setOperate_material(int operate_material) {
         this.operate_material = operate_material;
+    }
+
+    public String getCompany_name() {
+        return company_name;
+    }
+
+    public void setCompany_name(String company_name) {
+        this.company_name = company_name;
     }
 }
 

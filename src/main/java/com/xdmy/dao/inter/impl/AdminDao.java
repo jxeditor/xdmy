@@ -28,6 +28,7 @@ public class AdminDao extends BaseDao implements IAdminDao {
             user.setUsername(rs.getString("username"));
             user.setPassword(rs.getString("password"));
             user.setRole(rs.getString("role"));
+            user.setCompanyName(rs.getString("company_name"));
             return user;
         }
     }

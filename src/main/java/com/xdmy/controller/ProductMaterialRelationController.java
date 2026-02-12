@@ -24,14 +24,17 @@ public class ProductMaterialRelationController extends BaseController {
     @RequestMapping("/findAllRelation")
     public String findAllRelation(@RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                                @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-                               @RequestParam(value = "productName", defaultValue = "") String productName) {
-        JSONObject result = serviceFacade.getProductMaterialRelationService().findAllRelation(pageNum, pageSize, productName);
+                               @RequestParam(value = "productName", defaultValue = "") String productName,
+                               HttpServletRequest request) {
+        String companyName = getCompanyName(request);
+        JSONObject result = serviceFacade.getProductMaterialRelationService().findAllRelation(pageNum, pageSize, productName, companyName);
         return new JSONReturn(result).toString();
     }
 
     @RequestMapping("/addRelation")
     public String addRelation(HttpServletRequest request) {
         HashMap<String, String> params = getRequestParam(request);
+        String companyName = getCompanyName(request);
         String productName = params.get("productName");
         String materialName = params.get("materialName");
         String quantityStr = params.get("quantity");
@@ -47,8 +50,9 @@ public class ProductMaterialRelationController extends BaseController {
         relation.setMaterialName(materialName);
         relation.setQuantity(Integer.parseInt(quantityStr));
         relation.setIsDefault(isDefaultStr != null ? Integer.parseInt(isDefaultStr) : 0);
+        relation.setCompany_name(companyName);
         
-        int result = serviceFacade.getProductMaterialRelationService().addRelation(relation);
+        int result = serviceFacade.getProductMaterialRelationService().addRelation(relation, companyName);
         if (result > 0) {
             return new JSONReturn("success", "添加成功", 1).toString();
         } else {
@@ -59,6 +63,7 @@ public class ProductMaterialRelationController extends BaseController {
     @RequestMapping("/updateRelation")
     public String updateRelation(HttpServletRequest request) {
         HashMap<String, String> params = getRequestParam(request);
+        String companyName = getCompanyName(request);
         String idStr = params.get("id");
         String productName = params.get("productName");
         String materialName = params.get("materialName");
@@ -76,8 +81,9 @@ public class ProductMaterialRelationController extends BaseController {
         relation.setMaterialName(materialName);
         relation.setQuantity(Integer.parseInt(quantityStr));
         relation.setIsDefault(isDefaultStr != null ? Integer.parseInt(isDefaultStr) : 0);
+        relation.setCompany_name(companyName);
         
-        int result = serviceFacade.getProductMaterialRelationService().updateRelation(relation);
+        int result = serviceFacade.getProductMaterialRelationService().updateRelation(relation, companyName);
         if (result > 0) {
             return new JSONReturn("success", "修改成功", 1).toString();
         } else {
@@ -86,7 +92,8 @@ public class ProductMaterialRelationController extends BaseController {
     }
 
     @RequestMapping("/deleteRelationById")
-    public String deleteRelationById(@RequestParam(value = "id") Integer id) {
+    public String deleteRelationById(@RequestParam(value = "id") Integer id,
+                                    HttpServletRequest request) {
         int result = serviceFacade.getProductMaterialRelationService().deleteRelationById(id);
         if (result > 0) {
             return new JSONReturn("success", "删除成功", 1).toString();
@@ -96,7 +103,8 @@ public class ProductMaterialRelationController extends BaseController {
     }
 
     @RequestMapping("/batchDeleteRelation")
-    public String batchDeleteRelation(@RequestParam(value = "ids") String ids) {
+    public String batchDeleteRelation(@RequestParam(value = "ids") String ids,
+                                     HttpServletRequest request) {
         int result = serviceFacade.getProductMaterialRelationService().batchDeleteRelation(ids);
         if (result > 0) {
             return new JSONReturn("success", "批量删除成功", 1).toString();
@@ -106,8 +114,10 @@ public class ProductMaterialRelationController extends BaseController {
     }
 
     @RequestMapping("/checkRelationUnique")
-    public String checkRelationUnique(@RequestParam(value = "productName") String productName, @RequestParam(value = "materialName") String materialName, @RequestParam(value = "id", required = false) Integer id) {
-        boolean isUnique = serviceFacade.getProductMaterialRelationService().checkRelationUnique(productName, materialName, id);
+    public String checkRelationUnique(@RequestParam(value = "productName") String productName, @RequestParam(value = "materialName") String materialName, @RequestParam(value = "id", required = false) Integer id,
+                                    HttpServletRequest request) {
+        String companyName = getCompanyName(request);
+        boolean isUnique = serviceFacade.getProductMaterialRelationService().checkRelationUnique(productName, materialName, id, companyName);
         if (isUnique) {
             return new JSONReturn("success", "关系唯一", 1).toString();
         } else {
@@ -116,20 +126,23 @@ public class ProductMaterialRelationController extends BaseController {
     }
 
     @RequestMapping("/findRelationsByProductName")
-    public String findRelationsByProductName(@RequestParam(value = "productName") String productName) {
+    public String findRelationsByProductName(@RequestParam(value = "productName") String productName,
+                                           HttpServletRequest request) {
+        String companyName = getCompanyName(request);
         // 非空校验
         if (productName == null || productName.isEmpty()) {
             JSONObject result = new JSONObject();
             result.put("data", new java.util.ArrayList<>());
             return new JSONReturn(result).toString();
         }
-        JSONObject result = serviceFacade.getProductMaterialRelationService().findRelationsByProductName(productName);
+        JSONObject result = serviceFacade.getProductMaterialRelationService().findRelationsByProductName(productName, companyName);
         return new JSONReturn(result).toString();
     }
 
     @RequestMapping("/findProductNamesByPrefix")
     public String findProductNamesByPrefix(@RequestBody JSONObject request) {
         String prefix = request.getString("prefix");
+        String companyName = request.getString("companyName");
         int pageNum = request.getIntValue("pageNum");
         int pageSize = request.getIntValue("pageSize");
         
@@ -137,6 +150,7 @@ public class ProductMaterialRelationController extends BaseController {
         if (prefix == null) {
             prefix = "";
         }
+
         if (pageNum < 1) {
             pageNum = 1;
         }
@@ -144,7 +158,7 @@ public class ProductMaterialRelationController extends BaseController {
             pageSize = 10;
         }
         
-        JSONObject result = serviceFacade.getProductMaterialRelationService().findProductNamesByPrefix(prefix, pageNum, pageSize);
+        JSONObject result = serviceFacade.getProductMaterialRelationService().findProductNamesByPrefix(prefix, pageNum, pageSize, companyName);
         return new JSONReturn(result).toString();
     }
 }
