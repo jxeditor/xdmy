@@ -88,17 +88,24 @@ export default {
       const scaleContainer = document.querySelector('.scale-container');
       if (!scaleContainer) return;
       
+      // 设计稿宽度
+      const designWidth = 1440;
+      
       // 获取窗口尺寸
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
       
-      // 调整容器大小以适应窗口
-      scaleContainer.style.width = `${windowWidth}px`;
-      scaleContainer.style.height = `${windowHeight}px`;
+      // 计算缩放比例
+      const scale = windowWidth / designWidth;
       
-      // 移除缩放，让内容自然铺满
-      scaleContainer.style.transform = 'none';
-      scaleContainer.style.transformOrigin = 'unset';
+      // 设置容器大小为设计稿宽度
+      scaleContainer.style.width = `${designWidth}px`;
+      scaleContainer.style.height = 'auto';
+      
+      // 应用缩放，保持设计稿比例
+      scaleContainer.style.transform = `scale(${scale})`;
+      scaleContainer.style.transformOrigin = 'top left';
+      scaleContainer.style.overflow = 'hidden';
     }
   },
   beforeUnmount() {
@@ -337,38 +344,5 @@ export default {
   min-height: 0;
 }
 
-@media (max-width: 768px) {
-  .app-header {
-    padding: 0 20px;
-    height: auto;
-    flex-direction: column;
-    padding: 20px;
-    gap: 15px;
-  }
-  
-  .main-nav {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .nav-link {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-  
-  .dropdown-toggle {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-  
-  .logout-button {
-    margin-left: 0;
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-  
-  .app-content {
-    padding: 10px;
-  }
-}
+
 </style>
