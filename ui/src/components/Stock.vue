@@ -285,7 +285,10 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
-            that.$message.error(error);
+            // 401错误由响应拦截器处理，不显示错误信息
+            if (error.response && error.response.status !== 401) {
+              that.$message.error(error);
+            }
           })
         } else {
           return false
@@ -311,7 +314,10 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
-            that.$message.error(error);
+            // 401错误由响应拦截器处理，不显示错误信息
+            if (error.response && error.response.status !== 401) {
+              that.$message.error(error);
+            }
           })
         } else {
           return false
@@ -346,7 +352,10 @@ export default {
           console.log('Forced update completed')
         }).catch(function (error) {
         console.error('API error:', error)
-        that.$message.error(error);
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error(error);
+        }
       })
     },
     // 搜索库存
@@ -369,7 +378,10 @@ export default {
           console.log('Updated page.total after search:', that.page.total)
         }).catch(function (error) {
         console.error('Search API error:', error)
-        that.$message.error(error);
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error(error);
+        }
       })
     },
     // 获取联想建议
@@ -391,8 +403,11 @@ export default {
           that.showSuggestions = true
         }).catch(function (error) {
         console.error(error)
-        that.suggestOptions = []
-        that.showSuggestions = false
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.suggestOptions = []
+          that.showSuggestions = false
+        }
       })
     },
     // 选择联想建议
@@ -442,6 +457,12 @@ export default {
             that.addStockTotal = response.data.total;
             that.showAddStockDropdown = true;
           }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            console.error('获取产品名称失败:', error);
+          }
         });
     },
     selectAddStockSuggestion(item) {
@@ -490,6 +511,12 @@ export default {
             that.updateStockSuggestions = response.data.data;
             that.updateStockTotal = response.data.total;
             that.showUpdateStockDropdown = true;
+          }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            console.error('获取产品名称失败:', error);
           }
         });
     },
@@ -562,7 +589,10 @@ export default {
                 }).catch(function (error) {
                   // 关闭进度条
                   loadingInstance.close();
-                  that.$message.error('库存抹平失败：' + error);
+                  // 401错误由响应拦截器处理，不显示错误信息
+                  if (error.response && error.response.status !== 401) {
+                    that.$message.error('库存抹平失败：' + error);
+                  }
                 })
             }).catch(() => {
               // 取消操作
@@ -571,7 +601,10 @@ export default {
             that.$message.error('获取需要抹平的库存数据数量失败');
           }
         }).catch(function (error) {
-          that.$message.error('获取需要抹平的库存数据数量失败：' + error);
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            that.$message.error('获取需要抹平的库存数据数量失败：' + error);
+          }
         })
     },
     // 处理表格选择变化
@@ -595,7 +628,10 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
-            that.$message.error('删除失败：' + error);
+            // 401错误由响应拦截器处理，不显示错误信息
+            if (error.response && error.response.status !== 401) {
+              that.$message.error('删除失败：' + error);
+            }
           });
       }).catch(() => {
         // 取消操作
@@ -627,7 +663,10 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
-            that.$message.error('批量删除失败：' + error);
+            // 401错误由响应拦截器处理，不显示错误信息
+            if (error.response && error.response.status !== 401) {
+              that.$message.error('批量删除失败：' + error);
+            }
           });
       }).catch(() => {
         // 取消操作

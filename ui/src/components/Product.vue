@@ -118,7 +118,7 @@
       </div>
 
       <!-- 添加产品对话框 -->
-      <el-dialog v-model="dialogVisible" title="添加产品" width="500px" class="product-dialog">
+      <el-dialog v-model="dialogVisible" title="添加产品" width="500px" class="product-dialog" append-to-body>
         <el-form :model="addProductForm" label-width="120px">
           <el-form-item label="产品名称:" prop="productName">
             <div class="product-search-container">
@@ -188,7 +188,7 @@
       </el-dialog>
 
       <!-- 编辑产品对话框 -->
-      <el-dialog v-model="editDialogVisible" title="编辑产品" width="500px" class="product-dialog">
+      <el-dialog v-model="editDialogVisible" title="编辑产品" width="500px" class="product-dialog" append-to-body>
         <el-form :model="editProductForm" label-width="120px">
           <el-form-item label="产品名称:" prop="productName">
             <div class="product-search-container">
@@ -258,7 +258,7 @@
       </el-dialog>
 
       <!-- 维护原材料对话框 -->
-      <el-dialog v-model="materialDialogVisible" :title="'维护原材料 - ' + currentProductName" width="700px">
+      <el-dialog v-model="materialDialogVisible" :title="'维护原材料 - ' + currentProductName" width="700px" append-to-body>
         <div class="material-maintenance">
           <!-- 原材料列表 -->
           <el-table :data="materialList" style="width: 100%" border>
@@ -457,6 +457,12 @@ export default {
         .then(function (response) {
           that.productData = response.data.data;
           that.total = response.data.total;
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            that.$message.error('连接失败，请检查网络或服务状态');
+          }
         });
     },
     searchProduct() {
@@ -519,6 +525,10 @@ export default {
         })
         .catch(error => {
           console.error('获取原材料列表失败:', error);
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            that.$message.error('获取原材料列表失败');
+          }
         });
     },
     // 添加原材料到列表
@@ -645,17 +655,20 @@ export default {
           // 关闭加载中
           that.$loading().close();
           
-          // 显示错误消息
-          that.$message.error("保存失败，请重试");
-          console.error('保存原材料失败:', error);
-          // 打印具体的错误信息
-          if (error.response) {
-            console.error('响应数据:', error.response.data);
-            console.error('响应状态:', error.response.status);
-          } else if (error.request) {
-            console.error('请求数据:', error.request);
-          } else {
-            console.error('错误信息:', error.message);
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            // 显示错误消息
+            that.$message.error("保存失败，请重试");
+            console.error('保存原材料失败:', error);
+            // 打印具体的错误信息
+            if (error.response) {
+              console.error('响应数据:', error.response.data);
+              console.error('响应状态:', error.response.status);
+            } else if (error.request) {
+              console.error('请求数据:', error.request);
+            } else {
+              console.error('错误信息:', error.message);
+            }
           }
         });
     },
@@ -684,6 +697,12 @@ export default {
                 });
                 that.getAllProduct();
               } else {
+                that.$message.error("删除失败");
+              }
+            })
+            .catch(function (error) {
+              // 401错误由响应拦截器处理，不显示错误信息
+              if (error.response && error.response.status !== 401) {
                 that.$message.error("删除失败");
               }
             });
@@ -732,7 +751,10 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
-            that.$message.error('批量删除失败：' + error);
+            // 401错误由响应拦截器处理，不显示错误信息
+            if (error.response && error.response.status !== 401) {
+              that.$message.error('批量删除失败：' + error);
+            }
           });
       }).catch(() => {
         // 取消操作
@@ -762,6 +784,12 @@ export default {
           } else {
             that.$message.error("添加失败");
           }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            that.$message.error("添加失败");
+          }
         });
     },
     submitEditForm() {
@@ -780,6 +808,12 @@ export default {
             that.editDialogVisible = false;
             that.getAllProduct();
           } else {
+            that.$message.error("编辑失败");
+          }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
             that.$message.error("编辑失败");
           }
         });
@@ -814,6 +848,12 @@ export default {
             that.dropdownItems = response.data.data;
             that.dropdownTotal = response.data.total;
             that.showDropdown = true;
+          }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            console.error('获取产品名称失败:', error);
           }
         });
     },
@@ -864,6 +904,12 @@ export default {
             that.materialSuggestions = response.data.data;
             that.materialTotal = response.data.total;
             that.showMaterialDropdown = true;
+          }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            console.error('获取原材料名称失败:', error);
           }
         });
     },
@@ -920,6 +966,12 @@ export default {
             that.addProductTotal = response.data.total;
             that.showAddProductDropdown = true;
           }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            console.error('获取产品名称失败:', error);
+          }
         });
     },
     selectAddProductSuggestion(item) {
@@ -968,6 +1020,12 @@ export default {
             that.editProductSuggestions = response.data.data;
             that.editProductTotal = response.data.total;
             that.showEditProductDropdown = true;
+          }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            console.error('获取产品名称失败:', error);
           }
         });
     },

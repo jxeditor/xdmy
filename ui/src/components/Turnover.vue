@@ -177,7 +177,10 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
-            that.$message.error(error);
+            // 401错误由响应拦截器处理，不显示错误信息
+            if (error.response && error.response.status !== 401) {
+              that.$message.error(error);
+            }
           })
         } else {
           return false
@@ -204,7 +207,10 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
-            that.$message.error(error);
+            // 401错误由响应拦截器处理，不显示错误信息
+            if (error.response && error.response.status !== 401) {
+              that.$message.error(error);
+            }
           })
         } else {
           return false
@@ -221,7 +227,10 @@ export default {
             that.$message.error(response.data.msg);
           }
         }).catch(function (error) {
-        that.$message.error(error);
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error(error);
+        }
       })
     },
     getAllTurnover() {
@@ -235,7 +244,10 @@ export default {
           that.TurnoverData = response.data.data
           that.page.total = response.data.total
         }).catch(function (error) {
-        that.$message.error(error);
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error(error);
+        }
       })
     },
     searchTurnover() {
@@ -249,7 +261,10 @@ export default {
           that.TurnoverData = response.data.data
           that.page.total = response.data.total
         }).catch(function (error) {
-        that.$message.error(error);
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error(error);
+        }
       })
     },
   },

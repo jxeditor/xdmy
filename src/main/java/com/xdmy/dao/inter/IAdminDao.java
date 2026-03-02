@@ -7,7 +7,7 @@ import java.util.List;
 public interface IAdminDao {
     List<User> verifyLogin(User user);
     void updateToken(int userId, String token);
-    void saveToken(int userId, String token);
+    void saveToken(int userId, String token, String deviceInfo);
     User getUserByToken(String token);
     void deleteUserTokens(int userId);
 }

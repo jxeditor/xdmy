@@ -11,7 +11,7 @@ public class User {
     String password;
     String role;
     String companyName;
-    String token;
+    String deviceInfo;
 
     public User() {
     }
@@ -56,11 +56,11 @@ public class User {
         this.companyName = companyName;
     }
 
-    public String getToken() {
-        return token;
+    public String getDeviceInfo() {
+        return deviceInfo;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setDeviceInfo(String deviceInfo) {
+        this.deviceInfo = deviceInfo;
     }
 }

@@ -46,6 +46,24 @@ axios.interceptors.request.use(config => {
   return Promise.reject(error);
 });
 
+// 添加Axios响应拦截器，处理token无效的情况
+axios.interceptors.response.use(response => {
+  return response;
+}, error => {
+  // 处理token无效的情况
+  if (error.response && error.response.status === 401) {
+    // 清除localStorage中的登录信息
+    localStorage.removeItem('role');
+    localStorage.removeItem('loginTime');
+    localStorage.removeItem('token');
+    localStorage.removeItem('companyName');
+    
+    // 打开新标签页跳转到登录页面
+    window.open('/#/login', '_blank');
+  }
+  return Promise.reject(error);
+});
+
 const app = createApp(App)
 app.config.globalProperties.$axios = axios
 app.use(store).use(router).use(ElementPlus, { locale: zhCn }).mount('#app')

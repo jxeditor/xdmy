@@ -27,22 +27,17 @@ public class AdminDao extends BaseDao implements IAdminDao {
         jdbcTemplate.update(sql, token, userId);
     }
 
-    public void saveToken(int userId, String token) {
-        String sql = "INSERT INTO user_tokens (user_id, token) VALUES (?, ?)";
-        jdbcTemplate.update(sql, userId, token);
+    public void saveToken(int userId, String token, String deviceInfo) {
+        // 设置token过期时间为2小时后
+        String sql = "INSERT INTO user_tokens (user_id, token, device_info, expires_at) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 2 HOUR))";
+        jdbcTemplate.update(sql, userId, token, deviceInfo);
     }
 
     @Override
     public User getUserByToken(String token) {
-        // 先从新的token表查询
-        String sql = "SELECT u.* FROM users u JOIN user_tokens ut ON u.id = ut.user_id WHERE ut.token = ?";
+        // 只从新的token表查询，检查token是否过期
+        String sql = "SELECT u.* FROM users u JOIN user_tokens ut ON u.id = ut.user_id WHERE ut.token = ? AND (ut.expires_at IS NULL OR ut.expires_at > NOW())";
         List<User> users = jdbcTemplate.query(sql, new UserRowMapper(), token);
-        if (!users.isEmpty()) {
-            return users.get(0);
-        }
-        // 兼容旧的token存储方式
-        sql = "SELECT * FROM users WHERE token = ?";
-        users = jdbcTemplate.query(sql, new UserRowMapper(), token);
         return users.isEmpty() ? null : users.get(0);
     }
 
@@ -60,7 +55,6 @@ public class AdminDao extends BaseDao implements IAdminDao {
             user.setPassword(rs.getString("password"));
             user.setRole(rs.getString("role"));
             user.setCompanyName(rs.getString("company_name"));
-            user.setToken(rs.getString("token"));
             return user;
         }
     }

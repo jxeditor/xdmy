@@ -187,7 +187,10 @@ export default {
           };
           option && biShipment1Chart.setOption(option);
         }).catch(function (error) {
-        that.$message.error(error);
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error(error);
+        }
       })
     },
     getShipment2ChartData() {
@@ -302,7 +305,10 @@ export default {
           };
           option && biShipment2Chart.setOption(option);
         }).catch(function (error) {
-        that.$message.error(error);
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error(error);
+        }
       })
     }
   },

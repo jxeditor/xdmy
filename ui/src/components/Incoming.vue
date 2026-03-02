@@ -142,7 +142,7 @@
         <el-button @click="onBatchDeleteIncoming()">删除</el-button>
         <el-button @click="onClearSelection()">取消选择</el-button>
       </div>
-      <el-dialog title="入货" v-model="addIncomingVisible" width="80%" class="incoming-dialog">
+      <el-dialog title="入货" v-model="addIncomingVisible" width="80%" class="incoming-dialog" append-to-body>
         <el-form ref="addIncomingForm" :rules="addIncomingFormRules" :model="addIncomingForm" label-width="100px">
           <el-form-item label="单号:" prop="odd">
             <el-input v-model="addIncomingForm.odd"></el-input>
@@ -249,7 +249,31 @@
               <h4 style="margin-bottom: 10px;">添加原材料</h4>
               <el-row :gutter="20">
                 <el-col :span="10">
-                  <el-input v-model="newAddMaterial.materialName" placeholder="原材料名称" style="width: 100%" />
+                  <div class="incoming-search-container">
+                    <el-input v-model="newAddMaterial.materialName" placeholder="原材料名称" style="width: 100%" />
+                    <!-- 原材料联想结果下拉框 -->
+                    <div v-if="showAddMaterialSuggestions && addMaterialSuggestions.length > 0" class="incoming-suggestions-dropdown">
+                      <div 
+                        v-for="(item, index) in addMaterialSuggestions" 
+                        :key="index"
+                        class="incoming-suggestion-item"
+                        @click="selectAddMaterialSuggestion(item)"
+                      >
+                        {{ item }}
+                      </div>
+                      <!-- 原材料联想分页 -->
+                      <div v-if="addMaterialTotal > addMaterialPageSize" class="incoming-suggestion-pagination">
+                        <el-pagination
+                          small
+                          layout="prev, pager, next, ->, total"
+                          :total="addMaterialTotal"
+                          :page-size="addMaterialPageSize"
+                          :current-page="addMaterialCurrentPage"
+                          @current-change="handleAddMaterialPageChange"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </el-col>
                 <el-col :span="8">
                   <el-input-number v-model="newAddMaterial.quantity" :min="1" :step="1" placeholder="数量" style="width: 100%" />
@@ -266,7 +290,7 @@
           </el-form-item>
         </el-form>
       </el-dialog>
-      <el-dialog title="修改单据信息" v-model="updateIncomingVisible" width="80%" class="incoming-dialog">
+      <el-dialog title="修改单据信息" v-model="updateIncomingVisible" width="80%" class="incoming-dialog" append-to-body>
         <el-form ref="updateIncomingForm" :rules="updateIncomingFormRules" :model="updateIncomingForm"
                  label-width="100px">
           <el-form-item label="单号:" prop="odd">
@@ -374,7 +398,31 @@
               <h4 style="margin-bottom: 10px;">添加原材料</h4>
               <el-row :gutter="20">
                 <el-col :span="10">
-                  <el-input v-model="newUpdateMaterial.materialName" placeholder="原材料名称" style="width: 100%" />
+                  <div class="incoming-search-container">
+                    <el-input v-model="newUpdateMaterial.materialName" placeholder="原材料名称" style="width: 100%" />
+                    <!-- 原材料联想结果下拉框 -->
+                    <div v-if="showUpdateMaterialSuggestions && updateMaterialSuggestions.length > 0" class="incoming-suggestions-dropdown">
+                      <div 
+                        v-for="(item, index) in updateMaterialSuggestions" 
+                        :key="index"
+                        class="incoming-suggestion-item"
+                        @click="selectUpdateMaterialSuggestion(item)"
+                      >
+                        {{ item }}
+                      </div>
+                      <!-- 原材料联想分页 -->
+                      <div v-if="updateMaterialTotal > updateMaterialPageSize" class="incoming-suggestion-pagination">
+                        <el-pagination
+                          small
+                          layout="prev, pager, next, ->, total"
+                          :total="updateMaterialTotal"
+                          :page-size="updateMaterialPageSize"
+                          :current-page="updateMaterialCurrentPage"
+                          @current-change="handleUpdateMaterialPageChange"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </el-col>
                 <el-col :span="8">
                   <el-input-number v-model="newUpdateMaterial.quantity" :min="1" :step="1" placeholder="数量" style="width: 100%" />
@@ -430,7 +478,10 @@ export default {
         this.multipleSelection.forEach((data) => {
           this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/incoming/updatePaystatusIncomingById?id=` + data.id)
             .catch(function (error) {
-              that.$message.error(error);
+              // 401错误由响应拦截器处理，不显示错误信息
+              if (error.response && error.response.status !== 401) {
+                that.$message.error(error);
+              }
             })
         })
         this.sleep(500)
@@ -451,7 +502,10 @@ export default {
             this.multipleSelection.forEach((data) => {
               this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/incoming/deleteIncomingById?id=` + data.id)
                 .catch(function (error) {
-                  that.$message.error(error);
+                  // 401错误由响应拦截器处理，不显示错误信息
+                  if (error.response && error.response.status !== 401) {
+                    that.$message.error(error);
+                  }
                 })
             })
             this.sleep(500)
@@ -664,13 +718,20 @@ export default {
       this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/incoming/getIncomingMaterialOperations?id=${incomingId}`)
         .then(function (response) {
           if (response.data.code === 1) {
-            that.updateMaterialRelations = response.data.data
+            // 将后端返回的material_name字段映射为前端需要的materialName
+            that.updateMaterialRelations = response.data.data.map(item => ({
+              materialName: item.material_name,
+              quantity: item.quantity
+            }))
           } else {
             that.$message.error(response.data.msg)
           }
         }).catch(function (error) {
         console.error('获取原材料操作记录失败:', error)
-        that.$message.error('获取原材料操作记录失败')
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error('获取原材料操作记录失败')
+        }
       })
     },
     // 校验原材料库存
@@ -697,7 +758,12 @@ export default {
                 }
               })
               .catch(error => {
-                innerReject(`校验原材料 ${relation.materialName} 库存失败: ${error}`)
+                // 401错误由响应拦截器处理，不显示错误信息
+                if (error.response && error.response.status === 401) {
+                  // 由响应拦截器处理，这里不做处理
+                } else {
+                  innerReject(`校验原材料 ${relation.materialName} 库存失败: ${error}`)
+                }
               })
           })
         })
@@ -741,7 +807,12 @@ export default {
                 }
               })
               .catch(error => {
-                innerReject(`操作原材料 ${relation.materialName} 库存失败: ${error}`)
+                // 401错误由响应拦截器处理，不显示错误信息
+                if (error.response && error.response.status === 401) {
+                  // 由响应拦截器处理，这里不做处理
+                } else {
+                  innerReject(`操作原材料 ${relation.materialName} 库存失败: ${error}`)
+                }
               })
           })
         })
@@ -829,7 +900,10 @@ export default {
           that.$message.error(response.data.msg);
         }
       }).catch(function (error) {
-        that.$message.error(error);
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error(error);
+        }
       })
     },
     onUpdateIncomingCommit(updateIncomingForm) {
@@ -905,7 +979,10 @@ export default {
           that.$message.error(response.data.msg);
         }
       }).catch(function (error) {
-        that.$message.error(error);
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error(error);
+        }
       })
     },
     onDeleteIncoming(id) {
@@ -927,7 +1004,10 @@ export default {
                 that.$message.error(response.data.msg);
               }
             }).catch(function (error) {
-            that.$message.error(error);
+            // 401错误由响应拦截器处理，不显示错误信息
+            if (error.response && error.response.status !== 401) {
+              that.$message.error(error);
+            }
           })
         })
         .catch(() => {
@@ -950,7 +1030,10 @@ export default {
           that.page.total = response.data.total
         }).catch(function (error) {
         console.error('API Error:', error);
-        that.$message.error('连接失败，请检查网络或服务状态');
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error('连接失败，请检查网络或服务状态');
+        }
       })
     },
     searchIncoming() {
@@ -964,7 +1047,10 @@ export default {
           that.IncomingData = response.data.data
           that.page.total = response.data.total
         }).catch(function (error) {
-        that.$message.error(error);
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error(error);
+        }
       })
     },
     // 获取供应商联想建议
@@ -1145,6 +1231,94 @@ export default {
       this.updateProductCurrentPage = pageNum
       this.getUpdateProductSuggestions()
     },
+    // 处理添加原材料输入变化
+    handleAddMaterialInput() {
+      this.addMaterialCurrentPage = 1
+      this.getAddMaterialSuggestions()
+    },
+    // 处理修改原材料输入变化
+    handleUpdateMaterialInput() {
+      this.updateMaterialCurrentPage = 1
+      this.getUpdateMaterialSuggestions()
+    },
+    // 获取添加原材料联想建议
+    getAddMaterialSuggestions() {
+      const that = this
+      if (!that.newAddMaterial.materialName) {
+        that.addMaterialSuggestions = []
+        that.showAddMaterialSuggestions = false
+        return
+      }
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/materialStock/findMaterialNamesByPrefix`, {
+        prefix: that.newAddMaterial.materialName,
+        pageNum: that.addMaterialCurrentPage,
+        pageSize: that.addMaterialPageSize
+      })
+      .then(function (response) {
+        if (response.data.code === 1) {
+          that.addMaterialSuggestions = response.data.data
+          that.addMaterialTotal = response.data.total || 0
+          that.showAddMaterialSuggestions = true
+        } else {
+          that.addMaterialSuggestions = []
+          that.showAddMaterialSuggestions = false
+        }
+      })
+      .catch(function (error) {
+        console.error('获取添加原材料联想建议失败:', error)
+        that.addMaterialSuggestions = []
+        that.showAddMaterialSuggestions = false
+      })
+    },
+    // 获取修改原材料联想建议
+    getUpdateMaterialSuggestions() {
+      const that = this
+      if (!that.newUpdateMaterial.materialName) {
+        that.updateMaterialSuggestions = []
+        that.showUpdateMaterialSuggestions = false
+        return
+      }
+      this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/materialStock/findMaterialNamesByPrefix`, {
+        prefix: that.newUpdateMaterial.materialName,
+        pageNum: that.updateMaterialCurrentPage,
+        pageSize: that.updateMaterialPageSize
+      })
+      .then(function (response) {
+        if (response.data.code === 1) {
+          that.updateMaterialSuggestions = response.data.data
+          that.updateMaterialTotal = response.data.total || 0
+          that.showUpdateMaterialSuggestions = true
+        } else {
+          that.updateMaterialSuggestions = []
+          that.showUpdateMaterialSuggestions = false
+        }
+      })
+      .catch(function (error) {
+        console.error('获取修改原材料联想建议失败:', error)
+        that.updateMaterialSuggestions = []
+        that.showUpdateMaterialSuggestions = false
+      })
+    },
+    // 选择添加原材料
+    selectAddMaterialSuggestion(item) {
+      this.newAddMaterial.materialName = item
+      this.showAddMaterialSuggestions = false
+    },
+    // 选择修改原材料
+    selectUpdateMaterialSuggestion(item) {
+      this.newUpdateMaterial.materialName = item
+      this.showUpdateMaterialSuggestions = false
+    },
+    // 处理添加原材料分页变化
+    handleAddMaterialPageChange(pageNum) {
+      this.addMaterialCurrentPage = pageNum
+      this.getAddMaterialSuggestions()
+    },
+    // 处理修改原材料分页变化
+    handleUpdateMaterialPageChange(pageNum) {
+      this.updateMaterialCurrentPage = pageNum
+      this.getUpdateMaterialSuggestions()
+    },
     // 获取添加入货单产品联想建议
     getAddProductSuggestions() {
       const that = this
@@ -1222,6 +1396,20 @@ export default {
     productInput() {
       this.productCurrentPage = 1
       this.getProductSuggestions()
+    },
+    // 监听添加原材料输入变化，获取联想建议
+    "newAddMaterial.materialName": {
+      handler(val) {
+        this.handleAddMaterialInput()
+      },
+      debounce: 300
+    },
+    // 监听修改原材料输入变化，获取联想建议
+    "newUpdateMaterial.materialName": {
+      handler(val) {
+        this.handleUpdateMaterialInput()
+      },
+      debounce: 300
     }
   },
   data() {
@@ -1308,14 +1496,32 @@ export default {
       // 原材料关系相关数据
       addMaterialRelations: [],
       newAddMaterial: {
-        material_name: '',
+        materialName: '',
         quantity: 1
       },
       updateMaterialRelations: [],
       newUpdateMaterial: {
-        material_name: '',
+        materialName: '',
         quantity: 1
       },
+      // 原材料联想相关数据
+      materialSuggestions: [],
+      showMaterialSuggestions: false,
+      materialCurrentPage: 1,
+      materialPageSize: 10,
+      materialTotal: 0,
+      // 添加原材料联想相关数据
+      addMaterialSuggestions: [],
+      showAddMaterialSuggestions: false,
+      addMaterialCurrentPage: 1,
+      addMaterialPageSize: 10,
+      addMaterialTotal: 0,
+      // 修改原材料联想相关数据
+      updateMaterialSuggestions: [],
+      showUpdateMaterialSuggestions: false,
+      updateMaterialCurrentPage: 1,
+      updateMaterialPageSize: 10,
+      updateMaterialTotal: 0,
       initialOperateMaterial: 0,
       addIncomingFormRules: {
         odd: [

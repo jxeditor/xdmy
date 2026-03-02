@@ -109,7 +109,10 @@ export default {
           that.page.total = response.data.total
         }).catch(function (error) {
         console.error('获取原材料操作记录失败:', error)
-        that.$message.error('获取原材料操作记录失败');
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error('获取原材料操作记录失败');
+        }
       })
     },
     searchMaterialOperations() {

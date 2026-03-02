@@ -77,7 +77,7 @@
       </div>
       
       <!-- 添加关系对话框 -->
-      <el-dialog title="添加产品与原材料关系" v-model="addRelationVisible" width="80%">
+      <el-dialog title="添加产品与原材料关系" v-model="addRelationVisible" width="80%" append-to-body>
         <el-form ref="addRelationForm" :rules="addRelationFormRules" :model="addRelationForm" label-width="120px">
           <el-form-item label="产品:" prop="productName">
             <div class="relation-search-container">
@@ -125,7 +125,7 @@
       </el-dialog>
       
       <!-- 修改关系对话框 -->
-      <el-dialog title="修改产品与原材料关系" v-model="updateRelationVisible" width="80%">
+      <el-dialog title="修改产品与原材料关系" v-model="updateRelationVisible" width="80%" append-to-body>
         <el-form ref="updateRelationForm" :rules="updateRelationFormRules" :model="updateRelationForm" label-width="120px">
           <el-form-item label="产品:" prop="productName">
             <div class="search-container">
@@ -297,7 +297,10 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
-            that.$message.error('批量删除失败：' + error);
+            // 401错误由响应拦截器处理，不显示错误信息
+            if (error.response && error.response.status !== 401) {
+              that.$message.error('批量删除失败：' + error);
+            }
           });
       }).catch(() => {
         // 取消操作
@@ -355,7 +358,10 @@ export default {
                   }
                 })
                 .catch(function (error) {
-                  that.$message.error(error);
+                  // 401错误由响应拦截器处理，不显示错误信息
+                  if (error.response && error.response.status !== 401) {
+                    that.$message.error(error);
+                  }
                 });
             } else {
               // 不唯一，提示错误
@@ -363,7 +369,10 @@ export default {
             }
           })
           .catch(function (error) {
-            that.$message.error('检查关系唯一性失败');
+            // 401错误由响应拦截器处理，不显示错误信息
+            if (error.response && error.response.status !== 401) {
+              that.$message.error('检查关系唯一性失败');
+            }
           });
         } else {
           return false;
@@ -401,7 +410,10 @@ export default {
                   }
                 })
                 .catch(function (error) {
-                  that.$message.error(error);
+                  // 401错误由响应拦截器处理，不显示错误信息
+                  if (error.response && error.response.status !== 401) {
+                    that.$message.error(error);
+                  }
                 });
             } else {
               // 不唯一，提示错误
@@ -409,7 +421,10 @@ export default {
             }
           })
           .catch(function (error) {
-            that.$message.error('检查关系唯一性失败');
+            // 401错误由响应拦截器处理，不显示错误信息
+            if (error.response && error.response.status !== 401) {
+              that.$message.error('检查关系唯一性失败');
+            }
           });
         } else {
           return false;
@@ -435,6 +450,12 @@ export default {
               } else {
                 that.$message.error("删除失败");
               }
+            })
+            .catch(function (error) {
+              // 401错误由响应拦截器处理，不显示错误信息
+              if (error.response && error.response.status !== 401) {
+                that.$message.error("删除失败");
+              }
             });
         })
         .catch(function () {
@@ -454,7 +475,10 @@ export default {
           that.page.total = response.data.total;
         })
         .catch(function (error) {
-          that.$message.error(error);
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            that.$message.error(error);
+          }
         });
     },
     handleProductInput() {
@@ -481,8 +505,11 @@ export default {
         })
         .catch(function (error) {
           console.error(error);
-          that.productSuggestions = [];
-          that.showProductSuggestions = false;
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            that.productSuggestions = [];
+            that.showProductSuggestions = false;
+          }
         });
     },
     // 选择产品联想建议
@@ -517,8 +544,11 @@ export default {
         })
         .catch(function (error) {
           console.error(error);
-          that.addProductSuggestions = [];
-          that.showAddProductSuggestions = false;
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            that.addProductSuggestions = [];
+            that.showAddProductSuggestions = false;
+          }
         });
     },
     // 获取添加原材料联想建议
@@ -540,8 +570,11 @@ export default {
         })
         .catch(function (error) {
           console.error(error);
-          that.addMaterialSuggestions = [];
-          that.showAddMaterialSuggestions = false;
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            that.addMaterialSuggestions = [];
+            that.showAddMaterialSuggestions = false;
+          }
         });
     },
     // 选择添加产品联想建议
@@ -573,8 +606,11 @@ export default {
         })
         .catch(function (error) {
           console.error(error);
-          that.updateProductSuggestions = [];
-          that.showUpdateProductSuggestions = false;
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            that.updateProductSuggestions = [];
+            that.showUpdateProductSuggestions = false;
+          }
         });
     },
     // 获取修改原材料联想建议
@@ -596,8 +632,11 @@ export default {
         })
         .catch(function (error) {
           console.error(error);
-          that.updateMaterialSuggestions = [];
-          that.showUpdateMaterialSuggestions = false;
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            that.updateMaterialSuggestions = [];
+            that.showUpdateMaterialSuggestions = false;
+          }
         });
     },
     // 选择修改产品联想建议

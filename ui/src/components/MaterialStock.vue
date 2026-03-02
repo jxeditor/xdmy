@@ -293,6 +293,12 @@ export default {
             that.MaterialStockData = response.data.data;
             that.total = response.data.total;
           }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            that.$message.error('连接失败，请检查网络或服务状态');
+          }
         });
     },
     searchStock() {
@@ -349,6 +355,12 @@ export default {
               } else {
                 that.$message.error("删除失败");
               }
+            })
+            .catch(function (error) {
+              // 401错误由响应拦截器处理，不显示错误信息
+              if (error.response && error.response.status !== 401) {
+                that.$message.error("删除失败");
+              }
             });
         })
         .catch(function () {
@@ -381,6 +393,12 @@ export default {
           } else {
             that.$message.error("添加失败");
           }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            that.$message.error("添加失败");
+          }
         });
     },
     submitEditForm() {
@@ -405,6 +423,12 @@ export default {
             that.editDialogVisible = false;
             that.getAllMaterialStock();
           } else {
+            that.$message.error("编辑失败");
+          }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
             that.$message.error("编辑失败");
           }
         });
@@ -439,6 +463,12 @@ export default {
             that.dropdownItems = response.data.data;
             that.total = response.data.total;
             that.showDropdown = true;
+          }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            console.error('获取材料名称失败:', error);
           }
         });
     },
@@ -508,6 +538,12 @@ export default {
             that.addMaterialTotal = response.data.total;
             that.showAddMaterialDropdown = true;
           }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            console.error('获取材料名称失败:', error);
+          }
         });
     },
     selectAddMaterialSuggestion(item) {
@@ -556,6 +592,12 @@ export default {
             that.editMaterialSuggestions = response.data.data;
             that.editMaterialTotal = response.data.total;
             that.showEditMaterialDropdown = true;
+          }
+        })
+        .catch(function (error) {
+          // 401错误由响应拦截器处理，不显示错误信息
+          if (error.response && error.response.status !== 401) {
+            console.error('获取材料名称失败:', error);
           }
         });
     },
@@ -613,7 +655,10 @@ export default {
               that.$message.error(response.data.msg);
             }
           }).catch(function (error) {
-            that.$message.error('批量删除失败：' + error);
+            // 401错误由响应拦截器处理，不显示错误信息
+            if (error.response && error.response.status !== 401) {
+              that.$message.error('批量删除失败：' + error);
+            }
           });
       }).catch(() => {
         // 取消操作

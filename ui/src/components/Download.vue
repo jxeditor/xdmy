@@ -83,7 +83,10 @@ export default {
           document.body.removeChild(link) // 下载完成移除元素
           window.URL.revokeObjectURL(url) // 释放掉blob对象
         }).catch((error) => {
-        that.$message.error(error);
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error(error);
+        }
       })
     },
     downloadIncoming() {
@@ -109,7 +112,10 @@ export default {
           document.body.removeChild(link) // 下载完成移除元素
           window.URL.revokeObjectURL(url) // 释放掉blob对象
         }).catch((error) => {
-        that.$message.error(error);
+        // 401错误由响应拦截器处理，不显示错误信息
+        if (error.response && error.response.status !== 401) {
+          that.$message.error(error);
+        }
       })
     }
   },

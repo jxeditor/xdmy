@@ -82,9 +82,19 @@ export default {
         let encodedPassword = btoa(this.loginForm.password);
         console.log('Encoded password:', encodedPassword);
         
+        // 收集设备信息
+        let deviceInfo = {
+          userAgent: navigator.userAgent,
+          platform: navigator.platform,
+          language: navigator.language,
+          screen: `${window.screen.width}x${window.screen.height}`,
+          timestamp: new Date().getTime()
+        };
+        
         let param = {
           username: this.loginForm.username,
-          password: encodedPassword
+          password: encodedPassword,
+          deviceInfo: JSON.stringify(deviceInfo)
         };
         console.log('Login params:', param);
         

@@ -17,10 +17,11 @@ public class AdminService extends BaseService implements IAdminService {
     public JSONObject verifyLogin(User user) {
         DBContextHolder.setDbType("primary");
         List<User> userList = daoFacade.getAdminDao().verifyLogin(user);
-        return toJSONObject(userList);
+        String deviceInfo = user.getDeviceInfo();
+        return toJSONObject(userList, deviceInfo);
     }
 
-    public JSONObject toJSONObject(List<User> userList) {
+    public JSONObject toJSONObject(List<User> userList, String deviceInfo) {
         JSONObject result = new JSONObject();
         JSONArray data = new JSONArray();
         try {
@@ -28,12 +29,8 @@ public class AdminService extends BaseService implements IAdminService {
                 for (User user : userList) {
                     // 生成Token
                     String token = generateToken(user.getId(), user.getUsername());
-                    // 保存Token到新表
-                    daoFacade.getAdminDao().saveToken(user.getId(), token);
-                    // 保留旧的token更新，用于向后兼容
-                    daoFacade.getAdminDao().updateToken(user.getId(), token);
-                    // 设置用户的Token
-                    user.setToken(token);
+                    // 保存Token到新表，包含设备信息
+                    daoFacade.getAdminDao().saveToken(user.getId(), token, deviceInfo);
                     
                     JSONObject obj = new JSONObject();
                     obj.put("id", user.getId());
