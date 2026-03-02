@@ -111,15 +111,15 @@ public class ProductDao extends BaseDao implements IProductDao {
                      "    ELSE 1 " +
                      "END, " +
                      "product_name " +
-                     "LIMIT ? OFFSET ?";
+                     "LIMIT ? , ?";
         
         return jdbcTemplate.queryForList(sql, String.class, 
             "%" + prefix + "%",  // 包含完整前缀
             "%" + prefix.replaceAll("", "%") + "%",  // 包含前缀中每个字符
             companyName,  // 公司名称
             "%" + prefix + "%",  // 用于排序
-            pageSize, 
-            offset
+            offset, 
+            pageSize
         );
     }
 

@@ -1047,6 +1047,77 @@ export default {
   padding: 30px;
   margin: 0 auto;
   max-width: 1400px;
+}
+</style>
+
+<style>
+/* 产品对话框样式 */
+.product-dialog {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+  border: none !important;
+}
+
+.product-dialog .el-dialog__header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-bottom: none !important;
+  padding: 20px 24px !important;
+  margin: -20px -24px 0 !important;
+  width: calc(100% + 48px) !important;
+  box-sizing: border-box !important;
+}
+
+.product-dialog .el-dialog__title {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: white !important;
+  margin: 0 !important;
+}
+
+.product-dialog .el-dialog__headerbtn {
+  top: 20px !important;
+  right: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.product-dialog .el-dialog__headerbtn .el-icon {
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 24px !important;
+  font-size: 16px !important;
+}
+
+.product-dialog .el-dialog__headerbtn .el-icon .el-dialog__close {
+  color: white !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.product-dialog .el-dialog__headerbtn .el-icon .el-dialog__close svg {
+  width: 16px !important;
+  height: 16px !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+}
+</style>
+
+<style scoped>
+/* 操作按钮容器 */
+#product .operation-buttons {
+  margin-bottom: 20px;
   animation: fadeInUp 0.5s ease-out;
 }
 

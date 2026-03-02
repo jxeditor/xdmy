@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.math.BigInteger;
 
 @Repository
 public class IncomingDao extends BaseDao implements IIncomingDao {
@@ -88,8 +89,15 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
                 return ps;
             }, keyHolder);
 
+            int result = -1;
             Number key = keyHolder.getKey();
-            int result = key != null ? key.intValue() : -1;
+            if (key != null) {
+                if (key instanceof BigInteger) {
+                    result = ((BigInteger) key).intValue();
+                } else {
+                    result = key.intValue();
+                }
+            }
 
             // 检查product表中是否存在对应产品的记录
             String checkProductSql = "SELECT COUNT(*) FROM product WHERE product_name = ? AND company_name = ?";

@@ -28,7 +28,9 @@ public class AdminService extends BaseService implements IAdminService {
                 for (User user : userList) {
                     // 生成Token
                     String token = generateToken(user.getId(), user.getUsername());
-                    // 更新Token到数据库
+                    // 保存Token到新表
+                    daoFacade.getAdminDao().saveToken(user.getId(), token);
+                    // 保留旧的token更新，用于向后兼容
                     daoFacade.getAdminDao().updateToken(user.getId(), token);
                     // 设置用户的Token
                     user.setToken(token);

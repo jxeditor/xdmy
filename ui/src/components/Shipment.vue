@@ -505,12 +505,12 @@ export default {
     onAddShipment() {
       // 设置初始化标志位为true
       this.isInitializing = true
-      // 重置添加表单
+      // 重置添加表单，保留上次的单号、客户和时间信息
       this.addShipmentForm = {
-        odd: ``,
-        customer: ``,
+        odd: this.lastShipmentInfo.odd,
+        customer: this.lastShipmentInfo.customer,
         product: ``,
-        billdate: ``,
+        billdate: this.lastShipmentInfo.billdate || new Date().toISOString().split('T')[0],
         amount: 0,
         unitprice: 0,
         paystatus: `0`,
@@ -614,6 +614,12 @@ export default {
       }
       this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/shipment/addShipment`, param).then(function (response) {
         if (response.data.code === 1) {
+          // 开单成功，保存当前的单号、客户和时间信息
+          that.lastShipmentInfo = {
+            odd: that.addShipmentForm.odd,
+            customer: that.addShipmentForm.customer,
+            billdate: that.addShipmentForm.billdate
+          }
           // 开单成功，操作原材料库存
             if (that.addShipmentForm.operate_material === 1) {
                 that.operateMaterialStock(that.addMaterialRelations, that.addShipmentForm.amount, 'increase')
@@ -1380,6 +1386,12 @@ export default {
       billDateInput: ``,
       addShipmentVisible: false,
       updateShipmentVisible: false,
+      // 存储上次开单信息
+      lastShipmentInfo: {
+        odd: ``,
+        customer: ``,
+        billdate: ``
+      },
       addShipmentForm: {
         odd: ``,
         customer: ``,

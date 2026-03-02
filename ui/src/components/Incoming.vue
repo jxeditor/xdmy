@@ -500,10 +500,26 @@ export default {
       this.showUpdateProducerSuggestions = false
     },
     onAddIncoming() {
-      this.addIncomingVisible = true
+      // 重置添加表单，保留上次的单号、供应商和时间信息
+      this.addIncomingForm = {
+        odd: this.lastIncomingInfo.odd,
+        producer: this.lastIncomingInfo.producer,
+        product: ``,
+        billdate: this.lastIncomingInfo.billdate || new Date().toISOString().split('T')[0],
+        amount: 0,
+        unitprice: 0,
+        paystatus: `0`,
+        remark: `无`,
+        operate_material: 0
+      }
       // 重置原材料关系数据
       this.addMaterialRelations = []
       this.newAddMaterial = { material_name: '', quantity: 1 }
+      // 重置下拉框显示状态
+      this.showAddProducerSuggestions = false
+      this.showAddProductSuggestions = false
+      // 显示添加对话框
+      this.addIncomingVisible = true
     },
     onUpdateIncoming(incoming) {
       console.log('修改入货单数据:', incoming)
@@ -790,6 +806,12 @@ export default {
       }
       this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/incoming/addIncoming`, param).then(function (response) {
         if (response.data.code === 1) {
+          // 入货成功，保存当前的单号、供应商和时间信息
+          that.lastIncomingInfo = {
+            odd: that.addIncomingForm.odd,
+            producer: that.addIncomingForm.producer,
+            billdate: that.addIncomingForm.billdate
+          }
           // 入货成功，操作原材料库存
             if (that.addIncomingForm.operate_material === 1) {
                 that.operateMaterialStock(that.addMaterialRelations, that.addIncomingForm.amount, 'increase')
@@ -1219,6 +1241,12 @@ export default {
       billDateInput: ``,
       addIncomingVisible: false,
       updateIncomingVisible: false,
+      // 存储上次入货信息
+      lastIncomingInfo: {
+        odd: ``,
+        producer: ``,
+        billdate: ``
+      },
       // 供应商联想相关数据
       producerSuggestions: [],
       showProducerSuggestions: false,

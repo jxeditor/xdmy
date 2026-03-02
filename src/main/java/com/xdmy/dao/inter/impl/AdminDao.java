@@ -22,15 +22,33 @@ public class AdminDao extends BaseDao implements IAdminDao {
 
     @Override
     public void updateToken(int userId, String token) {
+        // 保留原方法，用于向后兼容
         String sql = "UPDATE users SET token = ? WHERE id = ?";
         jdbcTemplate.update(sql, token, userId);
     }
 
+    public void saveToken(int userId, String token) {
+        String sql = "INSERT INTO user_tokens (user_id, token) VALUES (?, ?)";
+        jdbcTemplate.update(sql, userId, token);
+    }
+
     @Override
     public User getUserByToken(String token) {
-        String sql = "SELECT * FROM users WHERE token = ?";
+        // 先从新的token表查询
+        String sql = "SELECT u.* FROM users u JOIN user_tokens ut ON u.id = ut.user_id WHERE ut.token = ?";
         List<User> users = jdbcTemplate.query(sql, new UserRowMapper(), token);
+        if (!users.isEmpty()) {
+            return users.get(0);
+        }
+        // 兼容旧的token存储方式
+        sql = "SELECT * FROM users WHERE token = ?";
+        users = jdbcTemplate.query(sql, new UserRowMapper(), token);
         return users.isEmpty() ? null : users.get(0);
+    }
+
+    public void deleteUserTokens(int userId) {
+        String sql = "DELETE FROM user_tokens WHERE user_id = ?";
+        jdbcTemplate.update(sql, userId);
     }
 
     static class UserRowMapper implements RowMapper<User> {

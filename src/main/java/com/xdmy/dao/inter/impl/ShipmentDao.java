@@ -15,6 +15,7 @@ import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.Connection;
 import java.util.List;
+import java.math.BigInteger;
 
 //
 @Repository
@@ -95,7 +96,15 @@ public class ShipmentDao extends BaseDao implements IShipmentDao {
                 }
             }, keyHolder);
             // 获取新插入记录的ID
-            Integer id = keyHolder.getKeyAs(Integer.class);
+            Integer id = null;
+            Number key = keyHolder.getKey();
+            if (key != null) {
+                if (key instanceof BigInteger) {
+                    id = ((BigInteger) key).intValue();
+                } else {
+                    id = key.intValue();
+                }
+            }
             if (id == null) {
                 jdbcTemplate.execute("ROLLBACK");
                 return 0;
