@@ -23,7 +23,6 @@ public class MaterialStockController extends BaseController {
                                        @RequestParam(value = "hideZeroStock", defaultValue = "false") Boolean hideZeroStock,
                                        HttpServletRequest request
     ) {
-        System.out.println("Received hideZeroStock parameter: " + hideZeroStock);
         String companyName = getCompanyName(request);
         JSONObject result = serviceFacade.getMaterialStockService().findAllMaterialStock(pageNum, pageSize, materialName, hideZeroStock, companyName);
         return new JSONReturn(result).toString();
