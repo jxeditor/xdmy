@@ -668,10 +668,11 @@ export default {
       }
       this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/shipment/addShipment`, param).then(function (response) {
         if (response.data.code === 1) {
-          // 开单成功，保存当前的单号、客户和时间信息
+          // 开单成功，保存当前的单号、客户、产品和时间信息
           that.lastShipmentInfo = {
             odd: that.addShipmentForm.odd,
             customer: that.addShipmentForm.customer,
+            product: that.addShipmentForm.product,
             billdate: that.addShipmentForm.billdate
           }
           // 开单成功，操作原材料库存
@@ -1548,6 +1549,7 @@ export default {
           setTimeout(() => {
             this.addShipmentForm.odd = this.lastShipmentInfo.odd
             this.addShipmentForm.customer = this.lastShipmentInfo.customer
+            this.addShipmentForm.product = this.lastShipmentInfo.product
             this.addShipmentForm.billdate = this.lastShipmentInfo.billdate
             this.isInitializing = false
           }, 100)
@@ -1576,6 +1578,7 @@ export default {
       lastShipmentInfo: {
         odd: ``,
         customer: ``,
+        product: ``,
         billdate: ``
       },
       addShipmentForm: {

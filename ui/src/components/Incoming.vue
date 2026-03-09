@@ -554,11 +554,11 @@ export default {
       this.showUpdateProducerSuggestions = false
     },
     onAddIncoming() {
-      // 重置添加表单，保留上次的单号、供应商和时间信息
+      // 重置添加表单，保留上次的单号、供应商、产品和时间信息
       this.addIncomingForm = {
         odd: this.lastIncomingInfo.odd,
         producer: this.lastIncomingInfo.producer,
-        product: ``,
+        product: this.lastIncomingInfo.product,
         billdate: this.lastIncomingInfo.billdate || new Date().toISOString().split('T')[0],
         amount: 0,
         unitprice: 0,
@@ -877,10 +877,11 @@ export default {
       }
       this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/incoming/addIncoming`, param).then(function (response) {
         if (response.data.code === 1) {
-          // 入货成功，保存当前的单号、供应商和时间信息
+          // 入货成功，保存当前的单号、供应商、产品和时间信息
           that.lastIncomingInfo = {
             odd: that.addIncomingForm.odd,
             producer: that.addIncomingForm.producer,
+            product: that.addIncomingForm.product,
             billdate: that.addIncomingForm.billdate
           }
           // 入货成功，操作原材料库存
@@ -1433,6 +1434,7 @@ export default {
       lastIncomingInfo: {
         odd: ``,
         producer: ``,
+        product: ``,
         billdate: ``
       },
       // 供应商联想相关数据
