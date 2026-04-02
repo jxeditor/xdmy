@@ -606,8 +606,10 @@ export default {
         console.log('操作原材料开关是关闭的，清空原材料关系')
         this.updateMaterialRelations = []
       }
-      // 重置新添加的原材料信息
+      // 重置新添加的原材料信息和原始总量
       this.newUpdateMaterial = { material_name: '', quantity: 1 }
+      this.originalUpdateTotalQuantities = {}
+      this.originalUpdateMaterialRelations = null
       // 显示修改对话框
       this.updateShipmentVisible = true
       // 延迟设置初始化标志位为false，确保所有watch监听器都执行完毕
@@ -620,7 +622,7 @@ export default {
       this.$refs[addShipmentForm].validate((valid) => {
         if (valid) {
           // 如果开启了操作原材料，校验库存
-          if (that.addShipmentForm.operate_material === 1) {
+          if (that.addShipmentForm.operate_material == 1) {
             // 检查是否添加了原材料关系
             if (!that.addMaterialRelations || that.addMaterialRelations.length === 0) {
               that.$message({
@@ -676,7 +678,7 @@ export default {
             billdate: that.addShipmentForm.billdate
           }
           // 开单成功，操作原材料库存
-            if (that.addShipmentForm.operate_material === 1) {
+            if (that.addShipmentForm.operate_material == 1) {
                 that.operateMaterialStock(that.addMaterialRelations, that.addShipmentForm.amount, 'increase')
                   .then(() => {
                     console.log('原材料库存操作成功')
@@ -703,7 +705,7 @@ export default {
       this.$refs[updateShipmentForm].validate((valid) => {
         if (valid) {
           // 如果开启了操作原材料，需要处理库存
-          if (that.updateShipmentForm.operate_material === 1) {
+          if (that.updateShipmentForm.operate_material == 1) {
             // 检查是否添加了原材料关系
             if (!that.updateMaterialRelations || that.updateMaterialRelations.length === 0) {
               that.$message({
@@ -759,14 +761,14 @@ export default {
       param.append(`fireproofboardcost`, this.updateShipmentForm.fireproofboardcost)
       param.append(`remark`, this.updateShipmentForm.remark)
       param.append(`operate_material`, this.updateShipmentForm.operate_material)
-      // 添加原材料关系数据
-      if (this.updateShipmentForm.operate_material === 1) {
+      // 传递原材料关系数据，backend 根据新旧差异计算库存变化
+      if (this.updateShipmentForm.operate_material == 1) {
         param.append(`materialRelations`, JSON.stringify(this.updateMaterialRelations))
       }
       this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/shipment/updateShipment`, param).then(function (response) {
         if (response.data.code === 1) {
-          // 修改成功，后端会自动处理原材料库存
           console.log('修改出货单成功')
+          // 原材料库存由后端自动处理
           that.updateShipmentVisible = false
           that.getAllShipment()
         } else {
@@ -1184,6 +1186,8 @@ export default {
             that.addMaterialRelations = formattedRelations
             console.log('添加表单原材料关系:', that.addMaterialRelations)
           } else {
+            // 从产品关系加载时没有历史操作记录，原始总量清零
+            that.originalUpdateTotalQuantities = {}
             that.updateMaterialRelations = formattedRelations
             console.log('修改表单原材料关系:', that.updateMaterialRelations)
           }
@@ -1212,15 +1216,27 @@ export default {
             operations = response.data.data.data
           }
           console.log('处理后的原材料操作记录:', operations)
-          // 转换字段名，确保表格能正确显示
+          // 保存原始操作总量，供修改时差异计算使用
+          const totals = {}
+          operations.forEach(item => {
+            const name = item.material_name || item.materialName
+            totals[name] = item.quantity
+          })
+          that.originalUpdateTotalQuantities = totals
+          // 显示时除以产品数量，恢复为每单位用量
+          const amount = that.updateShipmentForm.amount || 1
           const formattedOperations = operations.map(item => ({
             material_name: item.material_name || item.materialName,
-            quantity: item.quantity
+            quantity: amount > 0 ? Math.round(item.quantity / amount * 1000) / 1000 : item.quantity
           }))
           console.log('格式化后的原材料操作记录:', formattedOperations)
           that.updateMaterialRelations = formattedOperations
+          // 保存原始快照，供提交时判断是否有变更
+          that.originalUpdateMaterialRelations = JSON.stringify(formattedOperations)
         }).catch(function (error) {
         console.error('获取原材料操作记录失败:', error)
+        that.originalUpdateTotalQuantities = {}
+        that.originalUpdateMaterialRelations = null
         that.updateMaterialRelations = []
       })
     },
@@ -1708,6 +1724,10 @@ export default {
       // 原材料关系相关
       addMaterialRelations: [],
       updateMaterialRelations: [],
+      // 修改时原材料历史操作总量（用于差异计算）
+      originalUpdateTotalQuantities: {},
+      // 修改时原材料关系的原始快照（用于判断是否有变更）
+      originalUpdateMaterialRelations: null,
       // 新添加的原材料信息
       newAddMaterial: {
         material_name: '',

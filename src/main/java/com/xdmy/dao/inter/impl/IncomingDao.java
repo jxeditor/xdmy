@@ -423,7 +423,7 @@ public class IncomingDao extends BaseDao implements IIncomingDao {
                     }
                     boolean stillUsed = false;
                     for (java.util.Map<String, Object> relation : relations) {
-                        String relMaterialName = (String) relation.get("material_name");
+                        String relMaterialName = (String) relation.get("materialName");
                         if (materialName.equals(relMaterialName)) {
                             stillUsed = true;
                             break;

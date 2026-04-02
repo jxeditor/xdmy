@@ -582,8 +582,10 @@ export default {
       // 存储初始的operate_material状态
       this.initialOperateMaterial = incoming.operate_material
       this.updateIncomingVisible = true
-      // 重置原材料关系数据
+      // 重置原材料关系数据和原始总量
       this.updateMaterialRelations = []
+      this.originalUpdateTotalQuantities = {}
+      this.originalUpdateMaterialRelations = null
       this.newUpdateMaterial = { materialName: '', quantity: 1 }
       // 如果操作原材料开关是打开的，获取历史操作记录
       console.log('operate_material值:', incoming.operate_material, '类型:', typeof incoming.operate_material)
@@ -690,6 +692,8 @@ export default {
               that.addMaterialRelations = relations
               console.log('添加入货单原材料关系更新为:', that.addMaterialRelations)
             } else if (type === 'update') {
+              // 从产品关系加载时没有历史操作记录，原始总量清零
+              that.originalUpdateTotalQuantities = {}
               that.updateMaterialRelations = relations
               console.log('修改入货单原材料关系更新为:', that.updateMaterialRelations)
             }
@@ -718,16 +722,27 @@ export default {
       this.$axios.get(`${process.env.VUE_APP_API_BASE_URL}/incoming/getIncomingMaterialOperations?id=${incomingId}`)
         .then(function (response) {
           if (response.data.code === 1) {
-            // 将后端返回的material_name字段映射为前端需要的materialName
+            // 保存原始操作总量，供修改时差异计算使用
+            const totals = {}
+            response.data.data.forEach(item => {
+              totals[item.material_name] = item.quantity
+            })
+            that.originalUpdateTotalQuantities = totals
+            // 显示时除以产品数量，恢复为每单位用量
+            const amount = that.updateIncomingForm.amount || 1
             that.updateMaterialRelations = response.data.data.map(item => ({
               materialName: item.material_name,
-              quantity: item.quantity
+              quantity: amount > 0 ? Math.round(item.quantity / amount * 1000) / 1000 : item.quantity
             }))
+            // 保存原始快照，供提交时判断是否有变更
+            that.originalUpdateMaterialRelations = JSON.stringify(that.updateMaterialRelations)
           } else {
             that.$message.error(response.data.msg)
           }
         }).catch(function (error) {
         console.error('获取原材料操作记录失败:', error)
+        that.originalUpdateTotalQuantities = {}
+        that.originalUpdateMaterialRelations = null
         // 401错误由响应拦截器处理，不显示错误信息
         if (error.response && error.response.status !== 401) {
           that.$message.error('获取原材料操作记录失败')
@@ -831,7 +846,7 @@ export default {
       this.$refs[addIncomingForm].validate((valid) => {
         if (valid) {
           // 如果开启了操作原材料，校验库存
-          if (that.addIncomingForm.operate_material === 1) {
+          if (that.addIncomingForm.operate_material == 1) {
             // 检查是否添加了原材料关系
             if (!that.addMaterialRelations || that.addMaterialRelations.length === 0) {
               that.$message({
@@ -885,7 +900,7 @@ export default {
             billdate: that.addIncomingForm.billdate
           }
           // 入货成功，操作原材料库存
-            if (that.addIncomingForm.operate_material === 1) {
+            if (that.addIncomingForm.operate_material == 1) {
                 that.operateMaterialStock(that.addMaterialRelations, that.addIncomingForm.amount, 'increase')
                   .then(() => {
                     console.log('原材料库存操作成功')
@@ -912,7 +927,7 @@ export default {
       this.$refs[updateIncomingForm].validate((valid) => {
         if (valid) {
           // 如果开启了操作原材料，需要处理库存
-          if (that.updateIncomingForm.operate_material === 1) {
+          if (that.updateIncomingForm.operate_material == 1) {
             // 检查是否添加了原材料关系
             if (!that.updateMaterialRelations || that.updateMaterialRelations.length === 0) {
               that.$message({
@@ -966,14 +981,14 @@ export default {
       param.append(`paystatus`, this.updateIncomingForm.paystatus)
       param.append(`remark`, this.updateIncomingForm.remark)
       param.append(`operate_material`, this.updateIncomingForm.operate_material)
-      // 添加原材料关系数据
-      if (this.updateIncomingForm.operate_material === 1) {
+      // 传递原材料关系数据，backend 根据新旧差异计算库存变化
+      if (this.updateIncomingForm.operate_material == 1) {
         param.append(`materialRelations`, JSON.stringify(this.updateMaterialRelations))
       }
       this.$axios.post(`${process.env.VUE_APP_API_BASE_URL}/incoming/updateIncoming`, param).then(function (response) {
         if (response.data.code === 1) {
-          // 修改成功，后端会自动处理原材料库存
           console.log('修改入货单成功')
+          // 原材料库存由后端自动处理
           that.updateIncomingVisible = false
           that.getAllIncoming()
         } else {
@@ -1502,6 +1517,10 @@ export default {
         quantity: 1
       },
       updateMaterialRelations: [],
+      // 修改时原材料历史操作总量（用于差异计算）
+      originalUpdateTotalQuantities: {},
+      // 修改时原材料关系的原始快照（用于判断是否有变更）
+      originalUpdateMaterialRelations: null,
       newUpdateMaterial: {
         materialName: '',
         quantity: 1
