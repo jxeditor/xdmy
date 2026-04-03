@@ -1,0 +1,16 @@
+[Unit]
+Description=Xdmy Spring Boot Application
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/xdmy
+ExecStart=/opt/java/bin/java -jar /opt/xdmy/xdmy.jar --spring.profiles.active=prod
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/opt/xdmy/logs/app.log
+StandardError=append:/opt/xdmy/logs/app.log
+
+[Install]
+WantedBy=multi-user.target
