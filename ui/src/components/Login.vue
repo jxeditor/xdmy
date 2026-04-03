@@ -1,54 +1,58 @@
 <template>
   <el-form
     ref="loginForm"
-    status-icon
     :model="loginForm"
     :rules="loginFormRules"
-    label-width="80px"
-    class="login-form">
-    <el-form-item label="用户名" prop="username">
-      <el-input 
-        v-model="loginForm.username" 
+    class="login-form"
+    @keyup.enter="handleLogin"
+  >
+    <el-form-item prop="username">
+      <el-input
+        v-model="loginForm.username"
+        placeholder="用户名"
+        size="large"
         autocomplete="off"
-        placeholder="请输入用户名"
-        class="login-input"
       >
         <template #prefix>
-          <el-icon class="el-input__icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-              <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
-            </svg>
-          </el-icon>
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+               width="16" height="16" style="color:#94a3b8">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"
+                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
         </template>
       </el-input>
     </el-form-item>
-    <el-form-item label="密码" prop="password">
-      <el-input 
-        type="password" 
-        v-model="loginForm.password" 
-        placeholder="请输入密码"
-        class="login-input"
+
+    <el-form-item prop="password">
+      <el-input
+        type="password"
+        v-model="loginForm.password"
+        placeholder="密码"
+        size="large"
         show-password
       >
         <template #prefix>
-          <el-icon class="el-input__icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-              <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v3a1.5 1.5 0 01-1.5 1.5h-7.5a1.5 1.5 0 01-1.5-1.5v-3a3.75 3.75 0 117.5 0z" clip-rule="evenodd" />
-            </svg>
-          </el-icon>
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+               width="16" height="16" style="color:#94a3b8">
+            <rect x="3" y="11" width="18" height="11" rx="2"
+                  stroke="currentColor" stroke-width="1.8"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"
+                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
         </template>
       </el-input>
     </el-form-item>
-    <el-form-item class="login-button-container">
-      <el-button 
-        type="primary" 
-        @click="handleLogin"
-        class="login-button"
-        :loading="loading"
-      >
-        {{ loading ? '登录中...' : '登录' }}
-      </el-button>
-    </el-form-item>
+
+    <el-button
+      type="primary"
+      size="large"
+      class="login-btn"
+      :loading="loading"
+      @click="handleLogin"
+    >
+      {{ loading ? '登录中…' : '登 录' }}
+    </el-button>
   </el-form>
 </template>
 
@@ -60,29 +64,14 @@ export default {
   name: "Login",
   methods: {
     handleLogin() {
-      console.log('Login button clicked');
-      console.log('Login form:', this.loginForm);
-      
-      // 直接验证表单，不使用Element Plus的validate方法
       if (!this.loginForm.username || !this.loginForm.password) {
-        console.log('Form validation failed: username or password is empty');
         this.$message.error('用户名和密码不能为空');
         return;
       }
-      
-      console.log('Form validation passed');
       this.loading = true;
-      console.log('Loading set to true');
-      
       const that = this;
-      
       try {
-        // 对密码进行Base64编码，增加传输安全性
-        console.log('Encoding password:', this.loginForm.password);
         let encodedPassword = btoa(this.loginForm.password);
-        console.log('Encoded password:', encodedPassword);
-        
-        // 收集设备信息
         let deviceInfo = {
           userAgent: navigator.userAgent,
           platform: navigator.platform,
@@ -90,61 +79,32 @@ export default {
           screen: `${window.screen.width}x${window.screen.height}`,
           timestamp: new Date().getTime()
         };
-        
         let param = {
           username: this.loginForm.username,
           password: encodedPassword,
           deviceInfo: JSON.stringify(deviceInfo)
         };
-        console.log('Login params:', param);
-        
-        // 使用环境变量中的API Base URL
-        console.log('API Base URL:', process.env.VUE_APP_API_BASE_URL);
         const loginUrl = `${process.env.VUE_APP_API_BASE_URL}/admin/verifyLogin`;
-        console.log('Login URL:', loginUrl);
-        
-        // 创建新的axios实例，避免拦截器的影响
-        console.log('Creating axios instance');
-        const instance = axios.create({
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        console.log('Axios instance created:', instance);
-        
-        // 发送登录请求
-        console.log('Sending login request');
+        const instance = axios.create({ headers: { 'Content-Type': 'application/json' } });
         instance.post(loginUrl, param)
           .then(function (response) {
-            console.log('Login response received:', response);
             that.loading = false;
-            console.log('Loading set to false');
-            
             if (response.data.code === 1) {
-              console.log('Login successful:', response.data.data[0]);
               localStorage.setItem('role', response.data.data[0].role);
               localStorage.setItem('companyName', response.data.data[0].companyName || '');
               localStorage.setItem('loginTime', new Date().getTime());
-              // 存储Token
               localStorage.setItem('token', response.data.data[0].token);
-              console.log('Token stored:', response.data.data[0].token);
-              console.log('Redirecting to shipment page');
               router.push("shipment");
             } else {
-              console.log('Login failed:', response.data.msg);
               that.$message.error(response.data.msg);
             }
           })
-          .catch(function (error) {
-            console.log('Login error:', error);
+          .catch(function () {
             that.loading = false;
-            console.log('Loading set to false');
             that.$message.error('登录失败，请检查网络连接');
           });
-      } catch (error) {
-        console.log('Error in handleLogin:', error);
+      } catch {
         this.loading = false;
-        console.log('Loading set to false');
         this.$message.error('登录失败，请检查网络连接');
       }
     }
@@ -152,25 +112,10 @@ export default {
   data() {
     return {
       loading: false,
-      loginForm: {
-        username: '',
-        password: ''
-      },
+      loginForm: { username: '', password: '' },
       loginFormRules: {
-        username: [
-          {
-            required: true,
-            trigger: 'blur',
-            message: '用户名不能为空'
-          }
-        ],
-        password: [
-          {
-            required: true,
-            trigger: 'blur',
-            message: '密码不能为空'
-          }
-        ],
+        username: [{ required: true, trigger: 'blur', message: '用户名不能为空' }],
+        password: [{ required: true, trigger: 'blur', message: '密码不能为空' }],
       },
     }
   }
@@ -179,66 +124,56 @@ export default {
 
 <style scoped>
 .login-form {
-  width: 100%;
-}
-
-.login-input {
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.login-input:focus {
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
-  border-color: #667eea !important;
-}
-
-.login-button-container {
-  margin-top: 30px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.login-button {
+/* 输入框样式 */
+.login-form :deep(.el-input__wrapper) {
+  border-radius: 10px !important;
+  border: 1.5px solid #e2e8f0 !important;
+  box-shadow: none !important;
+  padding: 0 14px !important;
+  background: #f8fafc !important;
+  transition: border-color .2s, box-shadow .2s !important;
+}
+.login-form :deep(.el-input__wrapper:hover) {
+  border-color: #93c5fd !important;
+}
+.login-form :deep(.el-input__wrapper.is-focus) {
+  border-color: #3b82f6 !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.12) !important;
+}
+.login-form :deep(.el-input__inner) {
+  color: #0f172a !important;
+  font-size: .9rem !important;
+}
+.login-form :deep(.el-input__inner::placeholder) {
+  color: #94a3b8 !important;
+}
+
+/* 登录按钮 */
+.login-btn {
   width: 100%;
-  padding: 12px 0;
-  font-size: 16px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  transition: all 0.3s ease;
+  height: 46px;
+  border-radius: 10px !important;
+  font-size: .95rem !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em;
+  margin-top: 8px;
+  background: #1e40af !important;
+  border-color: #1e40af !important;
+  transition: background .2s, transform .15s, box-shadow .2s !important;
 }
-
-.login-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+.login-btn:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 4px 16px rgba(30,64,175,.35) !important;
+  transform: translateY(-1px);
 }
-
-.login-button:active {
-  transform: translateY(0);
-}
-
-.login-button:disabled {
-  opacity: 0.6;
-  transform: none;
-  box-shadow: none;
-}
-
-/* 输入框图标样式 */
-.el-input__icon {
-  color: #999;
-  font-size: 16px;
-}
-
-/* 表单标签样式 */
-.el-form-item__label {
-  font-weight: 500;
-  color: #333;
-}
-
-/* 错误提示样式 */
-.el-form-item__error {
-  font-size: 12px;
-  color: #f56c6c;
+.login-btn:active {
+  transform: translateY(0) !important;
 }
 </style>

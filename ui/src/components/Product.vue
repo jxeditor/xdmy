@@ -1,73 +1,71 @@
 <template>
-  <div id="product">
-    <h1>{{ msg }}</h1>
-    <div id="app">
-      <!-- 搜索行 -->
-      <el-row type="flex" justify="space-between" align="center" style="width:100%;padding: 10px 20px; margin-bottom: 24px;">
-        <el-col :span="16">
-          <div class="shipment-search-container product-search-container" style="width: 400px;">
-            <el-input
-              v-model="searchQuery"
-              placeholder="请输入产品名称"
-              style="width: 400px"
-              @input="handleInput"
-              @focus="handleFocus"
-              @blur="handleBlur"
-            >
-              <template #prefix>
-                <el-icon><Search /></el-icon>
-              </template>
-            </el-input>
-            <!-- 产品联想结果下拉框 -->
+  <div class="page">
+    <div class="page-header">
+      <h2 class="page-title">{{ msg }}</h2>
+      <div class="page-actions" style="display:flex;gap:8px;align-items:center;">
+        <el-button type="primary" @click="onAddProduct">添加产品</el-button>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <div class="shipment-search-container product-search-container" style="width: 400px;">
+        <el-input
+          v-model="searchQuery"
+          placeholder="请输入产品名称"
+          style="width: 400px"
+          @input="handleInput"
+          @focus="handleFocus"
+          @blur="handleBlur"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
+        <!-- 产品联想结果下拉框 -->
+        <div
+          v-if="showDropdown && dropdownItems.length > 0"
+          class="shipment-suggestions-dropdown product-suggestions-dropdown"
+        >
+          <div class="product-dropdown-body">
             <div
-              v-if="showDropdown && dropdownItems.length > 0"
-              class="shipment-suggestions-dropdown product-suggestions-dropdown"
+              v-for="(item, index) in dropdownItems"
+              :key="index"
+              class="shipment-suggestion-item product-dropdown-item"
+              @mousedown="selectItem(item)"
             >
-              <div class="product-dropdown-body">
-                <div
-                  v-for="(item, index) in dropdownItems"
-                  :key="index"
-                  class="shipment-suggestion-item product-dropdown-item"
-                  @mousedown="selectItem(item)"
-                >
-                  {{ item }}
-                </div>
-              </div>
-              <div
-                v-if="dropdownTotal > pageSize"
-                class="shipment-suggestion-pagination product-dropdown-footer"
-              >
-                <div class="product-dropdown-pagination-info">
-                  <span>共 {{ dropdownTotal }} 条</span>
-                  <span>第 {{ currentPage }} / {{ totalPages }} 页</span>
-                </div>
-                <el-pagination
-                  small
-                  layout="prev, pager, next"
-                  :total="dropdownTotal"
-                  :page-size="pageSize"
-                  :current-page="currentPage"
-                  @current-change="handleDropdownPageChange"
-                  style="margin: 0; white-space: nowrap;"
-                />
-              </div>
-              <div
-                v-else
-                class="shipment-suggestion-pagination product-dropdown-footer"
-              >
-                <div class="product-dropdown-pagination-info">
-                  <span>共 {{ dropdownTotal }} 条</span>
-                </div>
-              </div>
+              {{ item }}
             </div>
           </div>
-        </el-col>
-        <el-col :span="8" style="display: flex; justify-content: flex-end; gap: 10px;">
-          <el-button type="primary" @click="searchProduct">搜索</el-button>
-          <el-button type="primary" @click="onAddProduct">添加产品</el-button>
-        </el-col>
-      </el-row>
-
+          <div
+            v-if="dropdownTotal > pageSize"
+            class="shipment-suggestion-pagination product-dropdown-footer"
+          >
+            <div class="product-dropdown-pagination-info">
+              <span>共 {{ dropdownTotal }} 条</span>
+              <span>第 {{ currentPage }} / {{ totalPages }} 页</span>
+            </div>
+            <el-pagination
+              small
+              layout="prev, pager, next"
+              :total="dropdownTotal"
+              :page-size="pageSize"
+              :current-page="currentPage"
+              @current-change="handleDropdownPageChange"
+              style="margin: 0; white-space: nowrap;"
+            />
+          </div>
+          <div
+            v-else
+            class="shipment-suggestion-pagination product-dropdown-footer"
+          >
+            <div class="product-dropdown-pagination-info">
+              <span>共 {{ dropdownTotal }} 条</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <el-button type="primary" @click="searchProduct">搜索</el-button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
       <el-table :data="productData" style="width: 100%" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column prop="productName" label="产品名称" width="200" align="center" />
@@ -100,7 +98,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <div class="pagination-container">
+      <div class="pagination-wrapper">
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -112,10 +110,11 @@
         >
         </el-pagination>
       </div>
-      <div style="margin-top: 20px">
-        <el-button type="danger" @click="batchDeleteProduct" :disabled="selectedProducts.length === 0">批量删除</el-button>
-        <el-button @click="onClearSelection">取消选择</el-button>
-      </div>
+    </div>
+    <div style="margin-top: 20px">
+      <el-button type="danger" @click="batchDeleteProduct" :disabled="selectedProducts.length === 0">批量删除</el-button>
+      <el-button @click="onClearSelection">取消选择</el-button>
+    </div>
 
       <!-- 添加产品对话框 -->
       <el-dialog v-model="dialogVisible" title="添加产品" width="500px" class="product-dialog" append-to-body>
@@ -350,7 +349,6 @@
           </span>
         </template>
       </el-dialog>
-    </div>
   </div>
 </template>
 
@@ -1044,68 +1042,91 @@ export default {
 </script>
 
 <style scoped>
-/* 动画效果 */
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -20px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
+.page { padding: 24px; }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
+.page-title { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* 页面容器 */
-#product {
-  min-height: 100vh;
-  padding: 20px;
-}
-
-#product h1 {
-  text-align: center;
-  color: #303133;
-  margin-bottom: 30px;
-  font-size: 28px;
-  font-weight: 600;
-  padding-bottom: 15px;
-  border-bottom: 3px solid #667eea;
-  display: inline-block;
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: fadeInDown 0.5s ease-out;
-}
-
-/* 内容容器 */
-#app {
-  background-color: #ffffff;
+.filter-bar {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  padding: 30px;
-  margin: 0 auto;
-  max-width: 1400px;
+  padding: 16px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
 }
+
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.product-search-container {
+  position: relative;
+  display: inline-block;
+  z-index: 2000;
+  width: 400px;
+}
+
+.product-suggestions-dropdown {
+  position: absolute;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.1);
+  z-index: 9999;
+  max-height: 240px;
+  overflow-y: auto;
+  width: 400px;
+}
+
+.product-dropdown-body { padding: 4px 0; }
+
+.product-dropdown-item {
+  padding: 9px 14px;
+  font-size: .85rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.product-dropdown-item:hover { background: #f1f5f9; }
+
+.product-dropdown-footer {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.product-dropdown-pagination-info {
+  display: flex;
+  gap: 15px;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+
+/* 是否维护原材料样式 */
+.maintain-yes { color: green; font-weight: bold; }
+.maintain-no { color: red; font-weight: bold; }
 </style>
 
 <style>
@@ -1172,123 +1193,6 @@ export default {
 }
 </style>
 
-<style scoped>
-/* 操作按钮容器 */
-#product .operation-buttons {
-  margin-bottom: 20px;
-  animation: fadeInUp 0.5s ease-out;
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
-}
-
-.search-card {
-  margin-bottom: 20px;
-  position: relative;
-  z-index: 10;
-}
-
-.data-card {
-  margin-bottom: 20px;
-}
-
-.product-search-container {
-  position: relative;
-  display: inline-block;
-  z-index: 2000;
-  width: 400px;
-}
-
-.product-suggestions-dropdown {
-  position: fixed;
-  width: 400px;
-  max-height: 350px;
-  overflow-y: auto;
-  border: 1px solid #dcdfe6;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  z-index: 999999;
-  animation: fadeIn 0.3s ease-out;
-}
-
-.product-dropdown-header {
-  padding: 8px 12px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 12px;
-  color: #999;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.product-dropdown-body {
-  padding: 4px 0;
-}
-
-.product-dropdown-item {
-  padding: 8px 12px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.product-dropdown-item:hover {
-  background-color: #f5f5f5;
-}
-
-.product-dropdown-footer {
-  padding: 8px 12px;
-  border-top: 1px solid #f0f0f0;
-  font-size: 12px;
-  color: #999;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: nowrap;
-}
-
-.product-dropdown-pagination-info {
-  display: flex;
-  gap: 15px;
-  margin-right: 10px;
-  color: #999;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-/* 是否维护原材料样式 */
-.maintain-yes {
-  color: green;
-  font-weight: bold;
-}
-
-.maintain-no {
-  color: red;
-  font-weight: bold;
-}
-
-
-.product-dialog {
-  border-radius: 12px !important;
-  overflow: hidden !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
-  border: none !important;
-}
-
-.product-dialog .el-dialog__header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  border-bottom: none !important;
-  padding: 20px 24px !important;
-  margin: -20px -24px 0 !important;
-  width: calc(100% + 48px) !important;
-  box-sizing: border-box !important;
-}
-
-
-</style>
 
 <style>
 /* 对话框样式：不使用 scoped，因为 el-dialog 渲染在 body 下 */

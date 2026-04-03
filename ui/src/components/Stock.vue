@@ -1,50 +1,49 @@
 <template>
-  <div id="stock">
-    <h1>{{ msg }}</h1>
-    <div id="app">
-      <!-- 搜索行 -->
-      <el-row type="flex" justify="space-between" align="center" style="width:100%;padding: 10px 20px; margin-bottom: 24px;">
-        <el-col :span="8">
-          <div class="stock-search-container">
-            <el-input
-              v-model="productInput"
-              placeholder="输入产品名"
-              clearable
-              prefix-icon="el-icon-search"
-              style="width: 100%;"
-            />
-            <!-- 联想结果下拉框 -->
-            <div v-if="showSuggestions && suggestOptions.length > 0" class="stock-suggestions-dropdown">
-              <div 
-                v-for="(item, index) in suggestOptions" 
-                :key="index"
-                class="stock-suggestion-item"
-                @click="selectSuggestion(item)"
-              >
-                {{ item }}
-              </div>
-              <!-- 分页控件 -->
-              <div v-if="suggestTotal > suggestPageSize" class="stock-suggestion-pagination">
-                <el-pagination
-                  small
-                  layout="prev, pager, next, ->, total"
-                  :total="suggestTotal"
-                  :page-size="suggestPageSize"
-                  :current-page="suggestCurrentPage"
-                  @current-change="handleSuggestPageChange"
-                  style="margin-top: 10px;"
-                />
-              </div>
-            </div>
+  <div class="page">
+    <div class="page-header">
+      <h2 class="page-title">{{ msg }}</h2>
+      <div class="page-actions" style="display:flex;gap:8px;align-items:center;">
+        <el-button type="primary" @click='onAddStock'>添加库存</el-button>
+        <el-button type="warning" @click="toggleHideZeroStock">{{ hideZeroStock ? '取消隐藏' : '隐藏' }}</el-button>
+        <el-button type="danger" @click="flattenStock">抹平</el-button>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <div class="stock-search-container">
+        <el-input
+          v-model="productInput"
+          placeholder="输入产品名"
+          clearable
+          prefix-icon="el-icon-search"
+          style="width: 100%;"
+        />
+        <!-- 联想结果下拉框 -->
+        <div v-if="showSuggestions && suggestOptions.length > 0" class="stock-suggestions-dropdown">
+          <div
+            v-for="(item, index) in suggestOptions"
+            :key="index"
+            class="stock-suggestion-item"
+            @click="selectSuggestion(item)"
+          >
+            {{ item }}
           </div>
-        </el-col>
-        <el-col :span="8" style="display: flex; justify-content: flex-end; gap: 10px;">
-          <el-button type="primary" @click="searchStock">搜索</el-button>
-          <el-button type="primary" @click='onAddStock'>添加库存</el-button>
-          <el-button type="warning" @click="toggleHideZeroStock">{{ hideZeroStock ? '取消隐藏' : '隐藏' }}</el-button>
-          <el-button type="danger" @click="flattenStock">抹平</el-button>
-        </el-col>
-      </el-row>
+          <!-- 分页控件 -->
+          <div v-if="suggestTotal > suggestPageSize" class="stock-suggestion-pagination">
+            <el-pagination
+              small
+              layout="prev, pager, next, ->, total"
+              :total="suggestTotal"
+              :page-size="suggestPageSize"
+              :current-page="suggestCurrentPage"
+              @current-change="handleSuggestPageChange"
+              style="margin-top: 10px;"
+            />
+          </div>
+        </div>
+      </div>
+      <el-button type="primary" @click="searchStock">搜索</el-button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
       <el-table ref="multipleTable" stripe :data="StockData" style="width: 100%;" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center">
         </el-table-column>
@@ -79,19 +78,21 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-model:current-page="page.index"
-        :page-size="page.size"
-        layout="total,prev,pager,next"
-        :total="page.total"
-        @current-change="handleCurrentChange"
-        style="margin-top: 20px; text-align: center;"
-      >
-      </el-pagination>
-      <div style="margin-top: 20px">
-        <el-button type="danger" @click="batchDeleteStock" :disabled="selectedStock.length === 0">批量删除</el-button>
-        <el-button @click="onClearSelection">取消选择</el-button>
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-model:current-page="page.index"
+          :page-size="page.size"
+          layout="total,prev,pager,next"
+          :total="page.total"
+          @current-change="handleCurrentChange"
+        >
+        </el-pagination>
       </div>
+    </div>
+    <div style="margin-top: 20px">
+      <el-button type="danger" @click="batchDeleteStock" :disabled="selectedStock.length === 0">批量删除</el-button>
+      <el-button @click="onClearSelection">取消选择</el-button>
+    </div>
       <el-dialog title="初始化库存" v-model="addStockVisible" width="80%" class="stock-dialog"><br>
         <el-form ref="addStockForm" :rules="addStockFormRules" :model="addStockForm" label-width="120px">
           <el-form-item label="产品:" prop="product">
@@ -219,7 +220,6 @@
           </el-form-item>
         </el-form>
       </el-dialog>
-    </div>
   </div>
 </template>
 
@@ -782,339 +782,63 @@ export default {
 }
 </script>
 
-<style>
-/* 全局样式 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+<style scoped>
+.page { padding: 24px; }
 
-body {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  background-color: #f5f7fa;
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
+.page-title { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
 
-/* 页面容器 */
-#stock {
-  min-height: 100vh;
-  padding: 20px;
-}
-
-#stock h1 {
-  text-align: center;
-  color: #303133;
-  margin-bottom: 30px;
-  font-size: 28px;
-  font-weight: 600;
-  padding-bottom: 15px;
-  border-bottom: 3px solid #667eea;
-  display: inline-block;
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: fadeInDown 0.5s ease-out;
-}
-
-/* 内容容器 */
-#app {
-  background-color: #ffffff;
+.filter-bar {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  padding: 30px;
-  margin: 0 auto;
-  max-width: 1400px;
-  animation: fadeInUp 0.5s ease-out;
+  padding: 16px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
 }
 
-/* 搜索容器 */
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* 联想下拉（若有）*/
 .stock-search-container {
   position: relative;
-  width: 100%;
 }
-
-/* 联想结果下拉框 */
 .stock-suggestions-dropdown {
   position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background-color: #ffffff;
-  border: 1px solid #dcdfe6;
+  background: #fff;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  max-height: 350px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.1);
+  z-index: 9999;
+  max-height: 240px;
   overflow-y: auto;
-  margin-top: 4px;
-  animation: fadeIn 0.3s ease-out;
 }
-
-/* 联想结果项 */
 .stock-suggestion-item {
-  padding: 12px 16px;
+  padding: 9px 14px;
+  font-size: .85rem;
+  color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.3s ease;
-  border-bottom: 1px solid #f0f0f0;
-  position: relative;
-  overflow: hidden;
-  text-align: left;
 }
-
-.stock-suggestion-item:hover {
-  background-color: #f5f7fa;
-  color: #667eea;
-  transform: translateX(5px);
-}
-
-.stock-suggestion-item:last-child {
-  border-bottom: none;
-}
-
-/* 联想分页 */
-.stock-suggestion-pagination {
-  padding: 12px;
-  border-top: 1px solid #e4e7ed;
-  background-color: #f9f9f9;
-  border-radius: 0 0 8px 8px;
-  text-align: center;
-}
-
-.stock-suggestion-pagination .el-pagination {
-  margin-top: 0;
-}
-
-/* 表格样式 */
-.el-table {
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
-  animation: fadeInUp 0.5s ease-out 0.2s both;
-}
-
-.el-table th {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
-  font-weight: 600;
-  color: #303133;
-  padding: 14px 12px;
-}
-
-.el-table tr:hover {
-  background-color: #f5f7fa;
-  transition: all 0.3s ease;
-}
-
-.el-table--striped .el-table__row--striped {
-  background-color: #fafbfc;
-}
-
-/* 分页样式 */
-.el-pagination {
-  margin-top: 30px;
-  text-align: center;
-  animation: fadeInUp 0.5s ease-out 0.3s both;
-}
-
-.el-pagination__item:hover {
-  border-color: #667eea !important;
-  color: #667eea !important;
-}
-
-.el-pagination__item.active {
-  background-color: #667eea !important;
-  border-color: #667eea !important;
-}
-
-/* 按钮样式 */
-.el-button {
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
-  padding: 10px 18px !important;
-  font-weight: 500 !important;
-}
-
-.el-button:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-}
-
-.el-button--primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  border: none !important;
-}
-
-.el-button--danger {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
-  border: none !important;
-}
-
-.el-button--success {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
-  border: none !important;
-}
-
-/* 对话框样式 */
-.el-dialog {
-  border-radius: 12px !important;
-  overflow: hidden !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
-}
-
-.el-dialog__header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  border-bottom: none !important;
-  padding: 20px 24px !important;
-}
-
-.el-dialog__title {
-  font-size: 18px !important;
-  font-weight: 600 !important;
-  color: white !important;
-}
-
-.el-dialog__close {
-  color: white !important;
-}
-
-.el-dialog__body {
-  padding: 30px !important;
-  background-color: #ffffff !important;
-}
-
-/* 表单样式 */
-.el-form {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.el-form-item {
-  margin-bottom: 24px;
-}
-
-.el-form-item__label {
-  font-weight: 500;
-  color: #606266;
-  font-size: 14px;
-}
-
-.el-input {
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
-}
-
-.el-input:focus-within {
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
-  border-color: #667eea !important;
-}
-
-.el-select {
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
-}
-
-.el-select:focus-within {
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
-  border-color: #667eea !important;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  #stock {
-    padding: 10px;
-  }
-  
-  #app {
-    padding: 15px;
-  }
-  
-  #stock h1 {
-    font-size: 22px;
-    margin-bottom: 20px;
-  }
-  
-  .search-row {
-    padding: 15px;
-  }
-  
-  .el-dialog__body {
-    padding: 20px !important;
-  }
-  
-  .el-form {
-    max-width: 100%;
-  }
-  
-  .suggestions-dropdown {
-    max-height: 250px;
-  }
-  
-  .el-table {
-    font-size: 12px;
-  }
-  
-  .el-table th,
-  .el-table td {
-    padding: 10px 8px !important;
-  }
-}
-
-/* 动画效果 */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 滚动条样式 */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
+.stock-suggestion-item:hover { background: #f1f5f9; }
 </style>
 
 <style>

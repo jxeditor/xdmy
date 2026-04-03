@@ -1,12 +1,17 @@
 <template>
-  <div class="download-container">
-    <h1>数据下载</h1>
-    
-    <div class="content-wrapper">
-      <!-- 出货对账单下载 -->
-      <div class="download-card">
-        <h2>出货对账单</h2>
-        <el-row type="flex" justify="space-between" align="center" class="search-row" :gutter="20">
+  <div class="page">
+    <div class="page-header">
+      <h2 class="page-title">数据下载</h2>
+      <div class="page-actions" style="display:flex;gap:8px;"></div>
+    </div>
+
+    <!-- 出货对账单 -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header">
+        <h3 class="card-title">出货对账单</h3>
+      </div>
+      <div class="filter-bar" style="border:none;padding:16px 0 0;">
+        <el-row type="flex" justify="space-between" align="center" :gutter="20" style="width:100%;">
           <el-col :span="12">
             <el-date-picker v-model="shipmentBillDateInput"
                             type="daterange"
@@ -26,11 +31,15 @@
           </el-col>
         </el-row>
       </div>
-      
-      <!-- 入货对账单下载 -->
-      <div class="download-card">
-        <h2>入货对账单</h2>
-        <el-row type="flex" justify="space-between" align="center" class="search-row" :gutter="20">
+    </div>
+
+    <!-- 入货对账单 -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header">
+        <h3 class="card-title">入货对账单</h3>
+      </div>
+      <div class="filter-bar" style="border:none;padding:16px 0 0;">
+        <el-row type="flex" justify="space-between" align="center" :gutter="20" style="width:100%;">
           <el-col :span="12">
             <el-date-picker v-model="incomingBillDateInput"
                             type="daterange"
@@ -131,160 +140,42 @@ export default {
 </script>
 
 <style scoped>
-/* 页面容器 */
-.download-container {
-  min-height: 100vh;
-  padding: 20px;
-  background-color: #f5f7fa;
-}
+.page { padding: 24px; }
 
-/* 页面标题 */
-.download-container h1 {
-  text-align: center;
-  color: #303133;
-  margin-bottom: 30px;
-  font-size: 28px;
-  font-weight: 600;
-  padding-bottom: 15px;
-  border-bottom: 3px solid #667eea;
-  display: inline-block;
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: fadeInDown 0.5s ease-out;
-}
-
-/* 内容容器 */
-.content-wrapper {
-  max-width: 1400px;
-  margin: 0 auto;
-  animation: fadeInUp 0.5s ease-out;
-}
-
-/* 下载卡片 */
-.download-card {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  margin-bottom: 24px;
-  padding: 30px;
-  animation: fadeInUp 0.5s ease-out 0.1s both;
-}
-
-/* 卡片标题 */
-.download-card h2 {
-  color: #303133;
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 20px;
-  font-size: 20px;
-  font-weight: 600;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #f0f0f0;
-  animation: fadeInUp 0.5s ease-out 0.2s both;
 }
+.page-title { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
 
-/* 搜索行 */
-.search-row {
-  padding: 20px;
-  background-color: #f8f9fa;
+.card {
+  background: var(--card-bg);
   border-radius: 12px;
-  animation: fadeInUp 0.5s ease-out 0.3s both;
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
 }
 
-/* 按钮样式 */
-.el-button {
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
-  padding: 10px 18px !important;
-  font-weight: 500 !important;
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.el-button:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-}
-
-.el-button--primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  border: none !important;
-}
-
-/* 日期选择器样式 */
-.el-date-picker {
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
-}
-
-/* 输入框样式 */
-.el-input {
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
-}
-
-.el-input:focus-within {
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
-  border-color: #667eea !important;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .download-container {
-    padding: 10px;
-  }
-  
-  .download-container h1 {
-    font-size: 22px;
-    margin-bottom: 20px;
-  }
-  
-  .download-card {
-    padding: 15px;
-  }
-  
-  .download-card h2 {
-    font-size: 18px;
-  }
-  
-  .search-row {
-    flex-wrap: wrap;
-    padding: 15px;
-  }
-  
-  .el-col {
-    margin-bottom: 10px;
-  }
-}
-
-/* 动画效果 */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.filter-bar {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
 }
 </style>

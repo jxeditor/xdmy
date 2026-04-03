@@ -1,97 +1,107 @@
 <template>
-  <div id="incoming">
-    <h1>{{ msg }}</h1>
-    <div id="app">
-      <!-- 第一行：时间筛选 -->
-      <el-row type="flex" justify="space-between" align="center" style="width:100%;padding: 10px 20px;">
-        <el-col :span="12">
-          <el-date-picker v-model="billDateInput"
-                          type="daterange"
-                          range-separator="至"
-                          start-placeholder="开始日期"
-                          end-placeholder="结束日期"
-                          value-format="YYYY-MM-DD"
-                          style="width: 100%;"
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">{{ msg }}</h2>
+      </div>
+      <div class="page-actions" style="display:flex;gap:8px;align-items:center;">
+        <el-button type="primary" @click="onAddIncoming">入货</el-button>
+      </div>
+    </div>
+
+    <!-- 过滤栏 -->
+    <div class="filter-bar">
+      <!-- 日期筛选 -->
+      <div class="filter-item">
+        <span class="filter-label">日期范围</span>
+        <el-date-picker v-model="billDateInput"
+                        type="daterange"
+                        range-separator="至"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期"
+                        value-format="YYYY-MM-DD"
+                        style="width: 320px;"
+        />
+      </div>
+      <!-- 供应商筛选 -->
+      <div class="filter-item">
+        <span class="filter-label">供应商</span>
+        <div class="incoming-search-container">
+          <el-input
+            v-model="producerInput"
+            placeholder="输入供应商"
+            clearable
+            prefix-icon="el-icon-search"
+            style="width: 200px;"
           />
-        </el-col>
-        <el-col :span="8" style="display: flex; justify-content: flex-end; gap: 10px;">
-          <el-button type="primary" @click="searchIncoming">搜索</el-button>
-          <el-button type="primary" @click="onAddIncoming">入货</el-button>
-        </el-col>
-      </el-row>
-      
-      <!-- 第二行：供应商和产品筛选 -->
-      <el-row style="width:100%;padding: 0 20px 20px;">
-        <el-col :span="8">
-          <div class="incoming-search-container">
-            <el-input
-              v-model="producerInput"
-              placeholder="输入供应商"
-              clearable
-              prefix-icon="el-icon-search"
-              style="width: 100%;"
-            />
-            <!-- 供应商联想结果下拉框 -->
-            <div v-if="showProducerSuggestions && producerSuggestions.length > 0" class="incoming-suggestions-dropdown">
-              <div 
-                v-for="(item, index) in producerSuggestions" 
-                :key="index"
-                class="incoming-suggestion-item"
-                @click="selectProducerSuggestion(item)"
-              >
-                {{ item }}
-              </div>
-              <!-- 供应商联想分页 -->
-              <div v-if="producerTotal > producerPageSize" class="incoming-suggestion-pagination">
-                <el-pagination
-                  small
-                  layout="prev, pager, next, ->, total"
-                  :total="producerTotal"
-                  :page-size="producerPageSize"
-                  :current-page="producerCurrentPage"
-                  @current-change="handleProducerPageChange"
-                  style="margin-top: 10px;"
-                />
-              </div>
+          <!-- 供应商联想结果下拉框 -->
+          <div v-if="showProducerSuggestions && producerSuggestions.length > 0" class="incoming-suggestions-dropdown">
+            <div
+              v-for="(item, index) in producerSuggestions"
+              :key="index"
+              class="incoming-suggestion-item"
+              @click="selectProducerSuggestion(item)"
+            >
+              {{ item }}
+            </div>
+            <!-- 供应商联想分页 -->
+            <div v-if="producerTotal > producerPageSize" class="incoming-suggestion-pagination">
+              <el-pagination
+                small
+                layout="prev, pager, next, ->, total"
+                :total="producerTotal"
+                :page-size="producerPageSize"
+                :current-page="producerCurrentPage"
+                @current-change="handleProducerPageChange"
+                style="margin-top: 10px;"
+              />
             </div>
           </div>
-        </el-col>
-        <el-col :span="2"></el-col>
-        <el-col :span="8">
-          <div class="incoming-search-container">
-            <el-input
-              v-model="productInput"
-              placeholder="输入产品名"
-              clearable
-              prefix-icon="el-icon-search"
-              style="width: 100%;"
-            />
-            <!-- 产品联想结果下拉框 -->
-            <div v-if="showProductSuggestions && productSuggestions.length > 0" class="incoming-suggestions-dropdown">
-              <div 
-                v-for="(item, index) in productSuggestions" 
-                :key="index"
-                class="incoming-suggestion-item"
-                @click="selectProductSuggestion(item)"
-              >
-                {{ item }}
-              </div>
-              <!-- 产品联想分页 -->
-              <div v-if="productTotal > productPageSize" class="incoming-suggestion-pagination">
-                <el-pagination
-                  small
-                  layout="prev, pager, next, ->, total"
-                  :total="productTotal"
-                  :page-size="productPageSize"
-                  :current-page="productCurrentPage"
-                  @current-change="handleProductPageChange"
-                  style="margin-top: 10px;"
-                />
-              </div>
+        </div>
+      </div>
+      <!-- 产品筛选 -->
+      <div class="filter-item">
+        <span class="filter-label">产品</span>
+        <div class="incoming-search-container">
+          <el-input
+            v-model="productInput"
+            placeholder="输入产品名"
+            clearable
+            prefix-icon="el-icon-search"
+            style="width: 200px;"
+          />
+          <!-- 产品联想结果下拉框 -->
+          <div v-if="showProductSuggestions && productSuggestions.length > 0" class="incoming-suggestions-dropdown">
+            <div
+              v-for="(item, index) in productSuggestions"
+              :key="index"
+              class="incoming-suggestion-item"
+              @click="selectProductSuggestion(item)"
+            >
+              {{ item }}
+            </div>
+            <!-- 产品联想分页 -->
+            <div v-if="productTotal > productPageSize" class="incoming-suggestion-pagination">
+              <el-pagination
+                small
+                layout="prev, pager, next, ->, total"
+                :total="productTotal"
+                :page-size="productPageSize"
+                :current-page="productCurrentPage"
+                @current-change="handleProductPageChange"
+                style="margin-top: 10px;"
+              />
             </div>
           </div>
-        </el-col>
-      </el-row>
+        </div>
+      </div>
+      <div class="filter-item" style="justify-content:flex-end;">
+        <el-button type="primary" @click="searchIncoming">搜索</el-button>
+      </div>
+    </div>
+
+    <!-- 表格卡片 -->
+    <div class="card" style="padding:0;overflow:hidden;">
       <el-table ref="multipleTable" stripe :data="IncomingData" style="width: 100%;"
                 @selection-change="handleSelectionChange">
         <el-table-column type="selection">
@@ -130,19 +140,24 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-model:current-page="page.index"
-        :page-size="page.size"
-        layout="total,prev,pager,next"
-        :total="page.total"
-        @current-change="handleCurrentChange">
-      </el-pagination>
-      <div style="margin-top: 20px">
-        <el-button @click="onBatchUpdateIncoming()">置为已付款</el-button>
-        <el-button @click="onBatchDeleteIncoming()">删除</el-button>
-        <el-button @click="onClearSelection()">取消选择</el-button>
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-model:current-page="page.index"
+          :page-size="page.size"
+          layout="total,prev,pager,next"
+          :total="page.total"
+          @current-change="handleCurrentChange">
+        </el-pagination>
       </div>
-      <el-dialog title="入货" v-model="addIncomingVisible" width="80%" class="incoming-dialog" append-to-body>
+    </div><!-- end .card -->
+
+    <div class="batch-actions">
+      <el-button @click="onBatchUpdateIncoming()">置为已付款</el-button>
+      <el-button @click="onBatchDeleteIncoming()">删除</el-button>
+      <el-button @click="onClearSelection()">取消选择</el-button>
+    </div>
+
+    <el-dialog title="入货" v-model="addIncomingVisible" width="80%" class="incoming-dialog" append-to-body>
         <el-form ref="addIncomingForm" :rules="addIncomingFormRules" :model="addIncomingForm" label-width="100px">
           <el-form-item label="单号:" prop="odd">
             <el-input v-model="addIncomingForm.odd"></el-input>
@@ -289,8 +304,8 @@
             <el-button @click="onAddIncomingCancel">取消</el-button>
           </el-form-item>
         </el-form>
-      </el-dialog>
-      <el-dialog title="修改单据信息" v-model="updateIncomingVisible" width="80%" class="incoming-dialog" append-to-body>
+    </el-dialog>
+    <el-dialog title="修改单据信息" v-model="updateIncomingVisible" width="80%" class="incoming-dialog" append-to-body>
         <el-form ref="updateIncomingForm" :rules="updateIncomingFormRules" :model="updateIncomingForm"
                  label-width="100px">
           <el-form-item label="单号:" prop="odd">
@@ -438,8 +453,7 @@
             <el-button @click="onUpdateIncomingCancel">取消</el-button>
           </el-form-item>
         </el-form>
-      </el-dialog>
-    </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -1610,441 +1624,51 @@ export default {
 }
 </script>
 
-<style>
-/* 全局样式 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+<style scoped>
+/* 过滤栏布局 */
+.filter-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.filter-item { display: flex; flex-direction: column; gap: 4px; }
+.filter-label { font-size: .78rem; color: var(--text-secondary); font-weight: 500; }
 
-body {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  background-color: #f5f7fa;
-}
+/* 批量操作 */
+.batch-actions { display: flex; gap: 8px; margin-top: 16px; }
 
-/* 页面容器 */
-#incoming {
-  min-height: 100vh;
-  padding: 20px;
-}
+/* 分页 */
+.pagination-wrapper { display: flex; justify-content: flex-end; padding: 16px 20px; border-top: 1px solid var(--border); }
 
-#incoming h1 {
-  text-align: center;
-  color: #303133;
-  margin-bottom: 30px;
-  font-size: 28px;
-  font-weight: 600;
-  padding-bottom: 15px;
-  border-bottom: 3px solid #667eea;
-  display: inline-block;
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: fadeInDown 0.5s ease-out;
-}
+/* 搜索容器（联想下拉定位锚点）*/
+.incoming-search-container { position: relative; }
 
-/* 内容容器 */
-#app {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  padding: 30px;
-  margin: 0 auto;
-  max-width: 1400px;
-  animation: fadeInUp 0.5s ease-out;
-}
-
-/* 搜索容器 */
-.incoming-search-container {
-  position: relative;
-  width: 100%;
-}
-
-/* 联想结果下拉框 */
+/* 联想下拉 */
 .incoming-suggestions-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
-  background-color: #ffffff;
-  border: 1px solid #dcdfe6;
+  background: #fff;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  max-height: 350px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.1);
+  z-index: 9999;
+  max-height: 240px;
   overflow-y: auto;
   margin-top: 4px;
-  animation: fadeIn 0.3s ease-out;
 }
-
-/* 联想结果项 */
 .incoming-suggestion-item {
-  padding: 12px 16px;
+  padding: 9px 14px;
+  font-size: .85rem;
+  color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.3s ease;
-  border-bottom: 1px solid #f0f0f0;
-  position: relative;
-  overflow: hidden;
+  transition: background .12s;
   text-align: left;
 }
-
-.incoming-suggestion-item:hover {
-  background-color: #f5f7fa;
-  color: #667eea;
-  transform: translateX(5px);
-}
-
-.incoming-suggestion-item:last-child {
-  border-bottom: none;
-}
+.incoming-suggestion-item:hover { background: #f1f5f9; }
 
 /* 联想分页 */
 .incoming-suggestion-pagination {
-  padding: 12px;
-  border-top: 1px solid #e4e7ed;
-  background-color: #f9f9f9;
-  border-radius: 0 0 8px 8px;
-  text-align: center;
-}
-
-.incoming-suggestion-pagination .el-pagination {
-  margin-top: 0;
-}
-
-/* 搜索容器样式 */
-.incoming-search-container {
-  position: relative;
-  width: 100%;
-}
-
-/* 联想结果下拉框 */
-.incoming-suggestions-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background-color: #ffffff;
-  border: 1px solid #dcdfe6;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  max-height: 350px;
-  overflow-y: auto;
-  margin-top: 4px;
-  animation: fadeIn 0.3s ease-out;
-}
-
-/* 联想结果项 */
-.incoming-suggestion-item {
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border-bottom: 1px solid #f0f0f0;
-  position: relative;
-  overflow: hidden;
-  text-align: left;
-}
-
-.incoming-suggestion-item:hover {
-  background-color: #f5f7fa;
-  color: #667eea;
-  transform: translateX(5px);
-}
-
-.incoming-suggestion-item:last-child {
-  border-bottom: none;
-}
-
-/* 表格样式 */
-.el-table {
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
-  animation: fadeInUp 0.5s ease-out 0.2s both;
-}
-
-.el-table th {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
-  font-weight: 600;
-  color: #303133;
-  padding: 14px 12px;
-}
-
-.el-table tr:hover {
-  background-color: #f5f7fa;
-  transition: all 0.3s ease;
-}
-
-.el-table--striped .el-table__row--striped {
-  background-color: #fafbfc;
-}
-
-/* 分页样式 */
-.el-pagination {
-  margin-top: 30px;
-  text-align: center;
-  animation: fadeInUp 0.5s ease-out 0.3s both;
-}
-
-.el-pagination__item:hover {
-  border-color: #667eea !important;
-  color: #667eea !important;
-}
-
-.el-pagination__item.active {
-  background-color: #667eea !important;
-  border-color: #667eea !important;
-}
-
-/* 按钮样式 */
-.el-button {
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
-  padding: 10px 18px !important;
-  font-weight: 500 !important;
-}
-
-.el-button:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-}
-
-.el-button--primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  border: none !important;
-}
-
-.el-button--danger {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
-  border: none !important;
-}
-
-.el-button--success {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
-  border: none !important;
-}
-
-/* 入货单对话框样式 */
-.incoming-dialog {
-  border-radius: 12px !important;
-  overflow: hidden !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
-  border: none !important;
-}
-
-.incoming-dialog .el-dialog__header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  border-bottom: none !important;
-  padding: 20px 24px !important;
-  margin: -20px -24px 0 !important;
-  width: calc(100% + 48px) !important;
-  box-sizing: border-box !important;
-}
-
-.incoming-dialog .el-dialog__title {
-  font-size: 18px !important;
-  font-weight: 600 !important;
-  color: white !important;
-  margin: 0 !important;
-}
-
-.incoming-dialog .el-dialog__headerbtn {
-  top: 20px !important;
-  right: 24px !important;
-  width: 24px !important;
-  height: 24px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-.incoming-dialog .el-dialog__headerbtn .el-icon {
-  width: 24px !important;
-  height: 24px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  line-height: 24px !important;
-  font-size: 16px !important;
-}
-
-.incoming-dialog .el-dialog__headerbtn .el-icon .el-dialog__close {
-  color: white !important;
-  width: 100% !important;
-  height: 100% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.incoming-dialog .el-dialog__headerbtn .el-icon .el-dialog__close svg {
-  width: 16px !important;
-  height: 16px !important;
-  vertical-align: middle !important;
-  margin: 0 !important;
-}
-
-.incoming-dialog .el-dialog__body {
-  padding: 30px !important;
-  background-color: #ffffff !important;
-}
-
-/* 表单样式 */
-.el-form {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.el-form-item {
-  margin-bottom: 24px;
-}
-
-.el-form-item__label {
-  font-weight: 500;
-  color: #606266;
-  font-size: 14px;
-}
-
-.el-input {
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
-}
-
-.el-input:focus-within {
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
-  border-color: #667eea !important;
-}
-
-.el-date-picker {
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
-}
-
-.el-select {
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
-}
-
-.el-select:focus-within {
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
-  border-color: #667eea !important;
-}
-
-/* 批量操作按钮容器 */
-.batch-actions {
-  margin-top: 20px;
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  animation: fadeInUp 0.5s ease-out 0.4s both;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  #incoming {
-    padding: 10px;
-  }
-  
-  #app {
-    padding: 15px;
-  }
-  
-  #incoming h1 {
-    font-size: 22px;
-    margin-bottom: 20px;
-  }
-  
-  .el-dialog__body {
-    padding: 20px !important;
-  }
-  
-  .batch-actions {
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .el-table {
-    font-size: 12px;
-  }
-  
-  .el-table th,
-  .el-table td {
-    padding: 10px 8px !important;
-  }
-  
-  .el-form {
-    max-width: 100%;
-  }
-  
-  .suggestions-dropdown {
-    max-height: 250px;
-  }
-}
-
-/* 动画效果 */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 滚动条样式 */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  background: #f8fafc;
 }
 </style>
 

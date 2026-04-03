@@ -1,151 +1,222 @@
 <template>
-  <div class="login-container">
-    <div class="login-background">
-      <div class="login-shape"></div>
-      <div class="login-shape"></div>
-      <div class="login-shape"></div>
-      <div class="login-shape"></div>
-    </div>
-    <div class="login-card">
-      <div class="login-header">
-        <h1>{{ msg }}</h1>
-        <p>欢迎回来，请登录您的账号</p>
+  <div class="login-page">
+
+    <!-- ── 左侧品牌面板 ── -->
+    <div class="brand-panel">
+      <!-- 装饰光晕 -->
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+
+      <div class="brand-inner">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+            <path d="M20 7H4C2.9 7 2 7.9 2 9v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2z"
+                  stroke="white" stroke-width="1.8" fill="none"/>
+            <path d="M16 7V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2" stroke="white" stroke-width="1.8"/>
+            <line x1="12" y1="12" x2="12" y2="16" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="10" y1="14" x2="14" y2="14" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h1 class="brand-title">{{ companyName }}</h1>
+        <p class="brand-subtitle">高效管理，让业务更清晰</p>
+
+        <!-- 特性列表 -->
+        <ul class="feature-list">
+          <li>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span>出入货管理，一站式处理</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span>库存实时同步，精确到原材料</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span>数据可视化大屏，掌握全局</span>
+          </li>
+        </ul>
       </div>
-      <Login/>
     </div>
+
+    <!-- ── 右侧表单面板 ── -->
+    <div class="form-panel">
+      <div class="form-inner">
+        <div class="form-header">
+          <h2>欢迎回来</h2>
+          <p>请输入账号和密码登录</p>
+        </div>
+
+        <Login />
+
+        <p class="form-footer">内部系统 · 仅限授权人员访问</p>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
 import Login from '@/components/Login.vue'
 
 export default {
   name: 'LoginView',
-  components: {
-    Login
-  },
-  data() {
-    return {
-      msg: '欢迎登录'
+  components: { Login },
+  computed: {
+    companyName() {
+      return localStorage.getItem('companyName') || '管理系统'
     }
   }
 }
 </script>
 
 <style scoped>
-.login-container {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
+/* ── 整页布局 ── */
+.login-page {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* ── 左侧品牌面板 ── */
+.brand-panel {
+  flex: 1.1;
+  background: linear-gradient(145deg, #0f172a 0%, #1e3a5f 60%, #0f1f3d 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   overflow: hidden;
+  padding: 60px;
 }
 
-.login-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  z-index: 0;
-}
-
-.login-shape {
+/* 装饰光晕 */
+.orb {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  animation: float 8s ease-in-out infinite;
+  filter: blur(80px);
+  opacity: .35;
+  pointer-events: none;
+}
+.orb-1 {
+  width: 400px; height: 400px;
+  background: #3b82f6;
+  top: -100px; left: -100px;
+}
+.orb-2 {
+  width: 300px; height: 300px;
+  background: #6366f1;
+  bottom: -80px; right: -60px;
+}
+.orb-3 {
+  width: 200px; height: 200px;
+  background: #0ea5e9;
+  top: 50%; left: 55%;
+  transform: translate(-50%, -50%);
 }
 
-.login-shape:nth-child(1) {
-  width: 100px;
-  height: 100px;
-  top: 10%;
-  left: 20%;
-  animation-delay: 0s;
-}
-
-.login-shape:nth-child(2) {
-  width: 150px;
-  height: 150px;
-  top: 50%;
-  right: 10%;
-  animation-delay: 2s;
-}
-
-.login-shape:nth-child(3) {
-  width: 80px;
-  height: 80px;
-  bottom: 20%;
-  left: 30%;
-  animation-delay: 4s;
-}
-
-.login-shape:nth-child(4) {
-  width: 120px;
-  height: 120px;
-  top: 30%;
-  right: 30%;
-  animation-delay: 6s;
-}
-
-.login-card {
+.brand-inner {
   position: relative;
   z-index: 1;
-  width: 400px;
-  padding: 40px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  max-width: 420px;
+}
+
+.brand-logo {
+  width: 72px; height: 72px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
   backdrop-filter: blur(10px);
-  animation: fadeInUp 1s ease-out;
 }
 
-.login-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.login-header h1 {
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
+.brand-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  letter-spacing: -.02em;
   margin-bottom: 10px;
+  line-height: 1.2;
 }
 
-.login-header p {
-  font-size: 16px;
-  color: #666;
+.brand-subtitle {
+  font-size: 1rem;
+  color: #94a3b8;
+  margin-bottom: 48px;
+  line-height: 1.6;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-20px) rotate(180deg);
-  }
+.feature-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.feature-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #cbd5e1;
+  font-size: .9rem;
+}
+.feature-list li svg {
+  color: #60a5fa;
+  flex-shrink: 0;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ── 右侧表单面板 ── */
+.form-panel {
+  width: 440px;
+  flex-shrink: 0;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 48px;
 }
 
+.form-inner {
+  width: 100%;
+  max-width: 340px;
+}
+
+.form-header {
+  margin-bottom: 36px;
+}
+.form-header h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 6px;
+  letter-spacing: -.02em;
+}
+.form-header p {
+  font-size: .9rem;
+  color: #64748b;
+}
+
+.form-footer {
+  text-align: center;
+  font-size: .75rem;
+  color: #94a3b8;
+  margin-top: 32px;
+}
+
+/* ── 响应式 ── */
 @media (max-width: 768px) {
-  .login-card {
-    width: 90%;
-    padding: 30px;
+  .brand-panel { display: none; }
+  .form-panel {
+    width: 100%;
+    padding: 48px 32px;
   }
 }
 </style>
