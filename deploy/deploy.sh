@@ -11,7 +11,8 @@ REMOTE_BACKUP="/root/project/xdmy"       # 远程备份路径
 REMOTE_APP="/opt/xdmy"                   # 实际运行路径
 NGINX_CONF_REMOTE="/etc/nginx/conf.d/xdmy.conf"
 SYSTEMD_REMOTE="/etc/systemd/system/xdmy.service"
-PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
+DEPLOY_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$DEPLOY_DIR/.." && pwd)"
 
 # ── 颜色输出 ─────────────────────────────────────────────────
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
@@ -51,8 +52,8 @@ else
 fi
 
 # Nginx 配置 & systemd 服务文件
-scp -q "$PROJECT_ROOT/xdmy.nginx.conf" "$SERVER:$REMOTE_BACKUP/deploy/xdmy.nginx.conf"
-scp -q "$PROJECT_ROOT/xdmy.service"    "$SERVER:$REMOTE_BACKUP/deploy/xdmy.service"
+scp -q "$DEPLOY_DIR/xdmy.nginx.conf" "$SERVER:$REMOTE_BACKUP/deploy/xdmy.nginx.conf"
+scp -q "$DEPLOY_DIR/xdmy.service"    "$SERVER:$REMOTE_BACKUP/deploy/xdmy.service"
 ok "配置文件 → $REMOTE_BACKUP/deploy/"
 
 # ── [4/6] 从备份路径同步到运行路径 ───────────────────────────
