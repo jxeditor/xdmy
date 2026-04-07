@@ -3,7 +3,7 @@ logging:
     root: ERROR
 
 server:
-  port: 8088
+  port: 8887
 
 spring:
   profiles:
